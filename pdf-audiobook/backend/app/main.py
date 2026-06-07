@@ -13,7 +13,6 @@ from app.routers import auth, upload, translate, tts, jobs
 
 settings = get_settings()
 
-# ── Rate limiter ─────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address)
 
 
@@ -32,11 +31,11 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# ── Middleware ────────────────────────────────────────────────
+# ── CORS — allow everything ───────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -45,7 +44,6 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
-# ── Global exception handler ──────────────────────────────────
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
@@ -54,7 +52,6 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# ── Routers ───────────────────────────────────────────────────
 app.include_router(auth.router,      prefix="/api/auth",      tags=["auth"])
 app.include_router(upload.router,    prefix="/api/upload",    tags=["upload"])
 app.include_router(translate.router, prefix="/api/translate", tags=["translate"])
@@ -65,3 +62,8 @@ app.include_router(jobs.router,      prefix="/api/jobs",      tags=["jobs"])
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "version": "1.0.0"}
+
+
+@app.get("/")
+async def root():
+    return {"message": "PDF Audiobook API is running. Visit /api/docs for documentation."}
