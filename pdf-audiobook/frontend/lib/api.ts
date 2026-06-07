@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://convert-pdf-to-audio.onrender.com";
+const API_URL = "https://convert-pdf-to-audio.onrender.com";
 
 export const apiClient = axios.create({
   baseURL: API_URL,
