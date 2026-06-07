@@ -1,11 +1,6 @@
-"""
-routers/upload.py
-─────────────────
-POST /api/upload/pdf  — validate, store, create job, enqueue worker
-"""
-
 import uuid
 import logging
+import asyncio
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
@@ -17,7 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.auth import get_optional_user
 from app.config import get_settings
 from app.database import get_session
-from app.models import ConversionJob, User, PlanType
+from app.models import ConversionJob, User
 from app.services.storage import storage, generate_storage_path
 from app.services.translator import SUPPORTED_LANGUAGES
 
@@ -26,10 +21,7 @@ settings = get_settings()
 limiter = Limiter(key_func=get_remote_address)
 logger = logging.getLogger(__name__)
 
-ALLOWED_CONTENT_TYPES = {
-    "application/pdf",
-    "application/x-pdf",
-}
+ALLOWED_CONTENT_TYPES = {"application/pdf", "application/x-pdf"}
 MAX_BYTES = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
 
@@ -44,19 +36,19 @@ async def upload_pdf(
     session: AsyncSession = Depends(get_session),
     current_user: Optional[User] = Depends(get_optional_user),
 ):
-    # ── Validate file type ────────────────────────────────────
+    # Validate file type
     content_type = file.content_type or ""
     if content_type not in ALLOWED_CONTENT_TYPES and not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
 
-    # ── Validate language ─────────────────────────────────────
+    # Validate language
     if target_language not in SUPPORTED_LANGUAGES:
         raise HTTPException(status_code=400, detail=f"Unsupported language: {target_language}")
 
     if voice_gender not in ("male", "female", "neutral"):
         voice_gender = "neutral"
 
-    # ── Read file with size limit ─────────────────────────────
+    # Read file with size limit
     file_bytes = await file.read()
     if len(file_bytes) > MAX_BYTES:
         raise HTTPException(
@@ -67,11 +59,11 @@ async def upload_pdf(
     if len(file_bytes) < 100:
         raise HTTPException(status_code=400, detail="File appears to be empty or corrupt.")
 
-    # ── Check PDF magic bytes ─────────────────────────────────
+    # Check PDF magic bytes
     if not file_bytes.startswith(b"%PDF"):
         raise HTTPException(status_code=400, detail="File is not a valid PDF.")
 
-    # ── Create job record ─────────────────────────────────────
+    # Create job record
     job_id = str(uuid.uuid4())
     job = ConversionJob(
         id=uuid.UUID(job_id),
@@ -86,7 +78,7 @@ async def upload_pdf(
     await session.commit()
     await session.refresh(job)
 
-    # ── Store PDF ─────────────────────────────────────────────
+    # Store PDF
     storage_path = generate_storage_path(job_id, "original.pdf")
     try:
         await storage.upload(file_bytes, storage_path, "application/pdf")
@@ -94,14 +86,9 @@ async def upload_pdf(
         logger.error(f"Storage upload failed for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to store file. Please try again.")
 
-    # ── Enqueue Celery task ───────────────────────────────────
-    try:
-        from worker.tasks import process_pdf_job
-        process_pdf_job.delay(job_id, storage_path)
-    except Exception as e:
-        logger.error(f"Failed to enqueue job {job_id}: {e}")
-        # Still return success — operator can re-queue manually
-        logger.warning("Worker not available — job queued for manual processing")
+    # Run pipeline in background (no Celery needed)
+    from app.services.pipeline import run_pipeline
+    asyncio.create_task(run_pipeline(job_id, storage_path))
 
     return JSONResponse(
         status_code=202,
