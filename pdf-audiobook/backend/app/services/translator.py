@@ -1,27 +1,23 @@
 """
 translator.py
 ─────────────
-Translation using multiple free APIs with automatic fallback:
-1. LibreTranslate (free, open source, no key needed)
-2. MyMemory (backup)
-3. Returns original text if all fail
+Translation using Gemini API with proper rate limit handling.
+Free tier: 2 requests/minute → wait 35 seconds between requests.
 """
 from __future__ import annotations
 import logging
 import time
+import os
 import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
-MAX_CHUNK_CHARS = 4000
+# Gemini free tier: 2 requests/minute → 35s gap is safe
+REQUEST_DELAY_SECONDS = 35
 
-# Free public LibreTranslate instances
-LIBRETRANSLATE_MIRRORS = [
-    "https://libretranslate.com",
-    "https://translate.argosopentech.com",
-    "https://translate.terraprint.co",
-]
+# Send entire book in ONE request to minimize API calls
+# Gemini supports up to 1M tokens — entire books fit in one request
+MAX_SINGLE_REQUEST_CHARS = 25000
 
 SUPPORTED_LANGUAGES: dict[str, str] = {
     "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic",
@@ -49,14 +45,11 @@ SUPPORTED_LANGUAGES: dict[str, str] = {
     "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
 }
 
-# LibreTranslate uses slightly different codes
-LIBRE_LANG_MAP = {
-    "iw": "he", "jw": "jv", "zh-TW": "zh",
-    "tl": "fil", "ht": "ht",
-}
-
 
 class TranslationService:
+    def __init__(self):
+        self.api_key = os.environ.get("GEMINI_API_KEY", "")
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
     def translate_pages(
         self,
@@ -65,84 +58,85 @@ class TranslationService:
         source_lang: str = "auto",
         progress_callback=None,
     ) -> list[str]:
-        """Translate all pages, combining them into chunks to minimize requests."""
+        if not self.api_key:
+            logger.warning("GEMINI_API_KEY not set — returning original")
+            return pages
+
+        target_name = SUPPORTED_LANGUAGES.get(target_lang, target_lang)
+
+        # Combine ALL pages into one big text
         full_text = "\n\n---PAGEBREAK---\n\n".join(pages)
-        chunks = _split_into_chunks(full_text, MAX_CHUNK_CHARS)
-        logger.info(f"Translating {len(pages)} pages as {len(chunks)} chunks")
+
+        # Split into chunks only if absolutely necessary
+        chunks = _split_into_chunks(full_text, MAX_SINGLE_REQUEST_CHARS)
+        logger.info(f"Translating {len(pages)} pages in {len(chunks)} request(s)")
 
         translated_chunks = []
         for i, chunk in enumerate(chunks):
             if i > 0:
-                time.sleep(1)
-            translated = self._translate_with_fallback(chunk, target_lang, source_lang)
-            translated_chunks.append(translated)
+                logger.info(f"Waiting {REQUEST_DELAY_SECONDS}s before next request...")
+                time.sleep(REQUEST_DELAY_SECONDS)
+
+            result = self._call_gemini(chunk, target_name)
+            translated_chunks.append(result)
+
             if progress_callback:
                 progress_callback(i + 1, len(chunks))
 
+        # Rejoin and split back by page
         full_translated = "\n\n".join(translated_chunks)
         translated_pages = full_translated.split("---PAGEBREAK---")
         translated_pages = [p.strip() for p in translated_pages if p.strip()]
 
+        # Match original count
         while len(translated_pages) < len(pages):
             translated_pages.append("")
         return translated_pages[:len(pages)]
 
     def translate_text(self, text: str, target_lang: str, source_lang: str = "auto") -> str:
-        if not text.strip():
+        if not text.strip() or not self.api_key:
             return text
-        return self._translate_with_fallback(text[:MAX_CHUNK_CHARS], target_lang, source_lang)
-
-    def _translate_with_fallback(self, text: str, target_lang: str, source_lang: str) -> str:
-        """Try LibreTranslate mirrors, fall back to Gemini, then return original."""
-        import os
-
-        tl = LIBRE_LANG_MAP.get(target_lang, target_lang)
-        sl = "auto" if source_lang == "auto" else LIBRE_LANG_MAP.get(source_lang, source_lang)
-
-        # Try each LibreTranslate mirror
-        for mirror in LIBRETRANSLATE_MIRRORS:
-            try:
-                result = self._libretranslate(text, tl, sl, mirror)
-                if result and result != text:
-                    return result
-            except Exception as e:
-                logger.warning(f"LibreTranslate mirror {mirror} failed: {e}")
-                continue
-
-        # Fallback: try Gemini if API key is set
-        gemini_key = os.environ.get("GEMINI_API_KEY", "")
-        if gemini_key:
-            try:
-                return self._gemini_translate(text, target_lang, gemini_key)
-            except Exception as e:
-                logger.warning(f"Gemini fallback failed: {e}")
-
-        # Last resort: return original text
-        logger.error("All translation methods failed — returning original text")
-        return text
-
-    def _libretranslate(self, text: str, target: str, source: str, base_url: str) -> str:
-        response = httpx.post(
-            f"{base_url}/translate",
-            json={"q": text, "source": source, "target": target, "format": "text"},
-            timeout=30,
-            headers={"Content-Type": "application/json"},
-        )
-        response.raise_for_status()
-        return response.json()["translatedText"]
-
-    def _gemini_translate(self, text: str, target_lang: str, api_key: str) -> str:
         target_name = SUPPORTED_LANGUAGES.get(target_lang, target_lang)
-        response = httpx.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
-            json={
-                "contents": [{"parts": [{"text": f"Translate to {target_name}. Return only translated text:\n{text}"}]}],
-                "generationConfig": {"temperature": 0.1, "maxOutputTokens": 8192},
-            },
-            timeout=60,
-        )
-        response.raise_for_status()
-        return response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+        return self._call_gemini(text[:MAX_SINGLE_REQUEST_CHARS], target_name)
+
+    def _call_gemini(self, text: str, target_language_name: str) -> str:
+        prompt = f"""Translate the following text to {target_language_name}.
+Keep any "---PAGEBREAK---" markers exactly as they appear.
+Return ONLY the translated text, nothing else.
+
+{text}"""
+
+        for attempt in range(3):
+            try:
+                response = httpx.post(
+                    f"{self.api_url}?key={self.api_key}",
+                    json={
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {
+                            "temperature": 0.1,
+                            "maxOutputTokens": 8192,
+                        },
+                    },
+                    timeout=120,
+                )
+
+                if response.status_code == 429:
+                    wait = 60 * (attempt + 1)
+                    logger.warning(f"Rate limited — waiting {wait}s before retry {attempt+1}/3")
+                    time.sleep(wait)
+                    continue
+
+                response.raise_for_status()
+                data = response.json()
+                return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+            except Exception as e:
+                logger.error(f"Gemini attempt {attempt+1} failed: {e}")
+                if attempt < 2:
+                    time.sleep(30)
+
+        logger.error("All Gemini attempts failed — returning original text")
+        return text
 
     def detect_language(self, text: str) -> str:
         return "auto"
