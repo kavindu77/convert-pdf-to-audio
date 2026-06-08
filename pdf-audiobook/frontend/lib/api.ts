@@ -24,6 +24,8 @@ export interface UploadResponse {
   job_id: string;
   status: string;
   message: string;
+  estimated_time?: string | null;
+  is_free_plan?: boolean;
 }
 
 export interface JobStatus {
