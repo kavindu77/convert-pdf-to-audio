@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 GEMINI_API_KEY   = os.getenv("GEMINI_API_KEY", "")
 DEEPL_API_KEY    = os.getenv("DEEPL_API_KEY", "")
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 DEEPL_URL  = "https://api-free.deepl.com/v2/translate"   # free tier endpoint
 GT_URL     = "https://translate.googleapis.com/translate_a/single"
 
