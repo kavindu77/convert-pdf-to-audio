@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { uploadPDF, getJobStatus, getSupportedLanguages, JobStatus } from "@/lib/api";
 
+const API_URL = "https://convert-pdf-to-audio.onrender.com";
+
 const POPULAR_LANGUAGES = [
   "en", "es", "fr", "de", "ar", "hi", "zh", "ja", "ko", "pt",
   "ru", "tr", "vi", "id", "si", "ta", "bn", "ur", "ne",
@@ -49,7 +51,6 @@ export default function ConvertPage() {
     getSupportedLanguages().then(setLanguages).catch(() => {});
   }, []);
 
-  // Poll for job status every 3 seconds
   useEffect(() => {
     if (!jobId) return;
     const poll = async () => {
@@ -118,6 +119,13 @@ export default function ConvertPage() {
   const isDone = jobStatus?.status === "completed";
   const isFailed = jobStatus?.status === "failed";
 
+  // Build full audio URL with backend prefix
+  const getAudioUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    return `${API_URL}${url}`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
@@ -140,13 +148,10 @@ export default function ConvertPage() {
             <span className="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 text-xs flex items-center justify-center">1</span>
             Upload PDF
           </h2>
-
           <div
             {...getRootProps()}
-            className={`
-              border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
-              ${isDragActive ? "border-indigo-400 bg-indigo-500/10" : "border-white/20 hover:border-white/40 hover:bg-white/5"}
-            `}
+            className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all
+              ${isDragActive ? "border-indigo-400 bg-indigo-500/10" : "border-white/20 hover:border-white/40 hover:bg-white/5"}`}
           >
             <input {...getInputProps()} />
             {file ? (
@@ -174,7 +179,6 @@ export default function ConvertPage() {
             Choose Language & Voice
           </h2>
 
-          {/* Language selector */}
           <div className="relative">
             <button
               type="button"
@@ -222,7 +226,6 @@ export default function ConvertPage() {
             )}
           </div>
 
-          {/* Voice gender */}
           <div className="flex gap-3">
             {["neutral", "female", "male"].map((g) => (
               <button
@@ -232,8 +235,7 @@ export default function ConvertPage() {
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all capitalize
                   ${voiceGender === g
                     ? "bg-indigo-500 border-indigo-400 text-white"
-                    : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"
-                  }`}
+                    : "bg-white/5 border-white/10 text-gray-400 hover:border-white/30"}`}
               >
                 {g}
               </button>
@@ -265,7 +267,7 @@ export default function ConvertPage() {
           </button>
         )}
 
-        {/* Progress */}
+        {/* Progress & Results */}
         {jobStatus && (
           <section className="rounded-2xl border border-white/10 p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -273,9 +275,7 @@ export default function ConvertPage() {
                 {isDone && <CheckCircle2 size={20} className="text-green-400" />}
                 {isFailed && <XCircle size={20} className="text-red-400" />}
                 {isProcessing && <Loader2 size={20} className="animate-spin text-indigo-400" />}
-                <span className="font-medium">
-                  {STATUS_LABELS[jobStatus.status] || jobStatus.status}
-                </span>
+                <span className="font-medium">{STATUS_LABELS[jobStatus.status] || jobStatus.status}</span>
               </div>
               <span className="text-sm text-gray-400">{jobStatus.progress_percent}%</span>
             </div>
@@ -295,29 +295,39 @@ export default function ConvertPage() {
               <p className="text-sm text-red-400">{jobStatus.error_message}</p>
             )}
 
-            {/* Results */}
+            {/* Audio Results */}
             {isDone && jobStatus.chapter_urls && jobStatus.chapter_urls.length > 0 && (
               <div className="space-y-3 pt-2">
                 <p className="text-sm text-gray-400">
                   {jobStatus.chapter_urls.length} chapter{jobStatus.chapter_urls.length > 1 ? "s" : ""} ready
                   — {jobStatus.target_language_name}
                 </p>
-                {jobStatus.chapter_urls.map((url, i) => (
-                  <div key={url} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                    <span className="text-sm text-gray-300">Chapter {i + 1}</span>
-                    <div className="flex gap-2">
-                      <audio controls src={url} className="h-8" />
+                {jobStatus.chapter_urls.map((url, i) => {
+                  const fullUrl = getAudioUrl(url);
+                  return (
+                    <div key={url} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                      <span className="text-sm text-gray-300 w-20">Chapter {i + 1}</span>
+                      <audio controls src={fullUrl} className="flex-1 mx-3 h-8" />
                       <a
-                        href={url}
+                        href={fullUrl}
                         download={`chapter-${i + 1}.mp3`}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm transition-colors whitespace-nowrap"
                       >
                         <Download size={14} />
                         MP3
                       </a>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+
+                {/* Convert another */}
+                <button
+                  type="button"
+                  onClick={() => { setFile(null); setJobId(null); setJobStatus(null); setError(null); }}
+                  className="w-full mt-4 py-3 rounded-xl border border-white/10 text-gray-400 hover:border-white/30 hover:text-white transition-all text-sm"
+                >
+                  Convert another PDF
+                </button>
               </div>
             )}
           </section>
