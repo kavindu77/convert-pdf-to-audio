@@ -3,22 +3,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import {
-  Upload,
-  FileText,
-  Globe,
-  Mic,
-  Play,
-  Download,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  ChevronDown,
+  Upload, FileText, Globe, Mic, Play, Download,
+  Loader2, CheckCircle2, XCircle, ChevronDown, Clock, Lock,
 } from "lucide-react";
 import { uploadPDF, getJobStatus, JobStatus } from "@/lib/api";
 
 const API_URL = "https://convert-pdf-to-audio.onrender.com";
 
-// Only high-quality supported languages
 const SUPPORTED_LANGUAGES = [
   { code: "es", name: "Spanish",    flag: "🇪🇸", region: "Spain, Latin America, USA" },
   { code: "fr", name: "French",     flag: "🇫🇷", region: "France, Canada, Africa" },
@@ -31,24 +22,26 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: "Queued...",
-  extracting: "Extracting text...",
-  translating: "Translating...",
+  pending:          "Queued...",
+  extracting:       "Extracting text...",
+  translating:      "Translating...",
   generating_audio: "Generating audio...",
-  completed: "Done!",
-  failed: "Failed",
+  completed:        "Done!",
+  failed:           "Failed",
 };
 
 export default function ConvertPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [targetLang, setTargetLang] = useState("es");
+  const [file, setFile]               = useState<File | null>(null);
+  const [targetLang, setTargetLang]   = useState("es");
   const [voiceGender, setVoiceGender] = useState("neutral");
-  const [langOpen, setLangOpen] = useState(false);
+  const [langOpen, setLangOpen]       = useState(false);
 
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const [jobId, setJobId]           = useState<string | null>(null);
+  const [jobStatus, setJobStatus]   = useState<JobStatus | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError]           = useState<string | null>(null);
+  const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
+  const [isFreePlan, setIsFreePlan] = useState(true);
 
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -76,6 +69,7 @@ export default function ConvertPage() {
       setError(null);
       setJobId(null);
       setJobStatus(null);
+      setEstimatedTime(null);
     }
   }, []);
 
@@ -97,17 +91,25 @@ export default function ConvertPage() {
     try {
       const res = await uploadPDF(file, targetLang, "auto", voiceGender);
       setJobId(res.job_id);
+      setEstimatedTime(res.estimated_time || null);
+      setIsFreePlan(res.is_free_plan ?? true);
     } catch (e: any) {
-      setError(e?.response?.data?.detail || "Upload failed. Please try again.");
+      const detail = e?.response?.data?.detail || e?.message || "Upload failed. Please try again.";
+      // Check if it's a free limit error
+      if (detail.includes("Free plan limit reached") || detail.includes("3 free conversions")) {
+        setError("__upgrade__");
+      } else {
+        setError(detail);
+      }
     } finally {
       setIsUploading(false);
     }
   };
 
-  const selectedLang = SUPPORTED_LANGUAGES.find(l => l.code === targetLang);
-  const isProcessing = jobStatus && !["completed", "failed"].includes(jobStatus.status);
-  const isDone = jobStatus?.status === "completed";
-  const isFailed = jobStatus?.status === "failed";
+  const selectedLang  = SUPPORTED_LANGUAGES.find(l => l.code === targetLang);
+  const isProcessing  = jobStatus && !["completed", "failed"].includes(jobStatus.status);
+  const isDone        = jobStatus?.status === "completed";
+  const isFailed      = jobStatus?.status === "failed";
 
   const getAudioUrl = (url: string) => {
     if (!url) return "";
@@ -123,12 +125,31 @@ export default function ConvertPage() {
           <Mic size={18} />
         </div>
         <span className="font-semibold text-lg tracking-tight">PDF Audiobook</span>
+        <div className="ml-auto flex items-center gap-2 text-xs text-gray-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+          <Lock size={12} />
+          Free: 3 pages · 3 total conversions
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Convert PDF to Audiobook</h1>
-          <p className="text-gray-400">Upload a PDF, choose your language, and generate audio.</p>
+          <p className="text-gray-400">Upload a PDF, choose your language, and get an audio file.</p>
+        </div>
+
+        {/* Free Plan Banner */}
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 flex items-start gap-3">
+          <Lock size={18} className="text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-amber-300 font-medium text-sm">Free Plan — Limited Preview</p>
+            <p className="text-amber-400/70 text-xs mt-1">
+              First <strong>3 non-blank pages</strong> only · Maximum <strong>3 conversions</strong> total.
+              Upgrade for full book conversion.
+            </p>
+          </div>
+          <button className="ml-auto shrink-0 px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold transition-colors">
+            Upgrade
+          </button>
         </div>
 
         {/* Step 1: Upload */}
@@ -168,7 +189,6 @@ export default function ConvertPage() {
             Choose Language & Voice
           </h2>
 
-          {/* Language Dropdown */}
           <div className="relative">
             <button
               type="button"
@@ -207,7 +227,6 @@ export default function ConvertPage() {
             )}
           </div>
 
-          {/* Voice Gender */}
           <div className="flex gap-3">
             {["neutral", "female", "male"].map((g) => (
               <button
@@ -225,8 +244,24 @@ export default function ConvertPage() {
           </div>
         </section>
 
-        {/* Error */}
-        {error && (
+        {/* Upgrade Error */}
+        {error === "__upgrade__" && (
+          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5 space-y-3">
+            <div className="flex items-center gap-2 text-red-400">
+              <XCircle size={18} />
+              <span className="font-semibold">Free limit reached</span>
+            </div>
+            <p className="text-sm text-gray-400">
+              You have used all <strong>3 free conversions</strong>. Upgrade to convert full books with no limits.
+            </p>
+            <button className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-semibold transition-colors">
+              Upgrade to Pro
+            </button>
+          </div>
+        )}
+
+        {/* Regular Error */}
+        {error && error !== "__upgrade__" && (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
             <XCircle size={18} />
             <span className="text-sm">{error}</span>
@@ -234,7 +269,7 @@ export default function ConvertPage() {
         )}
 
         {/* Submit */}
-        {!jobId && (
+        {!jobId && error !== "__upgrade__" && (
           <button
             type="button"
             disabled={!file || isUploading}
@@ -249,13 +284,21 @@ export default function ConvertPage() {
           </button>
         )}
 
+        {/* Estimated Time */}
+        {estimatedTime && isProcessing && (
+          <div className="flex items-center gap-2 text-sm text-gray-400 bg-white/5 px-4 py-3 rounded-xl border border-white/10">
+            <Clock size={15} className="text-indigo-400" />
+            Estimated time: <span className="text-white font-medium">{estimatedTime}</span>
+          </div>
+        )}
+
         {/* Progress & Results */}
         {jobStatus && (
           <section className="rounded-2xl border border-white/10 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {isDone && <CheckCircle2 size={20} className="text-green-400" />}
-                {isFailed && <XCircle size={20} className="text-red-400" />}
+                {isDone      && <CheckCircle2 size={20} className="text-green-400" />}
+                {isFailed    && <XCircle size={20} className="text-red-400" />}
                 {isProcessing && <Loader2 size={20} className="animate-spin text-indigo-400" />}
                 <span className="font-medium">{STATUS_LABELS[jobStatus.status] || jobStatus.status}</span>
               </div>
@@ -268,6 +311,16 @@ export default function ConvertPage() {
                 style={{ width: `${jobStatus.progress_percent}%` }}
               />
             </div>
+
+            {/* Page count info */}
+            {jobStatus.total_pages > 0 && (
+              <p className="text-xs text-gray-500">
+                Processing {jobStatus.processed_pages} of {jobStatus.total_pages} pages
+                {jobStatus.total_pages > 3 && (
+                  <span className="text-amber-400 ml-2">· Free plan: first 3 pages only</span>
+                )}
+              </p>
+            )}
 
             {jobStatus.is_scanned_pdf && (
               <p className="text-xs text-amber-400">⚠ Scanned PDF detected — using OCR for text extraction.</p>
@@ -302,10 +355,19 @@ export default function ConvertPage() {
                   );
                 })}
 
+                {/* Upgrade prompt after completion */}
+                <div className="mt-4 p-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5">
+                  <p className="text-sm text-indigo-300 font-medium">Want the full book?</p>
+                  <p className="text-xs text-gray-500 mt-1">Upgrade to convert up to 500 pages per PDF.</p>
+                  <button className="mt-3 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-semibold transition-colors">
+                    Upgrade to Pro
+                  </button>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => { setFile(null); setJobId(null); setJobStatus(null); setError(null); }}
-                  className="w-full mt-4 py-3 rounded-xl border border-white/10 text-gray-400 hover:border-white/30 hover:text-white transition-all text-sm"
+                  onClick={() => { setFile(null); setJobId(null); setJobStatus(null); setError(null); setEstimatedTime(null); }}
+                  className="w-full py-3 rounded-xl border border-white/10 text-gray-400 hover:border-white/30 hover:text-white transition-all text-sm"
                 >
                   Convert another PDF
                 </button>

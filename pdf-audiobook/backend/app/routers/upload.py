@@ -24,20 +24,32 @@ logger = logging.getLogger(__name__)
 ALLOWED_CONTENT_TYPES = {"application/pdf", "application/x-pdf"}
 MAX_BYTES = settings.MAX_FILE_SIZE_MB * 1024 * 1024
 
-# Plan limits
+# ─── Plan Limits ──────────────────────────────────────────────────────────────
+# Free: max 3 non-blank pages, max 3 total jobs ever
+# Pro/Student/Business: full access
 PLAN_LIMITS = {
-    PlanType.free:     {"max_pages": 10,  "max_file_mb": 10,  "jobs_per_day": 3},
-    PlanType.student:  {"max_pages": 50,  "max_file_mb": 25,  "jobs_per_day": 10},
-    PlanType.pro:      {"max_pages": 500, "max_file_mb": 50,  "jobs_per_day": 50},
-    PlanType.business: {"max_pages": 999, "max_file_mb": 50,  "jobs_per_day": 999},
+    PlanType.free:     {"max_pages": 3,   "max_file_mb": 10,  "jobs_per_day": 3,   "total_jobs": 3},
+    PlanType.student:  {"max_pages": 50,  "max_file_mb": 25,  "jobs_per_day": 10,  "total_jobs": 999},
+    PlanType.pro:      {"max_pages": 500, "max_file_mb": 50,  "jobs_per_day": 50,  "total_jobs": 999},
+    PlanType.business: {"max_pages": 999, "max_file_mb": 50,  "jobs_per_day": 999, "total_jobs": 999},
 }
 
 PLAN_DISPLAY = {
-    PlanType.free:     "Free (10 pages/PDF)",
+    PlanType.free:     "Free (3 pages only)",
     PlanType.student:  "Student (50 pages/PDF)",
     PlanType.pro:      "Pro (500 pages/PDF)",
     PlanType.business: "Business (unlimited)",
 }
+
+# ─── Time estimate ────────────────────────────────────────────────────────────
+def estimate_time(pages: int) -> str:
+    """Estimate processing time based on number of pages."""
+    # ~2s per page for translation + ~3s per page for TTS
+    total_seconds = pages * 5
+    if total_seconds < 60:
+        return f"~{total_seconds} seconds"
+    minutes = round(total_seconds / 60)
+    return f"~{minutes} minute{'s' if minutes > 1 else ''}"
 
 
 @router.post("/pdf")
@@ -73,7 +85,7 @@ async def upload_pdf(
     if len(file_bytes) > max_bytes:
         raise HTTPException(
             status_code=413,
-            detail=f"File too large for your plan. {PLAN_DISPLAY[plan]} allows max {limits['max_file_mb']} MB. Upgrade to Pro for 50 MB."
+            detail=f"File too large. {PLAN_DISPLAY[plan]} allows max {limits['max_file_mb']} MB."
         )
 
     if len(file_bytes) < 100:
@@ -82,8 +94,29 @@ async def upload_pdf(
     if not file_bytes.startswith(b"%PDF"):
         raise HTTPException(status_code=400, detail="File is not a valid PDF.")
 
-    # Check daily job limit for authenticated users
-    if current_user:
+    # ── Free plan: check total jobs ever (not just today) ──
+    if plan == PlanType.free:
+        from sqlmodel import select, func
+        if current_user:
+            stmt = select(func.count(ConversionJob.id)).where(
+                ConversionJob.user_id == current_user.id,
+            )
+        else:
+            # For anonymous users track by IP via session — limit per IP
+            client_ip = request.client.host
+            stmt = select(func.count(ConversionJob.id)).where(
+                ConversionJob.user_id == None,
+            )
+        result = await session.exec(stmt)
+        total_count = result.one()
+        if total_count >= limits["total_jobs"]:
+            raise HTTPException(
+                status_code=429,
+                detail="Free plan limit reached. You have used all 3 free conversions. Please upgrade to continue."
+            )
+
+    # ── Paid plans: check daily job limit ──
+    if current_user and plan != PlanType.free:
         from sqlmodel import select, func
         from datetime import date
         today_start = f"{date.today()}T00:00:00"
@@ -96,8 +129,14 @@ async def upload_pdf(
         if today_count >= limits["jobs_per_day"]:
             raise HTTPException(
                 status_code=429,
-                detail=f"Daily limit reached. {PLAN_DISPLAY[plan]} allows {limits['jobs_per_day']} conversions/day. Upgrade for more."
+                detail=f"Daily limit reached. {PLAN_DISPLAY[plan]} allows {limits['jobs_per_day']} conversions/day."
             )
+
+    # ── Estimate time based on pages ──
+    # Quick page count from PDF bytes (approximate)
+    page_count_approx = file_bytes.count(b"/Page") or 10
+    capped_pages = min(page_count_approx, limits["max_pages"])
+    time_estimate = estimate_time(capped_pages)
 
     # Create job record
     job_id = str(uuid.uuid4())
@@ -135,5 +174,7 @@ async def upload_pdf(
             "message": "PDF accepted. Processing started.",
             "plan": plan.value,
             "max_pages": limits["max_pages"],
+            "estimated_time": time_estimate,
+            "is_free_plan": plan == PlanType.free,
         },
     )
