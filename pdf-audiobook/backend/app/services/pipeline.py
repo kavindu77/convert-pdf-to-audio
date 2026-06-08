@@ -14,40 +14,35 @@ _executor = ThreadPoolExecutor(max_workers=1)
 
 
 async def run_pipeline(job_id: str, storage_path: str):
-    """Launch pipeline in background thread."""
     loop = asyncio.get_event_loop()
     loop.run_in_executor(_executor, _run_pipeline_sync, job_id, storage_path)
 
 
 def _get_sync_db():
-    """Create a synchronous psycopg2 connection from the DATABASE_URL."""
     import os
     import psycopg2
     url = os.environ.get("DATABASE_URL", "")
-    # Convert asyncpg URL to psycopg2 format
     url = url.replace("postgresql+asyncpg://", "postgresql://")
     url = url.replace("postgres+asyncpg://", "postgresql://")
     return psycopg2.connect(url)
 
 
 def _update_job_sync(conn, job_id: str, **kwargs):
-    """Update job fields using sync psycopg2 connection."""
     if not kwargs:
         return
     sets = ", ".join(f"{k} = %s" for k in kwargs)
     vals = list(kwargs.values()) + [job_id]
     with conn.cursor() as cur:
-        cur.execute(f"UPDATE conversion_jobs SET {sets} WHERE id = %s", vals)
+        cur.execute(f"UPDATE conversion_jobs SET {sets} WHERE id = %s::uuid", vals)
     conn.commit()
 
 
 def _get_job_sync(conn, job_id: str) -> dict:
-    """Get job as dict using sync connection."""
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT id, status, target_language, source_language, 
-                   voice_gender, original_filename
-            FROM conversion_jobs WHERE id = %s
+            SELECT id, status, target_language, source_language,
+                   voice_gender, original_filename, max_pages
+            FROM conversion_jobs WHERE id = %s::uuid
         """, (job_id,))
         row = cur.fetchone()
         if not row:
@@ -59,11 +54,11 @@ def _get_job_sync(conn, job_id: str) -> dict:
             "source_language": row[3],
             "voice_gender": row[4],
             "original_filename": row[5],
+            "max_pages": row[6] or 10,
         }
 
 
 def _run_pipeline_sync(job_id: str, storage_path: str):
-    """Run entire pipeline with synchronous DB calls."""
     import asyncio
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -75,31 +70,37 @@ def _run_pipeline_sync(job_id: str, storage_path: str):
         if not job:
             return
 
-        # Step 1: Extract PDF
+        max_pages = job["max_pages"]
+
+        # Step 1: Extract
         _update_job_sync(conn, job_id, status="extracting", progress_percent=10)
 
-        # Download file using async storage in new loop
         from app.services.storage import storage
         pdf_bytes = loop.run_until_complete(storage.download(storage_path))
 
         from app.services.pdf_extractor import extract_pdf, split_into_chapters
         result = extract_pdf(pdf_bytes, job["target_language"])
 
+        # Enforce page limit based on plan
+        pages = result.pages[:max_pages]
+        if len(result.pages) > max_pages:
+            logger.info(f"Job {job_id}: truncating {len(result.pages)} pages to {max_pages} (plan limit)")
+
         _update_job_sync(conn, job_id,
             total_pages=result.total_pages,
             is_scanned_pdf=result.is_scanned,
-            processed_pages=len(result.pages),
+            processed_pages=len(pages),
             progress_percent=30,
         )
 
-        if not result.pages:
+        if not pages:
             raise ValueError("No readable text found in PDF.")
 
         # Step 2: Translate
         _update_job_sync(conn, job_id, status="translating", progress_percent=35)
 
         from app.services.translator import translation_service
-        page_texts = [p.text for p in result.pages]
+        page_texts = [p.text for p in pages]
         translated_pages = translation_service.translate_pages(
             page_texts,
             target_lang=job["target_language"],

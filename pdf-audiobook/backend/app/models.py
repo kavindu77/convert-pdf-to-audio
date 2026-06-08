@@ -49,6 +49,10 @@ class ConversionJob(SQLModel, table=True):
     voice_id: str = Field(default="default")
     voice_gender: str = Field(default="neutral")
 
+    # Plan info at time of upload
+    plan_at_upload: str = Field(default="free")
+    max_pages: int = Field(default=10)
+
     # Processing state
     status: JobStatus = Field(default=JobStatus.pending)
     progress_percent: int = Field(default=0)
@@ -58,12 +62,12 @@ class ConversionJob(SQLModel, table=True):
     total_pages: int = Field(default=0)
     processed_pages: int = Field(default=0)
     is_scanned_pdf: bool = Field(default=False)
-    extracted_text_url: Optional[str] = None      # stored in cloud
-    translated_text_url: Optional[str] = None     # stored in cloud
+    extracted_text_url: Optional[str] = None
+    translated_text_url: Optional[str] = None
 
     # Output
     audio_url: Optional[str] = None
-    chapter_urls: Optional[str] = None            # JSON array of URLs
+    chapter_urls: Optional[str] = None
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
