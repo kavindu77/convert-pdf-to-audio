@@ -7,7 +7,6 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Fix database URL — ensure correct async driver prefix
 db_url = settings.DATABASE_URL
 
 if db_url.startswith("postgresql://"):
@@ -15,7 +14,6 @@ if db_url.startswith("postgresql://"):
 elif db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
 
-# SQLite needs check_same_thread=False
 connect_args = {}
 if "sqlite" in db_url:
     connect_args = {"check_same_thread": False}
@@ -24,6 +22,11 @@ engine: AsyncEngine = create_async_engine(
     db_url,
     echo=False,
     connect_args=connect_args,
+    pool_size=2,          # Free tier: keep it small
+    max_overflow=3,       # Max 5 total connections
+    pool_timeout=60,      # Wait longer before giving up
+    pool_recycle=300,     # Recycle connections every 5 min
+    pool_pre_ping=True,   # Test connections before using
 )
 
 async_session = sessionmaker(
