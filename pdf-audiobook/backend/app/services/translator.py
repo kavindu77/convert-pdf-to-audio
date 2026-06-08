@@ -1,20 +1,17 @@
 """
-translator.py
-─────────────
-Translates text using Google Gemini API (free tier).
-Falls back to a simple copy if API not configured.
+translator.py — Gemini API translation with rate limit handling
 """
-
 from __future__ import annotations
 import logging
 import os
-import json
+import time
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
-MAX_CHUNK_CHARS = 5000
+MAX_CHUNK_CHARS = 3000
+MAX_PAGES = 10  # limit pages to avoid rate limits on free tier
 
 SUPPORTED_LANGUAGES: dict[str, str] = {
     "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic",
@@ -51,7 +48,6 @@ class TranslationService:
     def translate_text(self, text: str, target_lang: str, source_lang: str = "auto") -> str:
         if not text.strip():
             return text
-
         if not self.api_key:
             logger.warning("GEMINI_API_KEY not set — returning original text")
             return text
@@ -60,13 +56,15 @@ class TranslationService:
         chunks = _split_into_chunks(text, MAX_CHUNK_CHARS)
         translated_chunks = []
 
-        for chunk in chunks:
+        for i, chunk in enumerate(chunks):
+            if i > 0:
+                time.sleep(3)  # wait 3 seconds between chunks to avoid rate limit
             translated = self._translate_chunk(chunk, target_name)
             translated_chunks.append(translated)
 
         return "\n\n".join(translated_chunks)
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=5, max=30))
     def _translate_chunk(self, text: str, target_language_name: str) -> str:
         prompt = f"""Translate the following text to {target_language_name}.
 Return ONLY the translated text, no explanations, no markdown, no extra text.
@@ -93,12 +91,19 @@ Text to translate:
         source_lang: str = "auto",
         progress_callback=None,
     ) -> list[str]:
+        # Limit pages on free tier to avoid rate limits
+        limited_pages = pages[:MAX_PAGES]
+        if len(pages) > MAX_PAGES:
+            logger.warning(f"PDF has {len(pages)} pages — processing first {MAX_PAGES} only (free tier limit)")
+
         translated = []
-        for i, page_text in enumerate(pages):
+        for i, page_text in enumerate(limited_pages):
+            if i > 0:
+                time.sleep(4)  # 4 second delay between pages
             t = self.translate_text(page_text, target_lang, source_lang)
             translated.append(t)
             if progress_callback:
-                progress_callback(i + 1, len(pages))
+                progress_callback(i + 1, len(limited_pages))
         return translated
 
     def detect_language(self, text: str) -> str:
