@@ -1,9 +1,9 @@
 """
 translator.py
 ─────────────
-Uses Google Translate free public endpoint.
-No API key. No rate limits. No billing. Instant.
-Supports all 100+ languages including Sinhala, Tamil, Hindi, Arabic, etc.
+Google Translate free endpoint.
+Supports 8 high-quality languages only.
+No API key. No billing. No rate limits.
 """
 
 from __future__ import annotations
@@ -20,13 +20,7 @@ PAGE_SEP   = " ||| "
 
 
 def _translate_chunk(text: str, target: str, source: str = "auto") -> str:
-    params = {
-        "client": "gtx",
-        "sl": source,
-        "tl": target,
-        "dt": "t",
-        "q": text,
-    }
+    params = {"client": "gtx", "sl": source, "tl": target, "dt": "t", "q": text}
     try:
         with httpx.Client(timeout=30) as client:
             resp = client.get(GT_URL, params=params)
@@ -50,8 +44,7 @@ def translate_text(text: str, target_lang: str, source_lang: str = "auto") -> st
     if len(text) <= CHUNK_SIZE:
         return _translate_chunk(text, tgt, src)
 
-    # Split large text into sentence chunks
-    sentences = re.split(r'(?<=[.!?।])\s+', text)
+    sentences = re.split(r'(?<=[.!?])\s+', text)
     chunks, current = [], ""
     for s in sentences:
         if len(current) + len(s) + 1 > CHUNK_SIZE and current:
@@ -75,7 +68,6 @@ def translate_pages(
     target_lang: str,
     source_lang: str = "auto",
 ) -> list[str]:
-    """Translate all pages in as few requests as possible."""
     if not pages:
         return pages
 
@@ -91,15 +83,13 @@ def translate_pages(
             parts.append("")
         return [p.strip() for p in parts[:len(pages)]]
 
-    # Too big — send in batches
     results = []
     batch = []
 
-    for i, page in enumerate(pages):
+    for page in pages:
         test = PAGE_SEP.join(batch + [page.strip()])
         if len(test) > CHUNK_SIZE and batch:
-            joined_batch = PAGE_SEP.join(batch)
-            translated = _translate_chunk(joined_batch, tgt, src)
+            translated = _translate_chunk(PAGE_SEP.join(batch), tgt, src)
             parts = translated.split(PAGE_SEP)
             while len(parts) < len(batch):
                 parts.append("")
@@ -110,8 +100,7 @@ def translate_pages(
             batch.append(page.strip())
 
     if batch:
-        joined_batch = PAGE_SEP.join(batch)
-        translated = _translate_chunk(joined_batch, tgt, src)
+        translated = _translate_chunk(PAGE_SEP.join(batch), tgt, src)
         parts = translated.split(PAGE_SEP)
         while len(parts) < len(batch):
             parts.append("")
@@ -122,86 +111,20 @@ def translate_pages(
 
 
 def _normalize_lang(code: str) -> str:
-    mapping = {"zh-CN": "zh-CN", "zh-TW": "zh-TW", "iw": "iw", "he": "iw"}
-    return mapping.get(code, code.split("-")[0] if "-" in code and code not in mapping else code)
+    mapping = {"pt-BR": "pt", "pt-PT": "pt", "zh-CN": "zh-CN", "zh-TW": "zh-TW"}
+    return mapping.get(code, code)
 
 
 def get_supported_languages() -> list[dict]:
     return [
-        {"code": "af", "name": "Afrikaans"},
-        {"code": "sq", "name": "Albanian"},
-        {"code": "am", "name": "Amharic"},
-        {"code": "ar", "name": "Arabic"},
-        {"code": "hy", "name": "Armenian"},
-        {"code": "az", "name": "Azerbaijani"},
-        {"code": "bn", "name": "Bengali"},
-        {"code": "bs", "name": "Bosnian"},
-        {"code": "bg", "name": "Bulgarian"},
-        {"code": "ca", "name": "Catalan"},
-        {"code": "zh-CN", "name": "Chinese (Simplified)"},
-        {"code": "zh-TW", "name": "Chinese (Traditional)"},
-        {"code": "hr", "name": "Croatian"},
-        {"code": "cs", "name": "Czech"},
-        {"code": "da", "name": "Danish"},
-        {"code": "nl", "name": "Dutch"},
-        {"code": "en", "name": "English"},
-        {"code": "et", "name": "Estonian"},
-        {"code": "fi", "name": "Finnish"},
+        {"code": "es", "name": "Spanish"},
         {"code": "fr", "name": "French"},
         {"code": "de", "name": "German"},
-        {"code": "el", "name": "Greek"},
-        {"code": "gu", "name": "Gujarati"},
-        {"code": "ht", "name": "Haitian Creole"},
-        {"code": "ha", "name": "Hausa"},
-        {"code": "iw", "name": "Hebrew"},
-        {"code": "hi", "name": "Hindi"},
-        {"code": "hu", "name": "Hungarian"},
-        {"code": "is", "name": "Icelandic"},
-        {"code": "id", "name": "Indonesian"},
-        {"code": "ga", "name": "Irish"},
-        {"code": "it", "name": "Italian"},
-        {"code": "ja", "name": "Japanese"},
-        {"code": "kn", "name": "Kannada"},
-        {"code": "kk", "name": "Kazakh"},
-        {"code": "km", "name": "Khmer"},
-        {"code": "ko", "name": "Korean"},
-        {"code": "lo", "name": "Lao"},
-        {"code": "lv", "name": "Latvian"},
-        {"code": "lt", "name": "Lithuanian"},
-        {"code": "ms", "name": "Malay"},
-        {"code": "ml", "name": "Malayalam"},
-        {"code": "mt", "name": "Maltese"},
-        {"code": "mr", "name": "Marathi"},
-        {"code": "mn", "name": "Mongolian"},
-        {"code": "my", "name": "Myanmar (Burmese)"},
-        {"code": "ne", "name": "Nepali"},
-        {"code": "no", "name": "Norwegian"},
-        {"code": "fa", "name": "Persian"},
-        {"code": "pl", "name": "Polish"},
         {"code": "pt", "name": "Portuguese"},
-        {"code": "pa", "name": "Punjabi"},
-        {"code": "ro", "name": "Romanian"},
-        {"code": "ru", "name": "Russian"},
-        {"code": "sr", "name": "Serbian"},
-        {"code": "si", "name": "Sinhala"},
-        {"code": "sk", "name": "Slovak"},
-        {"code": "sl", "name": "Slovenian"},
-        {"code": "so", "name": "Somali"},
-        {"code": "es", "name": "Spanish"},
-        {"code": "sw", "name": "Swahili"},
-        {"code": "sv", "name": "Swedish"},
-        {"code": "tl", "name": "Tagalog (Filipino)"},
-        {"code": "ta", "name": "Tamil"},
-        {"code": "te", "name": "Telugu"},
-        {"code": "th", "name": "Thai"},
-        {"code": "tr", "name": "Turkish"},
-        {"code": "uk", "name": "Ukrainian"},
-        {"code": "ur", "name": "Urdu"},
-        {"code": "uz", "name": "Uzbek"},
-        {"code": "vi", "name": "Vietnamese"},
-        {"code": "cy", "name": "Welsh"},
-        {"code": "yo", "name": "Yoruba"},
-        {"code": "zu", "name": "Zulu"},
+        {"code": "it", "name": "Italian"},
+        {"code": "nl", "name": "Dutch"},
+        {"code": "ja", "name": "Japanese"},
+        {"code": "en", "name": "English"},
     ]
 
 
