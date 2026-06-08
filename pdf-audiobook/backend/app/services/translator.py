@@ -1,21 +1,17 @@
 """
-translator.py — Gemini API translation with big-chunk strategy
-Instead of translating page by page (many requests),
-we combine all pages into a few large requests to stay under
-Gemini free tier's 15 requests/minute limit.
+translator.py — MyMemory API (completely free, no API key needed)
+Supports 100+ languages, no rate limits for normal use.
 """
 from __future__ import annotations
 import logging
-import os
 import time
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
-# Gemini free tier: 15 requests/min, 1M tokens/min
-# We use max 10k chars per request = very few requests for any book
-MAX_CHUNK_CHARS = 10000
+# MyMemory free limit: 5000 chars per request
+MAX_CHUNK_CHARS = 4500
 
 SUPPORTED_LANGUAGES: dict[str, str] = {
     "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic",
@@ -43,11 +39,13 @@ SUPPORTED_LANGUAGES: dict[str, str] = {
     "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
 }
 
+# MyMemory language code fixes
+MYMEMORY_LANG_MAP = {
+    "iw": "he", "jw": "jv", "zh": "zh-CN", "zh-TW": "zh-TW",
+}
+
 
 class TranslationService:
-    def __init__(self):
-        self.api_key = os.environ.get("GEMINI_API_KEY", "")
-        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
     def translate_pages(
         self,
@@ -56,104 +54,82 @@ class TranslationService:
         source_lang: str = "auto",
         progress_callback=None,
     ) -> list[str]:
-        """
-        Combine all pages into big chunks, translate each chunk
-        in one request. A 300-page book becomes ~10-20 requests
-        instead of 300 — well within free tier limits.
-        """
-        if not self.api_key:
-            logger.warning("GEMINI_API_KEY not set — returning original text")
-            return pages
-
-        target_name = SUPPORTED_LANGUAGES.get(target_lang, target_lang)
-
-        # Step 1: Join all pages with a separator
-        full_text = "\n\n--- PAGE BREAK ---\n\n".join(pages)
-
-        # Step 2: Split into big chunks (10k chars each)
+        """Translate all pages using MyMemory API — free, no key needed."""
+        # Combine all pages into big chunks to reduce requests
+        full_text = "\n\n---PAGEBREAK---\n\n".join(pages)
         chunks = _split_into_chunks(full_text, MAX_CHUNK_CHARS)
-        logger.info(f"Translating {len(pages)} pages as {len(chunks)} big chunks")
 
-        # Step 3: Translate each chunk
+        logger.info(f"Translating {len(pages)} pages as {len(chunks)} chunks via MyMemory")
+
         translated_chunks = []
         for i, chunk in enumerate(chunks):
             if i > 0:
-                time.sleep(4)  # 4s between requests = max 15/min safely
-            logger.info(f"Translating chunk {i+1}/{len(chunks)}")
-            translated = self._translate_chunk(chunk, target_name)
+                time.sleep(1)  # small delay between requests
+            translated = self._translate_chunk(chunk, target_lang, source_lang)
             translated_chunks.append(translated)
             if progress_callback:
                 progress_callback(i + 1, len(chunks))
 
-        # Step 4: Rejoin and split back into pages
+        # Rejoin and split back into pages
         full_translated = "\n\n".join(translated_chunks)
-        translated_pages = full_translated.split("--- PAGE BREAK ---")
-
-        # Make sure we return same number of pages
+        translated_pages = full_translated.split("---PAGEBREAK---")
         translated_pages = [p.strip() for p in translated_pages if p.strip()]
 
-        # Pad or trim to match original page count
+        # Match original page count
         while len(translated_pages) < len(pages):
             translated_pages.append("")
-        translated_pages = translated_pages[:len(pages)]
-
-        return translated_pages
+        return translated_pages[:len(pages)]
 
     def translate_text(self, text: str, target_lang: str, source_lang: str = "auto") -> str:
-        """Translate a single piece of text."""
         if not text.strip():
             return text
-        if not self.api_key:
-            return text
-        target_name = SUPPORTED_LANGUAGES.get(target_lang, target_lang)
-        return self._translate_chunk(text[:MAX_CHUNK_CHARS], target_name)
+        chunks = _split_into_chunks(text, MAX_CHUNK_CHARS)
+        results = []
+        for chunk in chunks:
+            results.append(self._translate_chunk(chunk, target_lang, source_lang))
+            time.sleep(0.5)
+        return "\n\n".join(results)
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=5, max=60))
-    def _translate_chunk(self, text: str, target_language_name: str) -> str:
-        prompt = f"""Translate the following text to {target_language_name}.
-Keep any "--- PAGE BREAK ---" markers exactly as they are in your output.
-Return ONLY the translated text, no explanations, no extra text.
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    def _translate_chunk(self, text: str, target_lang: str, source_lang: str = "auto") -> str:
+        # Fix language codes for MyMemory
+        tl = MYMEMORY_LANG_MAP.get(target_lang, target_lang)
+        sl = "en" if source_lang == "auto" else MYMEMORY_LANG_MAP.get(source_lang, source_lang)
 
-Text:
-{text}"""
-
-        response = httpx.post(
-            f"{self.api_url}?key={self.api_key}",
-            json={
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.1,
-                    "maxOutputTokens": 8192,
-                },
+        response = httpx.get(
+            "https://api.mymemory.translated.net/get",
+            params={
+                "q": text,
+                "langpair": f"{sl}|{tl}",
             },
-            timeout=120,
+            timeout=30,
         )
         response.raise_for_status()
         data = response.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+        if data.get("responseStatus") == 200:
+            return data["responseData"]["translatedText"]
+        else:
+            logger.warning(f"MyMemory error: {data.get('responseDetails')}")
+            return text  # return original if translation fails
 
     def detect_language(self, text: str) -> str:
         return "auto"
 
 
 def _split_into_chunks(text: str, max_chars: int) -> list[str]:
-    """Split text into chunks at paragraph boundaries."""
     if len(text) <= max_chars:
         return [text]
-
     paragraphs = text.split("\n\n")
     chunks, current = [], ""
-
     for para in paragraphs:
         if len(current) + len(para) + 2 > max_chars and current:
             chunks.append(current.strip())
             current = para
         else:
             current = (current + "\n\n" + para).strip()
-
     if current:
         chunks.append(current)
-
     return chunks
 
 
