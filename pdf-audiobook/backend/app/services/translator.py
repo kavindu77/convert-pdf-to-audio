@@ -1,102 +1,90 @@
 """
 translator.py
 ─────────────
-Translates text using Google Cloud Translation API.
-- Splits long text into safe chunks (≤30,000 chars per API call)
-- Retries on transient errors
-- Preserves paragraph structure
+Translates text using Google Gemini API (free tier).
+Falls back to a simple copy if API not configured.
 """
 
 from __future__ import annotations
 import logging
-import re
+import os
+import json
+import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
-
-from google.cloud import translate_v2 as translate
 
 logger = logging.getLogger(__name__)
 
-# Google Translate free tier limit per request
-MAX_CHUNK_CHARS = 30_000
+MAX_CHUNK_CHARS = 5000
 
-# All supported languages (Google Translate codes)
 SUPPORTED_LANGUAGES: dict[str, str] = {
     "af": "Afrikaans", "sq": "Albanian", "am": "Amharic", "ar": "Arabic",
     "hy": "Armenian", "az": "Azerbaijani", "eu": "Basque", "be": "Belarusian",
     "bn": "Bengali", "bs": "Bosnian", "bg": "Bulgarian", "ca": "Catalan",
-    "ceb": "Cebuano", "ny": "Chichewa", "zh": "Chinese (Simplified)",
-    "zh-TW": "Chinese (Traditional)", "co": "Corsican", "hr": "Croatian",
-    "cs": "Czech", "da": "Danish", "nl": "Dutch", "en": "English",
-    "eo": "Esperanto", "et": "Estonian", "tl": "Filipino", "fi": "Finnish",
-    "fr": "French", "fy": "Frisian", "gl": "Galician", "ka": "Georgian",
-    "de": "German", "el": "Greek", "gu": "Gujarati", "ht": "Haitian Creole",
-    "ha": "Hausa", "haw": "Hawaiian", "iw": "Hebrew", "hi": "Hindi",
-    "hmn": "Hmong", "hu": "Hungarian", "is": "Icelandic", "ig": "Igbo",
-    "id": "Indonesian", "ga": "Irish", "it": "Italian", "ja": "Japanese",
-    "jw": "Javanese", "kn": "Kannada", "kk": "Kazakh", "km": "Khmer",
-    "ko": "Korean", "ku": "Kurdish (Kurmanji)", "ky": "Kyrgyz", "lo": "Lao",
-    "la": "Latin", "lv": "Latvian", "lt": "Lithuanian", "lb": "Luxembourgish",
-    "mk": "Macedonian", "mg": "Malagasy", "ms": "Malay", "ml": "Malayalam",
-    "mt": "Maltese", "mi": "Maori", "mr": "Marathi", "mn": "Mongolian",
-    "my": "Myanmar (Burmese)", "ne": "Nepali", "no": "Norwegian", "or": "Odia",
-    "ps": "Pashto", "fa": "Persian", "pl": "Polish", "pt": "Portuguese",
-    "pa": "Punjabi", "ro": "Romanian", "ru": "Russian", "sm": "Samoan",
-    "gd": "Scots Gaelic", "sr": "Serbian", "st": "Sesotho", "sn": "Shona",
-    "sd": "Sindhi", "si": "Sinhala", "sk": "Slovak", "sl": "Slovenian",
-    "so": "Somali", "es": "Spanish", "su": "Sundanese", "sw": "Swahili",
+    "zh": "Chinese (Simplified)", "zh-TW": "Chinese (Traditional)",
+    "hr": "Croatian", "cs": "Czech", "da": "Danish", "nl": "Dutch",
+    "en": "English", "et": "Estonian", "tl": "Filipino", "fi": "Finnish",
+    "fr": "French", "gl": "Galician", "ka": "Georgian", "de": "German",
+    "el": "Greek", "gu": "Gujarati", "ht": "Haitian Creole", "ha": "Hausa",
+    "iw": "Hebrew", "hi": "Hindi", "hu": "Hungarian", "is": "Icelandic",
+    "ig": "Igbo", "id": "Indonesian", "ga": "Irish", "it": "Italian",
+    "ja": "Japanese", "kn": "Kannada", "kk": "Kazakh", "km": "Khmer",
+    "ko": "Korean", "ku": "Kurdish", "ky": "Kyrgyz", "lo": "Lao",
+    "lv": "Latvian", "lt": "Lithuanian", "mk": "Macedonian", "ms": "Malay",
+    "ml": "Malayalam", "mt": "Maltese", "mi": "Maori", "mr": "Marathi",
+    "mn": "Mongolian", "my": "Myanmar (Burmese)", "ne": "Nepali",
+    "no": "Norwegian", "ps": "Pashto", "fa": "Persian", "pl": "Polish",
+    "pt": "Portuguese", "pa": "Punjabi", "ro": "Romanian", "ru": "Russian",
+    "sm": "Samoan", "sr": "Serbian", "si": "Sinhala", "sk": "Slovak",
+    "sl": "Slovenian", "so": "Somali", "es": "Spanish", "sw": "Swahili",
     "sv": "Swedish", "tg": "Tajik", "ta": "Tamil", "te": "Telugu",
     "th": "Thai", "tr": "Turkish", "uk": "Ukrainian", "ur": "Urdu",
-    "ug": "Uyghur", "uz": "Uzbek", "vi": "Vietnamese", "cy": "Welsh",
-    "xh": "Xhosa", "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
+    "uz": "Uzbek", "vi": "Vietnamese", "cy": "Welsh", "xh": "Xhosa",
+    "yi": "Yiddish", "yo": "Yoruba", "zu": "Zulu",
 }
 
 
 class TranslationService:
     def __init__(self):
-        self._client = None
-
-    @property
-    def client(self) -> translate.Client:
-        if self._client is None:
-            self._client = translate.Client()
-        return self._client
-
-    def detect_language(self, text: str) -> str:
-        """Returns BCP-47 language code e.g. 'en', 'si'."""
-        result = self.client.detect_language(text[:1000])
-        return result["language"]
+        self.api_key = os.environ.get("GEMINI_API_KEY", "")
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
     def translate_text(self, text: str, target_lang: str, source_lang: str = "auto") -> str:
-        """
-        Translate text to target_lang.
-        Splits into chunks if text is too long for one API call.
-        """
         if not text.strip():
             return text
 
-        # Split into paragraphs, group into safe chunks
-        paragraphs = text.split("\n\n")
-        chunks = _group_into_chunks(paragraphs, MAX_CHUNK_CHARS)
+        if not self.api_key:
+            logger.warning("GEMINI_API_KEY not set — returning original text")
+            return text
 
+        target_name = SUPPORTED_LANGUAGES.get(target_lang, target_lang)
+        chunks = _split_into_chunks(text, MAX_CHUNK_CHARS)
         translated_chunks = []
+
         for chunk in chunks:
-            translated = self._translate_chunk(
-                chunk,
-                target=target_lang,
-                source=None if source_lang == "auto" else source_lang,
-            )
+            translated = self._translate_chunk(chunk, target_name)
             translated_chunks.append(translated)
 
         return "\n\n".join(translated_chunks)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-    def _translate_chunk(self, text: str, target: str, source: str | None) -> str:
-        kwargs = {"target_language": target}
-        if source:
-            kwargs["source_language"] = source
+    def _translate_chunk(self, text: str, target_language_name: str) -> str:
+        prompt = f"""Translate the following text to {target_language_name}.
+Return ONLY the translated text, no explanations, no markdown, no extra text.
 
-        result = self.client.translate(text, **kwargs)
-        return result["translatedText"]
+Text to translate:
+{text}"""
+
+        response = httpx.post(
+            f"{self.api_url}?key={self.api_key}",
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.1, "maxOutputTokens": 8192},
+            },
+            timeout=60,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
     def translate_pages(
         self,
@@ -105,7 +93,6 @@ class TranslationService:
         source_lang: str = "auto",
         progress_callback=None,
     ) -> list[str]:
-        """Translate a list of page texts with optional progress updates."""
         translated = []
         for i, page_text in enumerate(pages):
             t = self.translate_text(page_text, target_lang, source_lang)
@@ -114,10 +101,15 @@ class TranslationService:
                 progress_callback(i + 1, len(pages))
         return translated
 
+    def detect_language(self, text: str) -> str:
+        return "auto"
 
-def _group_into_chunks(paragraphs: list[str], max_chars: int) -> list[str]:
-    chunks: list[str] = []
-    current = ""
+
+def _split_into_chunks(text: str, max_chars: int) -> list[str]:
+    if len(text) <= max_chars:
+        return [text]
+    paragraphs = text.split("\n\n")
+    chunks, current = [], ""
     for para in paragraphs:
         if len(current) + len(para) + 2 > max_chars and current:
             chunks.append(current.strip())
@@ -129,5 +121,4 @@ def _group_into_chunks(paragraphs: list[str], max_chars: int) -> list[str]:
     return chunks
 
 
-# Singleton
 translation_service = TranslationService()
