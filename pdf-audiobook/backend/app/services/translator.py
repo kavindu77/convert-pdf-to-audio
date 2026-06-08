@@ -231,3 +231,17 @@ def get_supported_languages() -> list[dict]:
 
 # Alias for backward compatibility with upload.py
 SUPPORTED_LANGUAGES = {lang["code"]: lang["name"] for lang in get_supported_languages()}
+
+
+# Singleton instance for pipeline.py
+class _TranslationService:
+    def translate_pages(self, pages, target_lang, source_lang="auto", progress_callback=None):
+        return translate_pages(pages, target_lang, source_lang)
+
+    def translate_text(self, text, target_lang, source_lang="auto"):
+        return translate_text(text, target_lang, source_lang)
+
+    def detect_language(self, text):
+        return "auto"
+
+translation_service = _TranslationService()
