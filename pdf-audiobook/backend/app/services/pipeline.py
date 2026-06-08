@@ -1,15 +1,58 @@
 """
-pipeline.py — runs the full job pipeline without Celery (for free tier)
+pipeline.py — runs the full job pipeline in a background thread (free tier)
 """
 import json
 import logging
 import uuid
+import asyncio
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
+# Single thread executor — one job at a time on free tier
+_executor = ThreadPoolExecutor(max_workers=1)
+
 
 async def run_pipeline(job_id: str, storage_path: str):
+    """Launch pipeline in background thread so it doesn't block the event loop."""
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(_executor, _run_pipeline_sync, job_id, storage_path)
+
+
+def _update_job(job_id: str, **kwargs):
+    """Update job fields synchronously using a new DB connection."""
+    import asyncio
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(_update_job_async(job_id, **kwargs))
+    finally:
+        loop.close()
+
+
+async def _update_job_async(job_id: str, **kwargs):
+    from app.database import async_session
+    from app.models import ConversionJob
+    async with async_session() as session:
+        job = await session.get(ConversionJob, uuid.UUID(job_id))
+        if job:
+            for k, v in kwargs.items():
+                setattr(job, k, v)
+            await session.commit()
+
+
+def _run_pipeline_sync(job_id: str, storage_path: str):
+    """Run the entire pipeline synchronously in a thread."""
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(_run_pipeline_async(job_id, storage_path))
+    finally:
+        loop.close()
+
+
+async def _run_pipeline_async(job_id: str, storage_path: str):
     from app.database import async_session
     from app.models import ConversionJob, JobStatus
     from app.services.pdf_extractor import extract_pdf, split_into_chapters
@@ -63,7 +106,9 @@ async def run_pipeline(job_id: str, storage_path: str):
             class FakePage:
                 def __init__(self, text): self.text = text
 
-            chapters = split_into_chapters([FakePage(t) for t in translated_pages], max_chars=3000)
+            chapters = split_into_chapters(
+                [FakePage(t) for t in translated_pages], max_chars=3000
+            )
             chapter_urls = []
 
             for i, chapter_text in enumerate(chapters):
