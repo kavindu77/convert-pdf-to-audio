@@ -227,3 +227,7 @@ def get_supported_languages() -> list[dict]:
         {"code": "yo", "name": "Yoruba"},
         {"code": "zu", "name": "Zulu"},
     ]
+
+
+# Alias for backward compatibility with upload.py
+SUPPORTED_LANGUAGES = {lang["code"]: lang["name"] for lang in get_supported_languages()}
