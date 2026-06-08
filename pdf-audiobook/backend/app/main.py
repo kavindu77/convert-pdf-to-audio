@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -12,26 +14,25 @@ from app.database import init_db
 from app.routers import auth, upload, translate, tts, jobs
 
 settings = get_settings()
-
 limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    # Ensure uploads directory exists
+    Path("./uploads").mkdir(parents=True, exist_ok=True)
     yield
 
 
 app = FastAPI(
     title="PDF Audiobook API",
     version="1.0.0",
-    description="Convert PDFs to translated audiobooks",
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
 )
 
-# ── CORS — allow everything ───────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -46,10 +47,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"},
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 app.include_router(auth.router,      prefix="/api/auth",      tags=["auth"])
@@ -57,6 +55,19 @@ app.include_router(upload.router,    prefix="/api/upload",    tags=["upload"])
 app.include_router(translate.router, prefix="/api/translate", tags=["translate"])
 app.include_router(tts.router,       prefix="/api/tts",       tags=["tts"])
 app.include_router(jobs.router,      prefix="/api/jobs",      tags=["jobs"])
+
+
+@app.get("/files/{file_path:path}")
+async def serve_file(file_path: str):
+    """Serve locally stored audio/upload files."""
+    full_path = Path("./uploads") / file_path
+    if not full_path.exists():
+        return JSONResponse(status_code=404, content={"detail": "File not found"})
+    return FileResponse(
+        path=str(full_path),
+        media_type="audio/mpeg",
+        filename=full_path.name,
+    )
 
 
 @app.get("/api/health")
