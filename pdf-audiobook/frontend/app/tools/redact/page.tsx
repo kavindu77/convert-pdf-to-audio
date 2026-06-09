@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
   EyeOff,
@@ -14,6 +14,10 @@ import {
   Plus,
   X,
   Shield,
+  Key,
+  Eye,
+  Bot,
+  Brain,
 } from "lucide-react";
 
 function formatSize(bytes: number): string {
@@ -68,6 +72,9 @@ function countMatches(text: string, regex: RegExp): number {
   return matches ? matches.length : 0;
 }
 
+// OPTIONAL: Hardcode your Groq API key here (e.g., "gsk_...") to bypass entering it in the browser UI
+const HARDCODED_GROQ_API_KEY = "";
+
 export default function RedactPdfPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -79,6 +86,30 @@ export default function RedactPdfPage() {
   const [redactedText, setRedactedText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Groq API Key state
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [saveKey, setSaveKey] = useState(true);
+
+  // AI redact settings
+  const [useAi, setUseAi] = useState(false);
+  const [aiRedactNames, setAiRedactNames] = useState(true);
+  const [aiRedactLocations, setAiRedactLocations] = useState(true);
+  const [aiRedactOrgs, setAiRedactOrgs] = useState(false);
+  const [isAiRedacting, setIsAiRedacting] = useState(false);
+
+  // Load key from hardcoded config or localStorage on mount
+  useEffect(() => {
+    if (HARDCODED_GROQ_API_KEY) {
+      setApiKey(HARDCODED_GROQ_API_KEY);
+    } else {
+      const saved = localStorage.getItem("groq_api_key");
+      if (saved) {
+        setApiKey(saved);
+      }
+    }
+  }, []);
 
   const handleFile = useCallback((f: File) => {
     if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
@@ -216,15 +247,105 @@ export default function RedactPdfPage() {
     0
   );
 
-  const applyRedaction = () => {
-    if (!extractedText || enabledPatterns.length === 0) return;
+  const applyRedaction = async () => {
+    if (!extractedText) return;
 
+    setError(null);
     let result = extractedText;
-    for (const pattern of enabledPatterns) {
-      const re = new RegExp(pattern.regex.source, pattern.regex.flags);
-      result = result.replace(re, "[REDACTED]");
+
+    // Apply standard regex patterns first if any are enabled
+    if (enabledPatterns.length > 0) {
+      for (const pattern of enabledPatterns) {
+        const re = new RegExp(pattern.regex.source, pattern.regex.flags);
+        result = result.replace(re, "[REDACTED]");
+      }
     }
-    setRedactedText(result);
+
+    if (useAi) {
+      if (!apiKey.trim()) {
+        setError("Please enter a Groq API Key for AI Redaction.");
+        return;
+      }
+
+      if (saveKey) {
+        localStorage.setItem("groq_api_key", apiKey);
+      }
+
+      setIsAiRedacting(true);
+      try {
+        const targetEntities: string[] = [];
+        if (aiRedactNames) targetEntities.push("people's names (first and last names)");
+        if (aiRedactLocations) targetEntities.push("locations, physical addresses, cities, and countries");
+        if (aiRedactOrgs) targetEntities.push("organization names, corporate names, and institutions");
+
+        if (targetEntities.length === 0) {
+          throw new Error("Please select at least one item type for AI to redact.");
+        }
+
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              {
+                role: "system",
+                content: `You are a secure, automated document redaction engine. Redact the following types of information from the provided document:
+${targetEntities.map((e) => `- ${e}`).join("\n")}
+
+Rules:
+- Replace every occurrence of these identified entities exactly with the word "[REDACTED]".
+- Do not modify or redact any other text, numbers, or structure.
+- Keep the capitalization, spacing, and phrasing of the rest of the text exactly the same.
+- Return ONLY the fully redacted text. Do not add any greeting, intro, explanation, markdown formatting, or notes.`
+              },
+              {
+                role: "user",
+                content: result.slice(0, 10000)
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 4000,
+          }),
+        });
+
+        if (!response.ok) {
+          const errJson = await response.json().catch(() => ({}));
+          throw new Error(errJson.error?.message || `Groq API responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        const aiResult = data.choices?.[0]?.message?.content;
+
+        if (!aiResult) {
+          throw new Error("No redacted text returned from the model.");
+        }
+
+        setRedactedText(aiResult);
+      } catch (err: any) {
+        setError(`AI Redaction failed: ${err.message || err}`);
+      } finally {
+        setIsAiRedacting(false);
+      }
+    } else {
+      setRedactedText(result);
+    }
+  };
+
+  const handleReset = () => {
+    setFile(null);
+    setExtractedText(null);
+    setRedactedText(null);
+    setPatterns([]);
+    setCustomInput("");
+    setError(null);
+    setIsExtracting(false);
+    setIsAiRedacting(false);
+    setProgress({ current: 0, total: 0 });
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const renderHighlightedText = (text: string) => {
@@ -565,9 +686,113 @@ export default function RedactPdfPage() {
               </div>
             </div>
 
+            {/* AI Smart Redact option */}
+            <div className="rounded-xl border border-white/10 p-4 bg-white/5 space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={useAi}
+                  onChange={(e) => setUseAi(e.target.checked)}
+                  className="w-4.5 h-4.5 rounded border-white/20 bg-white/5 accent-rose-500 cursor-pointer"
+                />
+                <div>
+                  <span className="text-sm font-semibold text-white flex items-center gap-1.5">
+                    <Brain size={14} className="text-rose-400" />
+                    Use AI-Powered Smart Redaction
+                  </span>
+                  <span className="text-xs text-gray-500 block mt-0.5">
+                    Analyses context to redact people's names, locations, and addresses.
+                  </span>
+                </div>
+              </label>
+
+              {useAi && (
+                <div className="pt-3 border-t border-white/5 space-y-4">
+                  {/* API Key */}
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-semibold text-gray-300 flex items-center gap-1">
+                        <Key size={12} className="text-rose-400" />
+                        Groq API Key
+                      </span>
+                      <a
+                        href="https://console.groq.com/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-rose-400 hover:underline"
+                      >
+                        Get Free Key →
+                      </a>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type={showKey ? "text" : "password"}
+                          placeholder="gsk_..."
+                          value={apiKey}
+                          onChange={(e) => setApiKey(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 text-xs focus:outline-none focus:border-rose-500/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowKey(!showKey)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                          {showKey ? <EyeOff size={12} /> : <Eye size={12} />}
+                        </button>
+                      </div>
+                    </div>
+                    <label className="flex items-center gap-1.5 text-[10px] text-gray-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={saveKey}
+                        onChange={(e) => setSaveKey(e.target.checked)}
+                        className="rounded border-white/10 bg-white/5 accent-rose-500"
+                      />
+                      Save key in browser
+                    </label>
+                  </div>
+
+                  {/* AI Options */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-semibold text-gray-400 block">AI Targets to Redact:</span>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 pt-1">
+                      <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={aiRedactNames}
+                          onChange={(e) => setAiRedactNames(e.target.checked)}
+                          className="rounded border-white/10 bg-white/5 accent-rose-500"
+                        />
+                        Names (e.g. John, Alice)
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={aiRedactLocations}
+                          onChange={(e) => setAiRedactLocations(e.target.checked)}
+                          className="rounded border-white/10 bg-white/5 accent-rose-500"
+                        />
+                        Locations & Addresses
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={aiRedactOrgs}
+                          onChange={(e) => setAiRedactOrgs(e.target.checked)}
+                          className="rounded border-white/10 bg-white/5 accent-rose-500"
+                        />
+                        Organizations & Companies
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Summary & Apply */}
             <div className="pt-2 space-y-3">
-              {totalRedactions > 0 && (
+              {totalRedactions > 0 && !useAi && (
                 <div className="flex items-center gap-2 text-sm text-rose-300">
                   <EyeOff size={16} />
                   <span>
@@ -582,23 +807,32 @@ export default function RedactPdfPage() {
               <button
                 type="button"
                 onClick={applyRedaction}
-                disabled={enabledPatterns.length === 0}
+                disabled={isAiRedacting || (!useAi && enabledPatterns.length === 0)}
                 className="w-full py-4 rounded-2xl font-semibold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor:
-                    enabledPatterns.length > 0 ? "#f43f5e" : "#374151",
+                    useAi || enabledPatterns.length > 0 ? "#f43f5e" : "#374151",
                 }}
                 onMouseEnter={(e) => {
-                  if (enabledPatterns.length > 0)
+                  if (useAi || enabledPatterns.length > 0)
                     e.currentTarget.style.backgroundColor = "#e11d48";
                 }}
                 onMouseLeave={(e) => {
-                  if (enabledPatterns.length > 0)
+                  if (useAi || enabledPatterns.length > 0)
                     e.currentTarget.style.backgroundColor = "#f43f5e";
                 }}
               >
-                <EyeOff size={20} />
-                Apply Redaction
+                {isAiRedacting ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    AI analyzing & redacting...
+                  </>
+                ) : (
+                  <>
+                    <EyeOff size={20} />
+                    Apply Redaction
+                  </>
+                )}
               </button>
             </div>
           </section>
