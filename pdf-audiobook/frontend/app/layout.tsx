@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geist = GeistSans;
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-jakarta",
+});
 
 export const metadata: Metadata = {
   title: "DocuSafe PDF — Private PDF Toolkit & Security Auditor",
@@ -14,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={geist.variable}>
+    <html lang="en" className={jakarta.variable}>
       <head>
         <script
           async
@@ -22,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         ></script>
       </head>
-      <body className={`${geist.className} font-sans`}>{children}</body>
+      <body className={`${jakarta.className} font-sans`}>{children}</body>
     </html>
   );
 }
