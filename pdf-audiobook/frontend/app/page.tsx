@@ -425,6 +425,38 @@ export default function HomePage() {
   const [userName, setUserName] = useState("Kavindu");
   const [userEmail, setUserEmail] = useState("kavindu@example.com");
 
+  // Mouse tracking for transparent background glow
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMouseActive, setIsMouseActive] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    const handleMouseEnter = () => setIsMouseActive(true);
+    const handleMouseLeave = () => setIsMouseActive(false);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseenter", handleMouseEnter);
+    document.addEventListener("mouseleave", handleMouseLeave);
+    
+    setIsMouseActive(true);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseenter", handleMouseEnter);
+      document.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  };
+
   // Modals
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
@@ -559,6 +591,16 @@ export default function HomePage() {
         <div className="absolute w-[700px] h-[700px] rounded-full bg-teal-500/3 blur-[120px] top-[30%] right-[-200px]" />
       </div>
 
+      {/* Dynamic Cursor Glow (Parallax depth layer) */}
+      {isMouseActive && (
+        <div
+          className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 opacity-70"
+          style={{
+            background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.04), rgba(20, 184, 166, 0.01) 40%, transparent 85%)`,
+          }}
+        />
+      )}
+
       {/* Header */}
       <header className="relative border-b border-white/5 px-6 py-4 flex items-center justify-between z-10 backdrop-blur-md bg-gray-950/40">
         <div className="flex items-center gap-3">
@@ -572,7 +614,7 @@ export default function HomePage() {
 
         {/* Top Navbar */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400">
-          <Link href="/all-tools" className="hover:text-white transition-colors">Tools</Link>
+          <Link href="/all-tools" prefetch={false} className="hover:text-white transition-colors">Tools</Link>
           <button onClick={() => {
             const el = document.getElementById("security-section");
             el?.scrollIntoView({ behavior: "smooth" });
@@ -588,7 +630,7 @@ export default function HomePage() {
           
           {isLoggedIn ? (
             <>
-              <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
+              <Link href="/dashboard" prefetch={false} className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
               <span className="text-gray-700">|</span>
               <div className="flex items-center gap-2 text-xs">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -605,7 +647,7 @@ export default function HomePage() {
         {/* Mobile profile link */}
         <div className="flex md:hidden items-center gap-2">
           {isLoggedIn ? (
-            <Link href="/dashboard" className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <Link href="/dashboard" prefetch={false} className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <User size={14} />
             </Link>
           ) : (
@@ -679,6 +721,7 @@ export default function HomePage() {
                   key={tool.id}
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
+                  onMouseMove={handleCardMouseMove}
                   className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
                 >
                   <div className="flex items-start justify-between">
@@ -724,6 +767,7 @@ export default function HomePage() {
                   key={tool.id}
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
+                  onMouseMove={handleCardMouseMove}
                   className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
                 >
                   <div className="flex items-start justify-between">
@@ -769,6 +813,7 @@ export default function HomePage() {
                   key={tool.id}
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
+                  onMouseMove={handleCardMouseMove}
                   className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
                 >
                   <div className="flex items-start justify-between">
@@ -797,14 +842,15 @@ export default function HomePage() {
         </section>
 
         {/* Directory Link */}
-        <section className="px-6 py-12 text-center max-w-md mx-auto">
+        <div className="pt-6 max-w-xs mx-auto">
           <Link
             href="/all-tools"
-            className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/10 active:scale-95"
+            prefetch={false}
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/10 active:scale-95 text-sm"
           >
             View All 38 Tools <ArrowRight size={16} />
           </Link>
-        </section>
+        </div>
 
         {/* Pricing Preview */}
         <section id="pricing-section" className="px-6 py-20 max-w-6xl mx-auto space-y-12 border-t border-white/5">

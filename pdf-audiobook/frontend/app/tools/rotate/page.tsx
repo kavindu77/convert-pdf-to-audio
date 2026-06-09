@@ -15,9 +15,7 @@ import {
   FlipHorizontal,
 } from "lucide-react";
 
-import * as pdfjsLib from "pdfjs-dist";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+// pdfjs-dist imported dynamically in renderThumbnails
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + " B";
@@ -60,6 +58,9 @@ export default function RotatePdfPage() {
   }, []);
 
   const renderThumbnails = useCallback(async (data: Uint8Array) => {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
     const loadingTask = pdfjsLib.getDocument({ data });
     const pdf = await loadingTask.promise;
     const totalPages = pdf.numPages;

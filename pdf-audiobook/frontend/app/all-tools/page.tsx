@@ -675,6 +675,38 @@ export default function AllToolsDirectory() {
   const [userPlan, setUserPlan] = useState<PlanType>("free");
   const [tasksUsed, setTasksUsed] = useState(0);
 
+  // Mouse tracking for transparent background glow
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isMouseActive, setIsMouseActive] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    const handleMouseEnter = () => setIsMouseActive(true);
+    const handleMouseLeave = () => setIsMouseActive(false);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseenter", handleMouseEnter);
+    document.addEventListener("mouseleave", handleMouseLeave);
+    
+    setIsMouseActive(true);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseenter", handleMouseEnter);
+      document.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
+
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  };
+
   // Modals
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
@@ -781,10 +813,20 @@ export default function AllToolsDirectory() {
         <div className="absolute w-[850px] h-[850px] rounded-full bg-indigo-500/5 blur-[140px] -top-96 -left-48 animate-pulse duration-[12000ms]" />
       </div>
 
+      {/* Dynamic Cursor Glow (Parallax depth layer) */}
+      {isMouseActive && (
+        <div
+          className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 opacity-70"
+          style={{
+            background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.04), rgba(20, 184, 166, 0.01) 40%, transparent 85%)`,
+          }}
+        />
+      )}
+
       {/* Header */}
       <header className="relative border-b border-white/5 px-6 py-4 flex items-center justify-between z-10 backdrop-blur-md bg-gray-950/40">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-85">
+          <Link href="/" prefetch={false} className="flex items-center gap-3 hover:opacity-85">
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <ShieldCheck size={18} className="text-white" />
             </div>
@@ -795,10 +837,10 @@ export default function AllToolsDirectory() {
         </div>
 
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-400">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <Link href="/" prefetch={false} className="hover:text-white transition-colors">Home</Link>
           {isLoggedIn ? (
             <>
-              <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
+              <Link href="/dashboard" prefetch={false} className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
             </>
           ) : (
             <button onClick={() => setIsSignInOpen(true)} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs">
@@ -875,6 +917,7 @@ export default function AllToolsDirectory() {
                   key={tool.id}
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
+                  onMouseMove={handleCardMouseMove}
                   className="glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
                 >
                   <div className="flex items-start justify-between">
