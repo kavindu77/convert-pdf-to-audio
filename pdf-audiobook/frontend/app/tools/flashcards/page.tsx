@@ -30,6 +30,9 @@ interface Flashcard {
   back: string;
 }
 
+// OPTIONAL: Hardcode your Groq API key here (e.g., "gsk_...") to bypass entering it in the browser UI
+const HARDCODED_GROQ_API_KEY = "";
+
 export default function FlashcardsPdfPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -60,11 +63,15 @@ export default function FlashcardsPdfPage() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load key from localStorage on mount
+  // Load key from hardcoded config or localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("groq_api_key");
-    if (saved) {
-      setApiKey(saved);
+    if (HARDCODED_GROQ_API_KEY) {
+      setApiKey(HARDCODED_GROQ_API_KEY);
+    } else {
+      const saved = localStorage.getItem("groq_api_key");
+      if (saved) {
+        setApiKey(saved);
+      }
     }
   }, []);
 
@@ -124,7 +131,7 @@ export default function FlashcardsPdfPage() {
       const arrayBuffer = await file.arrayBuffer();
       
       const pdfjs = await import("pdfjs-dist");
-      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
       setProgress(30);
       setProgressLabel("Parsing pages...");

@@ -106,7 +106,7 @@ export default function ReadingTimePage() {
       const arrayBuffer = await file.arrayBuffer();
       
       const pdfjs = await import("pdfjs-dist");
-      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
       setProgress(30);
       setProgressLabel("Reading layout...");
