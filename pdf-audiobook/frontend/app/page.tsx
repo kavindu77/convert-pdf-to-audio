@@ -639,9 +639,14 @@ export default function HomePage() {
               </div>
             </>
           ) : (
-            <button onClick={() => setIsSignInOpen(true)} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs">
-              Sign In
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setIsSignInOpen(true)} className="hover:text-white transition-colors">
+                Sign In
+              </button>
+              <button onClick={() => setIsSignInOpen(true)} className="px-4 py-1.5 bg-white text-gray-950 font-bold rounded-xl hover:bg-gray-200 transition-all text-xs">
+                Start Free
+              </button>
+            </div>
           )}
         </nav>
 
@@ -660,34 +665,34 @@ export default function HomePage() {
       <main className="relative z-10">
         
         {/* Hero */}
-        <section className="px-6 pt-20 pb-12 text-center max-w-4xl mx-auto space-y-6">
+        <section className="px-6 py-20 text-center max-w-7xl mx-auto space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/5 border border-indigo-500/15 text-xs text-indigo-300 animate-fade-in shadow-inner">
             <Sparkles size={12} className="text-indigo-400 animate-pulse" />
             Free PDF tools + Pro security reports
           </div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight bg-gradient-to-b from-white to-gray-200 bg-clip-text text-transparent">
+          <h1 className="font-[800] tracking-[-0.04em] leading-[0.95] bg-gradient-to-b from-white to-gray-200 bg-clip-text text-transparent" style={{ fontSize: "clamp(42px, 6vw, 72px)" }}>
             Private PDF Tools for Work,
             <br />
-            Print, Security &amp; Audit
+            Print &amp; Security
           </h1>
           
-          <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed font-normal">
-            Free everyday PDF tools. Pro tools for advanced reports, batch jobs, and document safety.
+          <p className="text-[16px] text-[#94a3b8] font-[400] leading-[1.6] max-w-2xl mx-auto">
+            Check, clean, print, and safely share PDFs with free tools and Pro reports.
           </p>
 
           <p className="text-[11px] text-gray-500 max-w-lg mx-auto italic">
-            🛡️ Most tools run in your browser. Advanced tools use secure temporary processing when needed.
+            🛡️ Secure Temporary Processing: Advanced tools use secure temporary processing when browser-only execution is not possible.
           </p>
 
           {/* Search Bar */}
           <div className="max-w-md mx-auto pt-6 relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-teal-500 rounded-2xl opacity-10 blur group-hover:opacity-20 transition-opacity duration-300" />
-            <div className="relative flex items-center">
+            <div className="relative flex items-center z-10">
               <Search className="absolute left-4 text-gray-500 group-hover:text-indigo-400 transition-colors" size={18} />
               <input
                 type="text"
-                placeholder="Search tools (e.g. redact, merge, metadata)..."
+                placeholder="Search tools: compress, privacy report, color pages..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-10 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder-gray-500 transition-all text-white backdrop-blur-md"
@@ -701,6 +706,19 @@ export default function HomePage() {
                 </button>
               )}
             </div>
+            
+            {/* Quick Chips */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-4 relative z-10">
+              {["compress", "privacy report", "color page detector", "fake redaction"].map(chip => (
+                <button 
+                  key={chip} 
+                  onClick={() => setSearchQuery(chip)} 
+                  className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-gray-400 hover:text-white hover:bg-white/10 transition-colors capitalize cursor-pointer"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -708,10 +726,12 @@ export default function HomePage() {
         <section className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Popular Tools</h2>
+              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Popular Free Tools</h2>
               <p className="text-xs text-gray-500">Everyday utility operations running 100% locally in your browser.</p>
             </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-green-400">Free Tier</span>
+            <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+              View all <ArrowRight size={14} />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -723,10 +743,10 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
                   style={{
                     animationDelay: `${index * 50}ms`,
-                    // @ts-ignore - custom css variable for hover border color
+                    // @ts-ignore
                     "--hover-color": tool.color
                   }}
                 >
@@ -734,20 +754,18 @@ export default function HomePage() {
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-green-500/15 border border-green-500/20 text-green-400 uppercase tracking-wider">
-                      {tool.badge}
+                    <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-green-500/15 border border-green-500/20 text-green-400">
+                      Free Tool
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
+                    <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
+                    <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
-                    <span>{tool.processing}</span>
-                    <span>·</span>
-                    <span>{tool.outputType}</span>
+                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                    {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
               );
@@ -755,19 +773,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Mid-page Ad Placement */}
-        <section className="px-6 max-w-7xl mx-auto py-4">
-          <AdBanner adSlot="homepage-mid-1" />
-        </section>
-
         {/* Security & Privacy Tools */}
         <section id="security-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Security &amp; Privacy</h2>
+              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Security &amp; Privacy Reports</h2>
               <p className="text-xs text-gray-500">Scan metadata, verify integrity hashes, and audit document leaks before sharing.</p>
             </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Pro Features</span>
+            <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+              View all <ArrowRight size={14} />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -779,7 +794,7 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
                   style={{
                     animationDelay: `${(index + 4) * 50}ms`,
                     // @ts-ignore
@@ -790,20 +805,18 @@ export default function HomePage() {
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">
-                      {tool.badge}
+                    <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400">
+                      Pro Report
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
+                    <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
+                    <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
-                    <span>{tool.processing}</span>
-                    <span>·</span>
-                    <span>{tool.outputType}</span>
+                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                    {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
               );
@@ -811,19 +824,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Mid-page Ad Placement 2 */}
-        <section className="px-6 max-w-7xl mx-auto py-4">
-          <AdBanner adSlot="homepage-mid-2" />
-        </section>
-
         {/* Print & Scan Engine */}
         <section id="print-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Print &amp; Scan</h2>
+              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Print &amp; Scan Optimization</h2>
               <p className="text-xs text-gray-500">Detect black-and-white page distribution, optimize vector ink paths, and spot bad scan crops.</p>
             </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Pro Features</span>
+            <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+              View all <ArrowRight size={14} />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -835,7 +845,7 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
                   style={{
                     animationDelay: `${(index + 8) * 50}ms`,
                     // @ts-ignore
@@ -846,20 +856,18 @@ export default function HomePage() {
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">
-                      {tool.badge}
+                    <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400">
+                      Pro Report
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
+                    <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
+                    <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
-                    <span>{tool.processing}</span>
-                    <span>·</span>
-                    <span>{tool.outputType}</span>
+                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                    {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
               );
@@ -879,7 +887,7 @@ export default function HomePage() {
         </div>
 
         {/* Pricing Preview */}
-        <section id="pricing-section" className="px-6 py-20 max-w-6xl mx-auto space-y-12 border-t border-white/5">
+        <section id="pricing-section" className="px-6 py-16 max-w-7xl mx-auto space-y-12 border-t border-white/5">
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-extrabold text-white tracking-tight">Flexible Pricing Plans</h2>
             <p className="text-xs text-gray-400 max-w-sm mx-auto">Choose a plan that fits your document workflow and privacy audits.</p>
@@ -916,36 +924,39 @@ export default function HomePage() {
             </div>
 
             {/* Pro */}
-            <div className="bg-indigo-600/[0.02] border-2 border-indigo-500/30 p-6 rounded-2xl space-y-6 flex flex-col justify-between relative">
-              <div className="absolute top-0 right-6 -translate-y-1/2 px-2.5 py-0.5 rounded bg-indigo-500 text-[8px] font-extrabold tracking-wider uppercase text-white">
-                Most Popular
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-indigo-300">Pro Plan</h3>
-                  <p className="text-[10px] text-indigo-400/50">Detailed privacy &amp; security reports</p>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="bg-indigo-600/[0.02] border-2 border-indigo-500/30 p-6 rounded-2xl space-y-6 flex flex-col justify-between relative backdrop-blur-md h-full">
+                <div className="absolute top-0 right-6 -translate-y-1/2 px-2.5 py-0.5 rounded bg-indigo-500 text-[8px] font-extrabold tracking-wider uppercase text-white shadow-lg shadow-indigo-500/20">
+                  Most Popular
                 </div>
-                <p className="text-3xl font-extrabold text-white">$9<span className="text-xs text-gray-500 font-normal">/month</span></p>
-                <div className="space-y-2.5 text-xs text-gray-300">
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> 300 tasks per month</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max file size: 250 MB</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max pages: 500</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Access to Security &amp; Print tools</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Batch process up to 25 files</p>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-indigo-300">Pro Plan</h3>
+                    <p className="text-[10px] text-indigo-400/50">Detailed privacy &amp; security reports</p>
+                  </div>
+                  <p className="text-3xl font-extrabold text-white">$9<span className="text-xs text-gray-500 font-normal">/month</span></p>
+                  <div className="space-y-2.5 text-xs text-gray-300">
+                    <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> 300 tasks per month</p>
+                    <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max file size: 250 MB</p>
+                    <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max pages: 500</p>
+                    <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Access to Security &amp; Print tools</p>
+                    <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Batch process up to 25 files</p>
+                  </div>
                 </div>
+                <button
+                  onClick={() => {
+                    if (isLoggedIn) {
+                      setIsUpgradeOpen(true);
+                    } else {
+                      setIsSignInOpen(true);
+                    }
+                  }}
+                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-semibold text-white transition-colors shadow-lg shadow-indigo-600/20"
+                >
+                  Upgrade to Pro
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  if (isLoggedIn) {
-                    setIsUpgradeOpen(true);
-                  } else {
-                    setIsSignInOpen(true);
-                  }
-                }}
-                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-semibold text-white transition-colors"
-              >
-                Upgrade to Pro
-              </button>
             </div>
 
             {/* Business */}
@@ -972,7 +983,7 @@ export default function HomePage() {
                 }}
                 className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-colors"
               >
-                Contact Sales
+                Start Business
               </button>
             </div>
 
@@ -995,8 +1006,8 @@ export default function HomePage() {
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto shadow-inner">
                   <Shield size={18} className="text-indigo-400" />
                 </div>
-                <h3 className="font-semibold text-sm text-white">Temporary Cloud Pools</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Complex Pro layout operations utilize secure memory instances. Files are cleared dynamically.</p>
+                <h3 className="font-semibold text-sm text-white">Secure Temporary Processing</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">Advanced tools use temporary secure processing when browser-only execution is not possible.</p>
               </div>
               <div className="text-center space-y-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto shadow-inner">
@@ -1010,15 +1021,29 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/5 px-6 py-8 text-center text-xs text-gray-600">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center">
-                <ShieldCheck size={12} className="text-white" />
+        <footer className="border-t border-white/5 px-6 py-8 mt-12 bg-gray-950">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <ShieldCheck size={16} className="text-white" />
               </div>
-              <span className="font-semibold text-white">DocuSafe PDF</span>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-sm text-white tracking-tight">DocuSafe PDF</span>
+                <span className="text-[10px] text-gray-500">Private PDF tools for secure document workflows.</span>
+              </div>
             </div>
-            <p>© {new Date().getFullYear()} DocuSafe PDF · Hybrid Private Document Engine · Made with ⚡</p>
+            
+            <div className="flex flex-wrap items-center gap-6 text-xs font-medium text-gray-400">
+              <Link href="/all-tools" className="hover:text-white transition-colors">Tools</Link>
+              <button onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-white transition-colors">Pricing</button>
+              <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="#" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="#" className="hover:text-white transition-colors">Contact</Link>
+            </div>
+            
+            <div className="text-[11px] text-gray-600">
+              © {new Date().getFullYear()} DocuSafe PDF
+            </div>
           </div>
         </footer>
       </main>
