@@ -155,7 +155,7 @@ export default function MergePDFPage() {
       }
 
       const mergedBytes = await mergedPdf.save();
-      const blob = new Blob([mergedBytes], { type: "application/pdf" });
+      const blob = new Blob([mergedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
 
       setMergedBlob(blob);
       setMergedSize(blob.size);
