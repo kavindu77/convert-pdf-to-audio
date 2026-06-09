@@ -68,22 +68,27 @@ export default function HiddenLayerViewer() {
       const hiddenElements: HiddenElement[] = [];
 
       // Check PDF Catalog structure for OCGs (Optional Content Groups) using pdf-lib
-      const { PDFDocument } = await import("pdf-lib");
+      const { PDFDocument, PDFName, PDFDict, PDFArray } = await import("pdf-lib");
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const catalog = pdfDoc.catalog;
       
-      if (catalog.has(pdfDoc.context.key("OCProperties"))) {
-        const ocProps = catalog.get(pdfDoc.context.key("OCProperties")) as any;
-        if (ocProps && ocProps.has(pdfDoc.context.key("OCGs"))) {
-          const ocgs = ocProps.get(pdfDoc.context.key("OCGs")) as any;
-          const ocgList = ocgs.array || [];
-          ocgList.forEach((ocgRef: any) => {
-            const ocg = pdfDoc.context.lookup(ocgRef) as any;
-            if (ocg && ocg.has(pdfDoc.context.key("Name"))) {
-              const name = ocg.get(pdfDoc.context.key("Name")).decodeText();
-              detectedLayers.push(name);
+      if (catalog.has(PDFName.of("OCProperties"))) {
+        const ocProps = pdfDoc.context.lookup(catalog.get(PDFName.of("OCProperties")));
+        if (ocProps instanceof PDFDict && ocProps.has(PDFName.of("OCGs"))) {
+          const ocgs = pdfDoc.context.lookup(ocProps.get(PDFName.of("OCGs")));
+          if (ocgs instanceof PDFArray) {
+            const arraySize = ocgs.size();
+            for (let idx = 0; idx < arraySize; idx++) {
+              const ocg = pdfDoc.context.lookup(ocgs.get(idx));
+              if (ocg instanceof PDFDict && ocg.has(PDFName.of("Name"))) {
+                const nameObj = pdfDoc.context.lookup(ocg.get(PDFName.of("Name")));
+                if (nameObj) {
+                  const name = nameObj.toString().replace(/^\(/, "").replace(/\)$/, "");
+                  detectedLayers.push(name);
+                }
+              }
             }
-          });
+          }
         }
       }
 
