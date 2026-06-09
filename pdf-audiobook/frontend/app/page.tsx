@@ -1,296 +1,220 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useDropzone } from "react-dropzone";
 import {
-  Upload, FileText, Mic, Play, Download, Loader2,
-  CheckCircle2, XCircle, ChevronDown, Sparkles,
-  Volume2, Languages, Zap,
+  Mic, Merge, Scissors, Image, FileImage, Archive, FileText,
+  ArrowRight, Sparkles, Shield, Zap, Globe,
 } from "lucide-react";
-import { uploadPDF, getJobStatus, getSupportedLanguages, JobStatus } from "@/lib/api";
 
-const API_URL = "https://convert-pdf-to-audio.onrender.com";
-const POPULAR = ["en","es","fr","de","hi","ar","zh","ja","ko","pt","ru","tr","si","ta","bn"];
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Queued...", extracting: "Reading PDF...", translating: "Translating...",
-  generating_audio: "Generating audio...", completed: "Complete!", failed: "Failed",
-};
-const STATUS_COLORS: Record<string, string> = {
-  pending: "text-gray-400", extracting: "text-blue-400", translating: "text-violet-400",
-  generating_audio: "text-indigo-400", completed: "text-emerald-400", failed: "text-red-400",
-};
+const TOOLS = [
+  {
+    id: "pdf-to-audio",
+    name: "PDF to Audio",
+    description: "Convert any PDF into a translated audiobook in 100+ languages with natural voices.",
+    icon: Mic,
+    href: "/tools/pdf-to-audio",
+    color: "#6366f1",
+    badge: "⭐ Star Tool",
+    badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-400/30",
+    isServer: true,
+  },
+  {
+    id: "merge",
+    name: "Merge PDF",
+    description: "Combine multiple PDF files into a single document. Drag to reorder pages.",
+    icon: Merge,
+    href: "/tools/merge",
+    color: "#8b5cf6",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "split",
+    name: "Split PDF",
+    description: "Split a PDF into individual pages or custom page ranges.",
+    icon: Scissors,
+    href: "/tools/split",
+    color: "#ec4899",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "pdf-to-images",
+    name: "PDF to Images",
+    description: "Convert each PDF page into high-quality PNG or JPG images.",
+    icon: Image,
+    href: "/tools/pdf-to-images",
+    color: "#f59e0b",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "images-to-pdf",
+    name: "Images to PDF",
+    description: "Combine multiple images (JPG, PNG, WebP) into a single PDF document.",
+    icon: FileImage,
+    href: "/tools/images-to-pdf",
+    color: "#10b981",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "compress",
+    name: "Compress PDF",
+    description: "Reduce PDF file size by stripping metadata and optimizing structure.",
+    icon: Archive,
+    href: "/tools/compress",
+    color: "#06b6d4",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "extract-text",
+    name: "Extract Text",
+    description: "Pull all text from a PDF and download it as a clean .txt file.",
+    icon: FileText,
+    href: "/tools/extract-text",
+    color: "#f97316",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+];
 
-export default function PdfToAudioPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [targetLang, setTargetLang] = useState("es");
-  const [voiceGender, setVoiceGender] = useState("neutral");
-  const [languages, setLanguages] = useState<Record<string, string>>({});
-  const [langSearch, setLangSearch] = useState("");
-  const [langOpen, setLangOpen] = useState(false);
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pollRef = useRef<NodeJS.Timeout | null>(null);
+const FEATURES = [
+  {
+    icon: Zap,
+    title: "Lightning Fast",
+    description: "Most tools run entirely in your browser — instant results, no waiting.",
+  },
+  {
+    icon: Shield,
+    title: "100% Private",
+    description: "Client-side tools never upload your files. Your documents stay on your device.",
+  },
+  {
+    icon: Globe,
+    title: "100+ Languages",
+    description: "Audio conversion supports translation to over 100 languages worldwide.",
+  },
+];
 
-  useEffect(() => { getSupportedLanguages().then(setLanguages).catch(() => {}); }, []);
-
-  useEffect(() => {
-    if (!jobId) return;
-    const poll = async () => {
-      try {
-        const s = await getJobStatus(jobId);
-        setJobStatus(s);
-        if (s.status === "completed" || s.status === "failed") {
-          if (pollRef.current) clearInterval(pollRef.current);
-        }
-      } catch {}
-    };
-    poll();
-    pollRef.current = setInterval(poll, 3000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [jobId]);
-
-  const onDrop = useCallback((accepted: File[]) => {
-    if (accepted[0]) { setFile(accepted[0]); setError(null); setJobId(null); setJobStatus(null); }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop, accept: { "application/pdf": [".pdf"] }, maxFiles: 1, maxSize: 50 * 1024 * 1024,
-    onDropRejected: (f) => setError(f[0]?.errors[0]?.code === "file-too-large" ? "File too large (max 50 MB)." : "Only PDF files accepted."),
-  });
-
-  const handleSubmit = async () => {
-    if (!file) return;
-    setIsUploading(true); setError(null);
-    try {
-      const res = await uploadPDF(file, targetLang, "auto", voiceGender);
-      setJobId(res.job_id);
-    } catch (e: any) {
-      setError(e?.response?.data?.detail || "Upload failed. Please try again.");
-    } finally { setIsUploading(false); }
-  };
-
-  const getAudioUrl = (url: string) => (!url ? "" : url.startsWith("http") ? url : `${API_URL}${url}`);
-
-  const filteredLangs = Object.entries(languages).filter(([code, name]) =>
-    !langSearch || name.toLowerCase().includes(langSearch.toLowerCase()) || code.toLowerCase().includes(langSearch.toLowerCase())
-  );
-  const sortedLangs = [...filteredLangs.filter(([c]) => POPULAR.includes(c)), ...filteredLangs.filter(([c]) => !POPULAR.includes(c))];
-
-  const isProcessing = jobStatus && !["completed","failed"].includes(jobStatus.status);
-  const isDone = jobStatus?.status === "completed";
-  const isFailed = jobStatus?.status === "failed";
-  const langName = languages[targetLang] || targetLang;
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-600/8 rounded-full blur-3xl" />
-      </div>
-
-      <header className="relative border-b border-white/[0.06] backdrop-blur-sm bg-[#0a0a0f]/80 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Mic size={16} />
-            </div>
-            <span className="font-bold tracking-tight">PDF Audiobook</span>
-          </Link>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-3 py-1.5 rounded-full">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Free · No signup
-          </div>
+    <div className="min-h-screen bg-gray-950 text-white">
+      {/* Header */}
+      <header className="border-b border-white/10 px-6 py-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
+          <Mic size={18} />
         </div>
+        <span className="font-semibold text-lg tracking-tight">PDF to Audio</span>
+        <span className="ml-2 text-xs text-gray-500 hidden sm:inline">& PDF Tools</span>
       </header>
 
-      <main className="relative max-w-2xl mx-auto px-6 py-12 space-y-6">
-        <div className="text-center space-y-3 pb-2">
-          <div className="inline-flex items-center gap-2 text-xs font-medium text-indigo-400 bg-indigo-400/10 border border-indigo-400/20 px-3 py-1.5 rounded-full mb-2">
-            <Sparkles size={12} />
-            AI-Powered Translation + Voice
-          </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent">
-            Turn any PDF into<br />an Audiobook
-          </h1>
-          <p className="text-gray-500 text-base">Upload · Translate · Listen in 100+ languages</p>
-        </div>
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden px-6 pt-20 pb-16">
+          {/* Background glows */}
+          <div className="hero-glow bg-indigo-600" style={{ top: "-200px", left: "10%" }} />
+          <div className="hero-glow bg-purple-600" style={{ top: "-100px", right: "15%", animationDelay: "2s" }} />
+          <div className="hero-glow bg-pink-600" style={{ top: "0px", left: "40%", animationDelay: "4s", width: 400, height: 400 }} />
 
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: Languages, label: "100+ Languages", sub: "Including Sinhala, Tamil" },
-            { icon: Zap, label: "Instant", sub: "No waiting required" },
-            { icon: Volume2, label: "Natural Voice", sub: "High quality audio" },
-          ].map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-center">
-              <Icon size={20} className="mx-auto mb-2 text-indigo-400" />
-              <p className="text-xs font-semibold text-white">{label}</p>
-              <p className="text-xs text-gray-600 mt-0.5">{sub}</p>
+          <div className="relative max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-400 mb-8">
+              <Sparkles size={14} className="text-indigo-400" />
+              7 powerful tools — most run entirely in your browser
             </div>
-          ))}
-        </div>
-
-        <div
-          {...getRootProps()}
-          className={`relative rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all duration-200 group
-            ${isDragActive ? "border-indigo-400 bg-indigo-500/10 scale-[1.01]"
-              : file ? "border-indigo-500/40 bg-indigo-500/5"
-              : "border-white/10 hover:border-white/20 hover:bg-white/[0.02]"}`}
-        >
-          <input {...getInputProps()} />
-          {file ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
-                <FileText size={26} className="text-indigo-400" />
-              </div>
-              <div>
-                <p className="font-semibold text-white">{file.name}</p>
-                <p className="text-sm text-gray-500 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB · Ready to convert</p>
-              </div>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setJobId(null); setJobStatus(null); }}
-                className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
-                Choose different file
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 transition-colors">
-                <Upload size={24} className="text-gray-500 group-hover:text-gray-400 transition-colors" />
-              </div>
-              <div>
-                <p className="font-semibold text-gray-300">Drop your PDF here</p>
-                <p className="text-sm text-gray-600 mt-1">or click to browse · PDF up to 50 MB</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
-            <Languages size={15} className="text-indigo-400" />
-            Output Language & Voice
-          </h2>
-          <div className="relative">
-            <button type="button" onClick={() => setLangOpen(!langOpen)}
-              className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-colors">
-              <span className="font-medium text-white">{langName}</span>
-              <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`} />
-            </button>
-            {langOpen && (
-              <div className="absolute z-50 mt-2 w-full rounded-xl bg-[#111118] border border-white/10 shadow-2xl overflow-hidden">
-                <div className="p-2 border-b border-white/[0.06]">
-                  <input autoFocus type="text" placeholder="Search language..." value={langSearch}
-                    onChange={(e) => setLangSearch(e.target.value)}
-                    className="w-full bg-white/[0.05] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none border border-white/[0.06] focus:border-indigo-500/40" />
-                </div>
-                <div className="max-h-52 overflow-y-auto">
-                  {sortedLangs.length === 0 && <p className="text-center text-gray-600 py-4 text-sm">No languages found</p>}
-                  {sortedLangs.map(([code, name]) => (
-                    <button key={code} type="button"
-                      onClick={() => { setTargetLang(code); setLangOpen(false); setLangSearch(""); }}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-white/[0.05] transition-colors
-                        ${targetLang === code ? "text-indigo-400 bg-indigo-500/10" : "text-gray-300"}`}>
-                      <span>{name}</span>
-                      {POPULAR.includes(code) && <span className="text-xs text-gray-700 bg-white/[0.05] px-2 py-0.5 rounded-full">popular</span>}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6">
+              Your All-in-One
+              <br />
+              <span className="gradient-text">PDF Toolkit</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              Convert PDFs to audiobooks, merge, split, compress, extract text, and more.
+              Fast, private, and free to use.
+            </p>
           </div>
-          <div className="flex gap-2">
-            {["neutral","female","male"].map((g) => (
-              <button key={g} type="button" onClick={() => setVoiceGender(g)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all capitalize
-                  ${voiceGender === g
-                    ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-300"
-                    : "bg-white/[0.03] border-white/[0.07] text-gray-500 hover:border-white/20 hover:text-gray-300"}`}>
-                {g}
-              </button>
-            ))}
+        </section>
+
+        {/* Tool Grid */}
+        <section className="px-6 pb-20 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {TOOLS.map((tool, i) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.id}
+                  href={tool.href}
+                  className={`glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer animate-in group ${
+                    i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
+                  }`}
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div
+                      className="tool-icon w-12 h-12 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${tool.color}20`, border: `1px solid ${tool.color}40` }}
+                    >
+                      <Icon size={22} style={{ color: tool.color }} />
+                    </div>
+                    <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full border ${tool.badgeColor}`}>
+                      {tool.badge}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white text-lg mb-1 group-hover:text-indigo-300 transition-colors">
+                      {tool.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{tool.description}</p>
+                  </div>
+                  <div className="mt-auto pt-2 flex items-center gap-1 text-xs text-gray-600 group-hover:text-indigo-400 transition-colors">
+                    Open tool <ArrowRight size={12} className="transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        </div>
+        </section>
 
-        {error && (
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/[0.08] border border-red-500/20 text-red-400">
-            <XCircle size={16} className="mt-0.5 shrink-0" />
-            <span className="text-sm">{error}</span>
-          </div>
-        )}
-
-        {!jobId && (
-          <button type="button" disabled={!file || isUploading} onClick={handleSubmit}
-            className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-500/20">
-            {isUploading ? <><Loader2 size={18} className="animate-spin" /> Uploading...</>
-              : <><Play size={18} fill="white" /> Convert to Audiobook</>}
-          </button>
-        )}
-
-        {jobStatus && (
-          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                {isDone && <CheckCircle2 size={18} className="text-emerald-400" />}
-                {isFailed && <XCircle size={18} className="text-red-400" />}
-                {isProcessing && <Loader2 size={18} className="animate-spin text-indigo-400" />}
-                <span className={`font-semibold text-sm ${STATUS_COLORS[jobStatus.status] || "text-gray-300"}`}>
-                  {STATUS_LABELS[jobStatus.status] || jobStatus.status}
-                </span>
-              </div>
-              <span className="text-sm font-mono text-gray-600">{jobStatus.progress_percent}%</span>
+        {/* Features */}
+        <section className="border-t border-white/5 px-6 py-20">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-center mb-12 text-gray-200">Why PDF to Audio?</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {FEATURES.map((feat) => {
+                const Icon = feat.icon;
+                return (
+                  <div key={feat.title} className="text-center">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto mb-4">
+                      <Icon size={22} className="text-indigo-400" />
+                    </div>
+                    <h3 className="font-semibold text-white mb-2">{feat.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{feat.description}</p>
+                  </div>
+                );
+              })}
             </div>
-            <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-700 ${isDone ? "bg-emerald-500" : isFailed ? "bg-red-500" : "bg-gradient-to-r from-indigo-500 to-violet-500"}`}
-                style={{ width: `${jobStatus.progress_percent}%` }} />
-            </div>
-            {jobStatus.total_pages > 0 && (
-              <p className="text-xs text-gray-600">{jobStatus.processed_pages} of {jobStatus.total_pages} pages processed</p>
-            )}
-            {isFailed && jobStatus.error_message && (
-              <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-xl">{jobStatus.error_message}</p>
-            )}
-            {isDone && jobStatus.chapter_urls && jobStatus.chapter_urls.length > 0 && (
-              <div className="space-y-3 pt-1">
-                <p className="text-sm text-gray-400 font-medium">
-                  {jobStatus.chapter_urls.length} chapter{jobStatus.chapter_urls.length > 1 ? "s" : ""} ready in{" "}
-                  <span className="text-white">{jobStatus.target_language_name}</span>
-                </p>
-                <div className="space-y-2">
-                  {jobStatus.chapter_urls.map((url, i) => {
-                    const fullUrl = getAudioUrl(url);
-                    return (
-                      <div key={url} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.04] border border-white/[0.07] hover:border-white/15 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                          <Volume2 size={14} className="text-indigo-400" />
-                        </div>
-                        <span className="text-sm text-gray-400 w-16 shrink-0">Ch. {i + 1}</span>
-                        <audio controls src={fullUrl} className="flex-1 h-8 min-w-0" />
-                        <a href={fullUrl} download={`chapter-${i + 1}.mp3`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-xs font-semibold transition-colors shrink-0 border border-indigo-500/30">
-                          <Download size={12} />MP3
-                        </a>
-                      </div>
-                    );
-                  })}
-                </div>
-                <button type="button"
-                  onClick={() => { setFile(null); setJobId(null); setJobStatus(null); setError(null); }}
-                  className="w-full mt-2 py-3 rounded-xl border border-white/[0.07] text-gray-500 hover:border-white/15 hover:text-gray-300 transition-all text-sm font-medium">
-                  Convert another PDF
-                </button>
-              </div>
-            )}
           </div>
-        )}
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t border-white/5 px-6 py-8">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-indigo-500 flex items-center justify-center">
+                <Mic size={12} />
+              </div>
+              <span>PDF to Audio</span>
+            </div>
+            <p>Free PDF tools — your files never leave your browser.</p>
+          </div>
+        </footer>
       </main>
-
-      <footer className="relative border-t border-white/[0.05] mt-20 py-8">
-        <div className="max-w-2xl mx-auto px-6 text-center">
-          <p className="text-xs text-gray-700">PDF Audiobook · Free · No signup required · 100+ languages</p>
-        </div>
-      </footer>
     </div>
   );
 }
