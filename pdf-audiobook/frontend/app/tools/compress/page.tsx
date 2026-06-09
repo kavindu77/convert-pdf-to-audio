@@ -131,7 +131,7 @@ export default function CompressPdfPage() {
           ? ((originalSize - compressedSize) / originalSize) * 100
           : 0;
 
-      const blob = new Blob([new Uint8Array(compressedBytes.buffer)], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(compressedBytes.buffer as ArrayBuffer)], { type: "application/pdf" });
       const baseName = file.name.replace(/\.pdf$/i, "");
 
       setProgress(100);
