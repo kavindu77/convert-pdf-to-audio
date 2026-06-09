@@ -7,36 +7,23 @@ export const apiClient = axios.create({
   timeout: 60_000,
 });
 
-// Attach JWT on every request
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
-
-// ── API functions ─────────────────────────────────────────────
 
 export interface UploadResponse {
   job_id: string;
   status: string;
   message: string;
-  estimated_time?: string | null;
-  is_free_plan?: boolean;
 }
 
 export interface JobStatus {
   job_id: string;
-  status:
-    | "pending"
-    | "extracting"
-    | "translating"
-    | "generating_audio"
-    | "completed"
-    | "failed";
+  status: "pending" | "extracting" | "translating" | "generating_audio" | "completed" | "failed";
   progress_percent: number;
   original_filename: string;
   target_language: string;
@@ -54,15 +41,14 @@ export interface JobStatus {
 export async function uploadPDF(
   file: File,
   targetLanguage: string,
-  sourceLanguage: string = "auto",
-  voiceGender: string = "neutral"
+  sourceLanguage = "auto",
+  voiceGender = "neutral"
 ): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("target_language", targetLanguage);
   formData.append("source_language", sourceLanguage);
   formData.append("voice_gender", voiceGender);
-
   const { data } = await apiClient.post<UploadResponse>("/api/upload/pdf", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -74,32 +60,8 @@ export async function getJobStatus(jobId: string): Promise<JobStatus> {
   return data;
 }
 
-export async function listJobs(): Promise<JobStatus[]> {
-  const { data } = await apiClient.get<JobStatus[]>("/api/jobs/");
-  return data;
-}
-
-export async function deleteJob(jobId: string): Promise<void> {
-  await apiClient.delete(`/api/jobs/${jobId}`);
-}
-
 export async function getSupportedLanguages(): Promise<Record<string, string>> {
-  const { data } = await apiClient.get<Record<string, string>>(
-    "/api/translate/languages"
-  );
-  return data;
-}
-
-export async function register(
-  email: string,
-  password: string,
-  fullName?: string
-) {
-  const { data } = await apiClient.post("/api/auth/register", {
-    email,
-    password,
-    full_name: fullName,
-  });
+  const { data } = await apiClient.get<Record<string, string>>("/api/translate/languages");
   return data;
 }
 
@@ -108,5 +70,10 @@ export async function login(email: string, password: string) {
   if (data.access_token && typeof window !== "undefined") {
     localStorage.setItem("access_token", data.access_token);
   }
+  return data;
+}
+
+export async function register(email: string, password: string, fullName?: string) {
+  const { data } = await apiClient.post("/api/auth/register", { email, password, full_name: fullName });
   return data;
 }
