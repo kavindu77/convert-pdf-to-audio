@@ -92,7 +92,7 @@ export default function PdfToAudioPage() {
     try {
       const res = await uploadPDF(file, targetLang, "auto", voiceGender);
       setJobId(res.job_id);
-      setEstimatedTime(res.estimated_time || null);
+      setEstimatedTime(res.estimated_time ? String(res.estimated_time) : null);
       setIsFreePlan(res.is_free_plan ?? true);
     } catch (e: any) {
       const detail = e?.response?.data?.detail || e?.message || "Upload failed. Please try again.";
