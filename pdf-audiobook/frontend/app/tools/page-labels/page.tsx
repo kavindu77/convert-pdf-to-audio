@@ -142,7 +142,7 @@ export default function PageLabels() {
       pdfDoc.catalog.set(PDFName.of("PageLabels"), pageLabelsDict);
 
       const savedBytes = await pdfDoc.save();
-      const blob = new Blob([savedBytes], { type: "application/pdf" });
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
     } catch (err: any) {

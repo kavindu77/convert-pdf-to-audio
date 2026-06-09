@@ -239,7 +239,7 @@ export default function PrivacyReport() {
       }
 
       const sanitizedBytes = await pdfDoc.save();
-      const blob = new Blob([sanitizedBytes], { type: "application/pdf" });
+      const blob = new Blob([sanitizedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setSanitizedUrl(URL.createObjectURL(blob));
       
       // Update report to show optimized score

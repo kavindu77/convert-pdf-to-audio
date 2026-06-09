@@ -232,7 +232,7 @@ export default function SignaturePositions() {
       });
 
       const stampedBytes = await pdfDoc.save();
-      const blob = new Blob([stampedBytes], { type: "application/pdf" });
+      const blob = new Blob([stampedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       setStampedUrl(url);
     } catch (err: any) {

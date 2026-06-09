@@ -146,7 +146,7 @@ export default function FakeRedactionChecker() {
       // or flattening the PDF page to an image. Re-flattening completely strips the selectable
       // text layers while keeping visual layers. We'll simulate this secure metadata stripping.
       const savedBytes = await pdfDoc.save();
-      const blob = new Blob([savedBytes], { type: "application/pdf" });
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setSanitizedUrl(URL.createObjectURL(blob));
       
       setLeaks([]);

@@ -200,7 +200,7 @@ export default function EvidenceLocker() {
       });
 
       const certBytes = await certDoc.save();
-      const certBlob = new Blob([certBytes], { type: "application/pdf" });
+      const certBlob = new Blob([certBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setCertificateUrl(URL.createObjectURL(certBlob));
 
       setProgress(100);

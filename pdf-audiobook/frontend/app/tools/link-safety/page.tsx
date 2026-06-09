@@ -179,7 +179,7 @@ export default function LinkSafetyScanner() {
       }
 
       const savedBytes = await pdfDoc.save();
-      const blob = new Blob([savedBytes], { type: "application/pdf" });
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setSanitizedUrl(URL.createObjectURL(blob));
       
       // Update links state to all safe/cleaned

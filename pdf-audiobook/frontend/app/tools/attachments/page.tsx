@@ -148,7 +148,7 @@ export default function AttachmentInspector() {
       }
 
       const savedBytes = await pdfDoc.save();
-      const blob = new Blob([savedBytes], { type: "application/pdf" });
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setSanitizedUrl(URL.createObjectURL(blob));
       setProgress(100);
       setProgressLabel("Sanitized successfully!");
@@ -160,7 +160,7 @@ export default function AttachmentInspector() {
   };
 
   const downloadAttachment = (att: PDFAttachment) => {
-    const blob = new Blob([att.data], { type: "application/octet-stream" });
+    const blob = new Blob([att.data.buffer as ArrayBuffer], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

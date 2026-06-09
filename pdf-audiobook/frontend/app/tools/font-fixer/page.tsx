@@ -204,7 +204,7 @@ export default function FontFixer() {
       await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
       const fixedBytes = await pdfDoc.save();
-      const blob = new Blob([fixedBytes], { type: "application/pdf" });
+      const blob = new Blob([fixedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       
       setDownloadUrl(url);

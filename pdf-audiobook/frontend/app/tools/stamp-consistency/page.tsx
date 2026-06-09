@@ -150,7 +150,7 @@ export default function StampConsistency() {
       });
 
       const stampedBytes = await pdfDoc.save();
-      const blob = new Blob([stampedBytes], { type: "application/pdf" });
+      const blob = new Blob([stampedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       setDownloadUrl(URL.createObjectURL(blob));
       
       // Update local state to reflect additions

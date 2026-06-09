@@ -171,7 +171,7 @@ export default function MarginNormalizer() {
       setProgress(95);
       
       const savedBytes = await outputPdfDoc.save();
-      const blob = new Blob([savedBytes], { type: "application/pdf" });
+      const blob = new Blob([savedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProgress(100);
