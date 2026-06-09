@@ -59,7 +59,8 @@ export default function PrivacyReport() {
   }, []);
 
   const generatePrivacyReport = async () => {
-    if (!pdfBytes) return;
+    const currentFile = file;
+    if (!pdfBytes || !currentFile) return;
 
     setIsProcessing(true);
     setError(null);
@@ -193,7 +194,7 @@ export default function PrivacyReport() {
       else if (privacyScore < 90) grade = "B";
 
       setReport({
-        fileName: file.name,
+        fileName: currentFile.name,
         privacyScore,
         grade,
         leaks,

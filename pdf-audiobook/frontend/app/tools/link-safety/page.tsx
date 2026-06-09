@@ -82,44 +82,46 @@ export default function LinkSafetyScanner() {
                 
                 if (action instanceof PDFDict && action.has(PDFName.of("URI"))) {
                   const uriObj = pdfDoc.context.lookup(action.get(PDFName.of("URI")));
-                  const rawUrl = uriObj.toString().replace(/^\(/, "").replace(/\)$/, "");
-                  
-                  // Clean URL by stripping tracking parameters (e.g. utm_*)
-                  let cleanUrl = rawUrl;
-                  let status: "safe" | "tracking" | "shortener" | "suspicious" = "safe";
-                  let details = "No security issues detected.";
+                  if (uriObj) {
+                    const rawUrl = uriObj.toString().replace(/^\(/, "").replace(/\)$/, "");
+                    
+                    // Clean URL by stripping tracking parameters (e.g. utm_*)
+                    let cleanUrl = rawUrl;
+                    let status: "safe" | "tracking" | "shortener" | "suspicious" = "safe";
+                    let details = "No security issues detected.";
 
-                  try {
-                    const parsed = new URL(rawUrl);
-                    const trackingParams = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid"];
-                    const hasTracking = trackingParams.some(param => parsed.searchParams.has(param));
+                    try {
+                      const parsed = new URL(rawUrl);
+                      const trackingParams = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid"];
+                      const hasTracking = trackingParams.some(param => parsed.searchParams.has(param));
 
-                    if (hasTracking) {
-                      status = "tracking";
-                      details = "Contains marketing tracking tokens (e.g., utm_source).";
-                      trackingParams.forEach(param => parsed.searchParams.delete(param));
-                      cleanUrl = parsed.toString();
+                      if (hasTracking) {
+                        status = "tracking";
+                        details = "Contains marketing tracking tokens (e.g., utm_source).";
+                        trackingParams.forEach(param => parsed.searchParams.delete(param));
+                        cleanUrl = parsed.toString();
+                      }
+
+                      // Check for URL shorteners
+                      const shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "buff.ly"];
+                      if (shorteners.some(domain => parsed.hostname.includes(domain))) {
+                        status = "shortener";
+                        details = "Uses a URL shortener service which hides the true destination.";
+                      }
+                    } catch {
+                      // Invalid URL structure
+                      status = "suspicious";
+                      details = "Invalid URL schema or suspicious syntax structure.";
                     }
 
-                    // Check for URL shorteners
-                    const shorteners = ["bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "is.gd", "buff.ly"];
-                    if (shorteners.some(domain => parsed.hostname.includes(domain))) {
-                      status = "shortener";
-                      details = "Uses a URL shortener service which hides the true destination.";
-                    }
-                  } catch {
-                    // Invalid URL structure
-                    status = "suspicious";
-                    details = "Invalid URL schema or suspicious syntax structure.";
+                    foundLinks.push({
+                      url: rawUrl,
+                      cleanUrl,
+                      page: idx + 1,
+                      status,
+                      details,
+                    });
                   }
-
-                  foundLinks.push({
-                    url: rawUrl,
-                    cleanUrl,
-                    page: idx + 1,
-                    status,
-                    details,
-                  });
                 }
               }
             }
@@ -163,13 +165,15 @@ export default function LinkSafetyScanner() {
                 
                 if (action instanceof PDFDict && action.has(PDFName.of("URI"))) {
                   const uriObj = pdfDoc.context.lookup(action.get(PDFName.of("URI")));
-                  const rawUrl = uriObj.toString().replace(/^\(/, "").replace(/\)$/, "");
+                  if (uriObj) {
+                    const rawUrl = uriObj.toString().replace(/^\(/, "").replace(/\)$/, "");
 
-                  // Find clean URL counterpart
-                  const match = links.find(l => l.url === rawUrl && l.page === idx + 1);
-                  if (match && match.status === "tracking") {
-                    // Update the URI value
-                    action.set(PDFName.of("URI"), PDFString.of(match.cleanUrl));
+                    // Find clean URL counterpart
+                    const match = links.find(l => l.url === rawUrl && l.page === idx + 1);
+                    if (match && match.status === "tracking") {
+                      // Update the URI value
+                      action.set(PDFName.of("URI"), PDFString.of(match.cleanUrl));
+                    }
                   }
                 }
               }
