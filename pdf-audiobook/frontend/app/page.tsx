@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Mic,
@@ -46,6 +46,10 @@ import {
   QrCode,
   Stamp,
   AlertOctagon,
+  User,
+  CreditCard,
+  Award,
+  Check,
 } from "lucide-react";
 
 interface Tool {
@@ -557,6 +561,66 @@ const CATEGORIES = [
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  
+  // Profile settings
+  const [userName, setUserName] = useState("Kavindu");
+  const [userEmail, setUserEmail] = useState("kavindu@example.com");
+  const [globalApiKey, setGlobalApiKey] = useState("");
+  const [isPremium, setIsPremium] = useState(false);
+  const [filesProcessed, setFilesProcessed] = useState(14);
+  const [storageSaved, setStorageSaved] = useState(42.8);
+  const [timeSaved, setTimeSaved] = useState(12.5);
+
+  useEffect(() => {
+    // Load state from localStorage
+    const savedName = localStorage.getItem("user_profile_name");
+    const savedEmail = localStorage.getItem("user_profile_email");
+    const savedKey = localStorage.getItem("groq_api_key");
+    const premiumStatus = localStorage.getItem("user_is_premium") === "true";
+    const savedFiles = localStorage.getItem("user_files_processed");
+    const savedStorage = localStorage.getItem("user_storage_saved");
+    const savedTime = localStorage.getItem("user_time_saved");
+    
+    if (savedName) setUserName(savedName);
+    if (savedEmail) setUserEmail(savedEmail);
+    if (savedKey) setGlobalApiKey(savedKey);
+    setIsPremium(premiumStatus);
+    if (savedFiles) setFilesProcessed(parseInt(savedFiles, 10));
+    else localStorage.setItem("user_files_processed", "14");
+
+    if (savedStorage) setStorageSaved(parseFloat(savedStorage));
+    else localStorage.setItem("user_storage_saved", "42.8");
+
+    if (savedTime) setTimeSaved(parseFloat(savedTime));
+    else localStorage.setItem("user_time_saved", "12.5");
+  }, []);
+
+  const handleSaveProfile = () => {
+    localStorage.setItem("user_profile_name", userName);
+    localStorage.setItem("user_profile_email", userEmail);
+    localStorage.setItem("groq_api_key", globalApiKey);
+    setIsProfileOpen(false);
+  };
+
+  const handleUpgradeNow = () => {
+    setIsUpgrading(true);
+    setTimeout(() => {
+      setIsUpgrading(false);
+      setUpgradeSuccess(true);
+      setIsPremium(true);
+      localStorage.setItem("user_is_premium", "true");
+      setTimeout(() => {
+        setIsUpgradeOpen(false);
+        setUpgradeSuccess(false);
+      }, 2000);
+    }, 1500);
+  };
 
   const filteredTools = TOOLS.filter((tool) => {
     const query = searchQuery.toLowerCase().trim();
@@ -570,6 +634,10 @@ export default function HomePage() {
   const getToolsByCategory = (category: string) => {
     return filteredTools.filter((t) => t.category === category);
   };
+
+  const categoriesToRender = activeCategory === "all"
+    ? CATEGORIES
+    : CATEGORIES.filter((c) => c.id === activeCategory);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white selection:bg-indigo-500/30 overflow-x-hidden relative">
@@ -592,11 +660,34 @@ export default function HomePage() {
           </span>
           <span className="ml-2 text-xs text-gray-500 hidden sm:inline">&amp; PDF Toolkit</span>
         </div>
-        <div className="flex items-center gap-4 text-xs text-gray-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
-            100% Client Secure
-          </span>
+        
+        <div className="flex items-center gap-3">
+          {/* Pro Status Badge */}
+          {isPremium && (
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-bold tracking-wider uppercase shadow-inner">
+              <Award size={10} className="animate-pulse" /> Pro Member
+            </span>
+          )}
+
+          {/* Upgrade Button */}
+          {!isPremium && (
+            <button
+              onClick={() => setIsUpgradeOpen(true)}
+              className="relative px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black text-xs font-bold rounded-xl transition-all duration-300 shadow-lg shadow-amber-500/10 hover:scale-[1.03] active:scale-[0.98] flex items-center gap-1"
+            >
+              <Sparkles size={12} />
+              Upgrade to Pro
+            </button>
+          )}
+
+          {/* Profile Trigger */}
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all hover:scale-105 active:scale-95"
+            title="User Profile"
+          >
+            <User size={16} />
+          </button>
         </div>
       </header>
 
@@ -642,6 +733,37 @@ export default function HomePage() {
               )}
             </div>
           </div>
+
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto pt-8">
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 border backdrop-blur-md active:scale-95 ${
+                activeCategory === "all"
+                  ? "bg-indigo-600/90 border-indigo-500 text-white shadow-lg shadow-indigo-600/10 scale-105"
+                  : "bg-white/5 border-white/10 hover:border-white/20 text-gray-400 hover:text-white"
+              }`}
+            >
+              All Tools ({filteredTools.length})
+            </button>
+            {CATEGORIES.map((cat) => {
+              const count = getToolsByCategory(cat.id).length;
+              if (count === 0 && searchQuery) return null;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 border backdrop-blur-md active:scale-95 ${
+                    activeCategory === cat.id
+                      ? "bg-indigo-600/90 border-indigo-500 text-white shadow-lg shadow-indigo-600/10 scale-105"
+                      : "bg-white/5 border-white/10 hover:border-white/20 text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {cat.name} ({count})
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         {/* Categorized Tools Sections */}
@@ -661,7 +783,7 @@ export default function HomePage() {
               </button>
             </div>
           ) : (
-            CATEGORIES.map((category) => {
+            categoriesToRender.map((category) => {
               const tools = getToolsByCategory(category.id);
               if (tools.length === 0) return null;
 
@@ -768,7 +890,243 @@ export default function HomePage() {
         </footer>
       </main>
 
+      {/* Profile Modal */}
+      {isProfileOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative">
+            <button
+              onClick={() => setIsProfileOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="p-6 space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center">
+                  <User size={24} className="text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-lg">Profile Settings</h3>
+                  <p className="text-xs text-gray-400">Configure global preferences &amp; credentials</p>
+                </div>
+              </div>
+
+              {/* Preferences Form */}
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">User Name</label>
+                  <input
+                    type="text"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Email Address</label>
+                  <input
+                    type="email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Groq API Key</label>
+                    <a
+                      href="https://console.groq.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-indigo-400 hover:underline"
+                    >
+                      Get free key
+                    </a>
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="gsk_..."
+                    value={globalApiKey}
+                    onChange={(e) => setGlobalApiKey(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white font-mono"
+                  />
+                  <p className="text-[9px] text-gray-500 leading-relaxed pt-0.5">
+                    Your key is saved locally in your browser context. Required for PDF Chat, Summarizer, and Flashcards.
+                  </p>
+                </div>
+              </div>
+
+              {/* Account Stats */}
+              <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl space-y-3">
+                <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Usage Statistics</p>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="p-2 bg-white/5 rounded-lg">
+                    <p className="font-bold text-white">{filesProcessed}</p>
+                    <p className="text-[9px] text-gray-500">Processed</p>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded-lg">
+                    <p className="font-bold text-white">{storageSaved} MB</p>
+                    <p className="text-[9px] text-gray-500">Optimized</p>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded-lg">
+                    <p className="font-bold text-white">{timeSaved}m</p>
+                    <p className="text-[9px] text-gray-500">Time Saved</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-2 flex items-center justify-between border-t border-white/5">
+                <div className="flex items-center gap-1">
+                  <span className={`w-2.5 h-2.5 rounded-full ${isPremium ? "bg-amber-500 animate-pulse" : "bg-gray-600"}`} />
+                  <span className="text-xs text-gray-400">
+                    {isPremium ? "Premium Account" : "Free Tier"}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsProfileOpen(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold transition-colors"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Modal */}
+      {isUpgradeOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative">
+            <button
+              onClick={() => setIsUpgradeOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+              disabled={isUpgrading}
+            >
+              <X size={18} />
+            </button>
+
+            <div className="p-6 space-y-6">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+                  <Award size={24} className="text-black font-black" />
+                </div>
+                <h3 className="font-extrabold text-white text-2xl tracking-tight">Upgrade to Premium Pro</h3>
+                <p className="text-xs text-gray-400 max-w-xs mx-auto">
+                  Unlock unlimited file limits, batch conversions, and advanced AI services.
+                </p>
+              </div>
+
+              {/* Billing Toggle */}
+              <div className="bg-white/5 border border-white/10 p-1.5 rounded-xl flex max-w-[240px] mx-auto text-xs">
+                <button
+                  onClick={() => setBillingInterval("monthly")}
+                  className={`flex-1 py-1.5 rounded-lg font-bold transition-all ${
+                    billingInterval === "monthly"
+                      ? "bg-white/15 text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingInterval("yearly")}
+                  className={`flex-1 py-1.5 rounded-lg font-bold transition-all flex items-center justify-center gap-1 ${
+                    billingInterval === "yearly"
+                      ? "bg-white/15 text-white"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Yearly <span className="bg-amber-500/20 text-amber-300 text-[8px] px-1 rounded uppercase font-extrabold">Save 33%</span>
+                </button>
+              </div>
+
+              {/* Pricing Cards */}
+              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-white text-lg">Pro Plan</p>
+                  <p className="text-xs text-gray-400">All advanced toolkit features</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-extrabold text-white text-2xl">
+                    {billingInterval === "monthly" ? "$9" : "$6"}
+                    <span className="text-xs text-gray-500 font-normal"> / month</span>
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    {billingInterval === "monthly" ? "Billed monthly" : "Billed annually ($72)"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Benefits Checklist */}
+              <div className="space-y-2 text-xs">
+                {[
+                  "Unlimited file sizes (up to 500 MB)",
+                  "Cloud translation & translation to 100+ languages",
+                  "Multiple files batch processing",
+                  "Premium AI model connections (GPT-4o & Claude 3.5)",
+                  "Tamper-proof certified Evidence Locker receipts",
+                  "Priority developer response & feature requests",
+                ].map((benefit, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-gray-300">
+                    <Check size={14} className="text-amber-400 shrink-0" />
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Checkout Button / Progress */}
+              <div className="pt-4 border-t border-white/5">
+                {upgradeSuccess ? (
+                  <div className="py-2.5 bg-green-500/10 border border-green-500/25 rounded-xl text-green-300 font-bold text-center text-xs flex items-center justify-center gap-2 animate-bounce">
+                    <Check size={16} /> Upgrade Successful! Welcome to Pro!
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleUpgradeNow}
+                    disabled={isUpgrading}
+                    className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black text-sm font-bold rounded-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isUpgrading ? (
+                      <>
+                        <RefreshCw size={16} className="animate-spin text-black" /> Processing purchase...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard size={16} /> Activate Premium Pro
+                      </>
+                    )}
+                  </button>
+                )}
+                <p className="text-[10px] text-center text-gray-500 mt-2">
+                  Safe checkout. Cancel anytime. Prototype upgrades instantly!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
         @keyframes fadeInUp {
           from {
             opacity: 0;
