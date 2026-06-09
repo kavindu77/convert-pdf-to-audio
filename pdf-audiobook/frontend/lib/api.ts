@@ -19,6 +19,10 @@ export interface UploadResponse {
   job_id: string;
   status: string;
   message: string;
+  plan?: string;
+  max_pages?: number;
+  estimated_time?: number | null;
+  is_free_plan?: boolean;
 }
 
 export interface JobStatus {
