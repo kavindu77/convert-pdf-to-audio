@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AdBanner from "./components/AdBanner";
 import {
   Mic,
   Merge,
@@ -587,8 +588,8 @@ export default function HomePage() {
       
       {/* Background Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute w-[850px] h-[850px] rounded-full bg-indigo-500/5 blur-[140px] -top-96 -left-48 animate-pulse duration-[12000ms]" />
-        <div className="absolute w-[700px] h-[700px] rounded-full bg-teal-500/3 blur-[120px] top-[30%] right-[-200px]" />
+        <div className="absolute w-[850px] h-[850px] rounded-full bg-indigo-500/10 blur-[140px] -top-96 -left-48 animate-float-slow duration-[12000ms]" />
+        <div className="absolute w-[700px] h-[700px] rounded-full bg-teal-500/5 blur-[120px] top-[30%] right-[-200px] animate-float-fast" />
       </div>
 
       {/* Dynamic Cursor Glow (Parallax depth layer) */}
@@ -714,7 +715,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {popularTools.map((tool) => {
+            {popularTools.map((tool, index) => {
               const Icon = tool.icon;
               return (
                 <a
@@ -722,10 +723,15 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    // @ts-ignore - custom css variable for hover border color
+                    "--hover-color": tool.color
+                  }}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-green-500/15 border border-green-500/20 text-green-400 uppercase tracking-wider">
@@ -749,6 +755,11 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Mid-page Ad Placement */}
+        <section className="px-6 max-w-7xl mx-auto py-4">
+          <AdBanner adSlot="homepage-mid-1" />
+        </section>
+
         {/* Security & Privacy Tools */}
         <section id="security-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
@@ -760,7 +771,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {securityTools.map((tool) => {
+            {securityTools.map((tool, index) => {
               const Icon = tool.icon;
               return (
                 <a
@@ -768,10 +779,15 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  style={{
+                    animationDelay: `${(index + 4) * 50}ms`,
+                    // @ts-ignore
+                    "--hover-color": tool.color
+                  }}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">
@@ -795,7 +811,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Print & Scan Tools */}
+        {/* Mid-page Ad Placement 2 */}
+        <section className="px-6 max-w-7xl mx-auto py-4">
+          <AdBanner adSlot="homepage-mid-2" />
+        </section>
+
+        {/* Print & Scan Engine */}
         <section id="print-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
@@ -806,7 +827,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {printTools.map((tool) => {
+            {printTools.map((tool, index) => {
               const Icon = tool.icon;
               return (
                 <a
@@ -814,10 +835,15 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  style={{
+                    animationDelay: `${(index + 8) * 50}ms`,
+                    // @ts-ignore
+                    "--hover-color": tool.color
+                  }}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">

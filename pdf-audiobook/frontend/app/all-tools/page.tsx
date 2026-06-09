@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AdBanner from "../components/AdBanner";
 import {
   Mic,
   Merge,
@@ -901,6 +902,11 @@ export default function AllToolsDirectory() {
           </div>
         </div>
 
+        {/* Directory Ad Placement */}
+        <div className="w-full">
+          <AdBanner adSlot="directory-top" />
+        </div>
+
         {/* Main Grid */}
         {filteredTools.length === 0 ? (
           <div className="text-center py-20 bg-white/[0.02] border border-white/5 rounded-3xl max-w-lg mx-auto space-y-4">
@@ -910,7 +916,7 @@ export default function AllToolsDirectory() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTools.map((tool) => {
+            {filteredTools.map((tool, index) => {
               const Icon = tool.icon;
               return (
                 <a
@@ -918,10 +924,15 @@ export default function AllToolsDirectory() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
+                  className="glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    // @ts-ignore
+                    "--hover-color": tool.color
+                  }}
                 >
                   <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className={`text-[8px] font-extrabold px-2.5 py-0.5 rounded border uppercase tracking-wider ${
