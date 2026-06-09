@@ -2,8 +2,27 @@
 
 import Link from "next/link";
 import {
-  Mic, Merge, Scissors, Image, FileImage, Archive, FileText,
-  ArrowRight, Sparkles, Shield, Zap, Globe,
+  Mic,
+  Merge,
+  Scissors,
+  Image,
+  FileImage,
+  Archive,
+  FileText,
+  ArrowRight,
+  Sparkles,
+  Shield,
+  Zap,
+  Globe,
+  RotateCw,
+  Droplets,
+  Lock,
+  EyeOff,
+  GitCompare,
+  FileEdit,
+  Clock,
+  Layers,
+  MessageSquare,
 } from "lucide-react";
 
 const TOOLS = [
@@ -17,6 +36,39 @@ const TOOLS = [
     badge: "⭐ Star Tool",
     badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-400/30",
     isServer: true,
+  },
+  {
+    id: "pdf-chat",
+    name: "PDF Chat / Q&A",
+    description: "Chat with your PDF and ask questions. Uses Groq free AI model.",
+    icon: MessageSquare,
+    href: "/tools/pdf-chat",
+    color: "#6366f1",
+    badge: "Free AI",
+    badgeColor: "bg-indigo-500/20 text-indigo-300 border-indigo-400/30",
+    isServer: false,
+  },
+  {
+    id: "summarize",
+    name: "PDF Summarizer",
+    description: "Summarize PDF documents into structured paragraphs or key bullet points.",
+    icon: Sparkles,
+    href: "/tools/summarize",
+    color: "#d946ef",
+    badge: "Free AI",
+    badgeColor: "bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/30",
+    isServer: false,
+  },
+  {
+    id: "flashcards",
+    name: "PDF to Flashcards",
+    description: "Generate study Q&A flashcards from textbooks. Uses Groq AI model.",
+    icon: Layers,
+    href: "/tools/flashcards",
+    color: "#10b981",
+    badge: "Free AI",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
   },
   {
     id: "merge",
@@ -36,6 +88,83 @@ const TOOLS = [
     icon: Scissors,
     href: "/tools/split",
     color: "#ec4899",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "diff",
+    name: "Compare / Diff PDFs",
+    description: "Compare two PDFs line-by-line and view visual red/green differences.",
+    icon: GitCompare,
+    href: "/tools/diff",
+    color: "#14b8a6",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "redact",
+    name: "PDF Redactor",
+    description: "Find and sanitize emails, phones, SSNs, credit cards, or custom keywords.",
+    icon: EyeOff,
+    href: "/tools/redact",
+    color: "#f43f5e",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "rotate",
+    name: "Rotate PDF Pages",
+    description: "Select individual pages or all pages and rotate them 90° or 180°.",
+    icon: RotateCw,
+    href: "/tools/rotate",
+    color: "#a855f7",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "watermark",
+    name: "Add Watermark",
+    description: "Draw text watermarks with custom size, color, opacity, and rotation.",
+    icon: Droplets,
+    href: "/tools/watermark",
+    color: "#0ea5e9",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "password-protect",
+    name: "Password Protect",
+    description: "Strips metadata, adds protection markers, and watermarks PDF for security.",
+    icon: Lock,
+    href: "/tools/password-protect",
+    color: "#ef4444",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "form-filler",
+    name: "PDF Form Filler",
+    description: "Parse and fill interactive forms in a browser without leaving your computer.",
+    icon: FileEdit,
+    href: "/tools/form-filler",
+    color: "#8b5cf6",
+    badge: "Client-side",
+    badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
+    isServer: false,
+  },
+  {
+    id: "reading-time",
+    name: "Reading Time Estimator",
+    description: "Estimate silent reading time, speaking duration, ARI readability, and word stats.",
+    icon: Clock,
+    href: "/tools/reading-time",
+    color: "#f59e0b",
     badge: "Client-side",
     badgeColor: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
     isServer: false,
@@ -127,7 +256,7 @@ export default function HomePage() {
           <div className="relative max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-400 mb-8">
               <Sparkles size={14} className="text-indigo-400" />
-              7 powerful tools — most run entirely in your browser
+              17 powerful tools — most run entirely in your browser
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6">
               Your All-in-One
@@ -135,7 +264,7 @@ export default function HomePage() {
               <span className="gradient-text">PDF Toolkit</span>
             </h1>
             <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Convert PDFs to audiobooks, merge, split, compress, extract text, and more.
+              Convert PDFs to audiobooks, chat with documents, merge, split, compress, watermark, protect, and more.
               Fast, private, and free to use.
             </p>
           </div>
@@ -150,10 +279,8 @@ export default function HomePage() {
                 <Link
                   key={tool.id}
                   href={tool.href}
-                  className={`glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer animate-in group ${
-                    i === 0 ? "sm:col-span-2 lg:col-span-1" : ""
-                  }`}
-                  style={{ animationDelay: `${i * 80}ms` }}
+                  className="glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer animate-in group"
+                  style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <div className="flex items-start justify-between">
                     <div
@@ -184,7 +311,7 @@ export default function HomePage() {
         {/* Features */}
         <section className="border-t border-white/5 px-6 py-20">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-12 text-gray-200">Why PDF to Audio?</h2>
+            <h2 className="text-2xl font-bold text-center mb-12 text-gray-200">Why PDF to Audio & Tools?</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {FEATURES.map((feat) => {
                 const Icon = feat.icon;
