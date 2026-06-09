@@ -385,17 +385,7 @@ Rules:
     URL.revokeObjectURL(url);
   };
 
-  const handleReset = () => {
-    setFile(null);
-    setExtractedText(null);
-    setRedactedText(null);
-    setPatterns([]);
-    setCustomInput("");
-    setError(null);
-    setIsExtracting(false);
-    setProgress({ current: 0, total: 0 });
-    if (inputRef.current) inputRef.current.value = "";
-  };
+
 
   const progressPercent =
     progress.total > 0
