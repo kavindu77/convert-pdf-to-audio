@@ -588,16 +588,17 @@ export default function HomePage() {
       
       {/* Background Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute w-[850px] h-[850px] rounded-full bg-indigo-500/10 blur-[140px] -top-96 -left-48 animate-float-slow duration-[12000ms]" />
-        <div className="absolute w-[700px] h-[700px] rounded-full bg-teal-500/5 blur-[120px] top-[30%] right-[-200px] animate-float-fast" />
+        <div className="absolute w-[800px] h-[800px] rounded-full bg-indigo-600/20 blur-[140px] top-[-10%] left-[-10%] animate-float-slow duration-[12000ms] mix-blend-screen" />
+        <div className="absolute w-[700px] h-[700px] rounded-full bg-fuchsia-600/20 blur-[130px] top-[20%] right-[-10%] animate-float-fast mix-blend-screen" />
+        <div className="absolute w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[150px] bottom-[-20%] left-[20%] animate-float-slow mix-blend-screen" />
       </div>
 
       {/* Dynamic Cursor Glow (Parallax depth layer) */}
       {isMouseActive && (
         <div
-          className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 opacity-70"
+          className="pointer-events-none fixed inset-0 z-30 transition-opacity duration-500 opacity-80"
           style={{
-            background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.04), rgba(20, 184, 166, 0.01) 40%, transparent 85%)`,
+            background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(139, 92, 246, 0.08), rgba(236, 72, 153, 0.03) 40%, transparent 85%)`,
           }}
         />
       )}
@@ -709,15 +710,26 @@ export default function HomePage() {
             
             {/* Quick Chips */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4 relative z-10">
-              {["compress", "privacy report", "color page detector", "fake redaction"].map(chip => (
-                <button 
-                  key={chip} 
-                  onClick={() => setSearchQuery(chip)} 
-                  className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-gray-400 hover:text-white hover:bg-white/10 transition-colors capitalize cursor-pointer"
-                >
-                  {chip}
-                </button>
-              ))}
+              {["compress", "privacy report", "color page detector", "fake redaction"].map((chip, idx) => {
+                const gradients = [
+                  "from-cyan-400 to-blue-500",
+                  "from-purple-400 to-pink-500",
+                  "from-amber-400 to-orange-500",
+                  "from-rose-400 to-red-500"
+                ];
+                return (
+                  <button 
+                    key={chip} 
+                    onClick={() => setSearchQuery(chip)} 
+                    className="group relative px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] hover:bg-white/10 transition-all capitalize cursor-pointer overflow-hidden"
+                  >
+                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r ${gradients[idx]} transition-opacity`} />
+                    <span className={`bg-gradient-to-r ${gradients[idx]} bg-clip-text text-transparent opacity-80 group-hover:opacity-100 font-bold transition-opacity`}>
+                      {chip}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -726,8 +738,8 @@ export default function HomePage() {
         <section className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Popular Free Tools</h2>
-              <p className="text-xs text-gray-500">Everyday utility operations running 100% locally in your browser.</p>
+              <h2 className="text-[22px] font-[800] bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">Popular Free Tools</h2>
+              <p className="text-xs text-gray-500 mt-1">Everyday utility operations running 100% locally in your browser.</p>
             </div>
             <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
               View all <ArrowRight size={14} />
@@ -743,15 +755,19 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
                   style={{
                     animationDelay: `${index * 50}ms`,
                     // @ts-ignore
-                    "--hover-color": tool.color
+                    "--hover-color": tool.color,
+                    backgroundColor: `${tool.color}08`, // Super subtle color tint
                   }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
+                  <div className="flex items-start justify-between relative z-10">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center border transition-colors shadow-inner"
+                      style={{ backgroundColor: `${tool.color}15`, borderColor: `${tool.color}30` }}
+                    >
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-green-500/15 border border-green-500/20 text-green-400">
@@ -759,12 +775,12 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div>
+                  <div className="relative z-10">
                     <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
                     <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                  <div className="relative z-10 text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
                     {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
@@ -777,8 +793,8 @@ export default function HomePage() {
         <section id="security-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Security &amp; Privacy Reports</h2>
-              <p className="text-xs text-gray-500">Scan metadata, verify integrity hashes, and audit document leaks before sharing.</p>
+              <h2 className="text-[22px] font-[800] bg-gradient-to-r from-fuchsia-400 to-purple-500 bg-clip-text text-transparent tracking-tight">Security &amp; Privacy Reports</h2>
+              <p className="text-xs text-gray-500 mt-1">Scan metadata, verify integrity hashes, and audit document leaks before sharing.</p>
             </div>
             <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
               View all <ArrowRight size={14} />
@@ -794,15 +810,19 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
                   style={{
                     animationDelay: `${(index + 4) * 50}ms`,
                     // @ts-ignore
-                    "--hover-color": tool.color
+                    "--hover-color": tool.color,
+                    backgroundColor: `${tool.color}08`,
                   }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
+                  <div className="flex items-start justify-between relative z-10">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center border transition-colors shadow-inner"
+                      style={{ backgroundColor: `${tool.color}15`, borderColor: `${tool.color}30` }}
+                    >
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400">
@@ -810,12 +830,12 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div>
+                  <div className="relative z-10">
                     <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
                     <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                  <div className="relative z-10 text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
                     {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
@@ -828,8 +848,8 @@ export default function HomePage() {
         <section id="print-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
           <div className="flex items-end justify-between border-b border-white/5 pb-3">
             <div>
-              <h2 className="text-[22px] font-[700] text-white tracking-[-0.02em]">Print &amp; Scan Optimization</h2>
-              <p className="text-xs text-gray-500">Detect black-and-white page distribution, optimize vector ink paths, and spot bad scan crops.</p>
+              <h2 className="text-[22px] font-[800] bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent tracking-tight">Print &amp; Scan Optimization</h2>
+              <p className="text-xs text-gray-500 mt-1">Detect black-and-white page distribution, optimize vector ink paths, and spot bad scan crops.</p>
             </div>
             <Link href="/all-tools" className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
               View all <ArrowRight size={14} />
@@ -845,15 +865,19 @@ export default function HomePage() {
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
                   onMouseMove={handleCardMouseMove}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white/[0.04]"
+                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
                   style={{
                     animationDelay: `${(index + 8) * 50}ms`,
                     // @ts-ignore
-                    "--hover-color": tool.color
+                    "--hover-color": tool.color,
+                    backgroundColor: `${tool.color}08`,
                   }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
+                  <div className="flex items-start justify-between relative z-10">
+                    <div 
+                      className="w-10 h-10 rounded-xl flex items-center justify-center border transition-colors shadow-inner"
+                      style={{ backgroundColor: `${tool.color}15`, borderColor: `${tool.color}30` }}
+                    >
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
                     <span className="text-[11px] font-[600] px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400">
@@ -861,12 +885,12 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  <div>
+                  <div className="relative z-10">
                     <h3 className="font-[700] text-white text-[16px] group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
                     <p className="text-[13.5px] text-[#94a3b8] leading-[1.5] min-h-[32px]">{tool.description}</p>
                   </div>
 
-                  <div className="text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
+                  <div className="relative z-10 text-[11px] font-[600] text-gray-500 mt-auto pt-2 border-t border-white/5">
                     {tool.planRequired === 'free' ? 'Free' : tool.planRequired === 'pro' ? 'Pro' : 'Business'} · {tool.processing} · {tool.outputType}
                   </div>
                 </a>
