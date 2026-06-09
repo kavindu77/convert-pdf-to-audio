@@ -190,7 +190,7 @@ export default function MarginNormalizer() {
           <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
             <Maximize size={18} />
           </div>
-          <span className="font-semibold text-lg tracking-tight">PDF to Audio</span>
+          <span className="font-semibold text-lg tracking-tight">DocuSafe PDF</span>
         </Link>
       </header>
 

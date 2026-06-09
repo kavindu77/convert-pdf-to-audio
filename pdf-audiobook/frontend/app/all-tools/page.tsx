@@ -53,21 +53,19 @@ import {
   Award,
   Check,
   RefreshCw,
-  LogOut,
 } from "lucide-react";
 import {
   PlanType,
   PLANS,
   TOOL_COSTS,
   isToolAllowed,
-  getRequiredPlanForTool,
   getLocalPlan,
   setLocalPlan,
   getLocalTasksUsed,
   incrementLocalTasksUsed,
   getLocalTasksLimit,
   checkHasRemainingTasks,
-} from "./utils/userState";
+} from "../utils/userState";
 
 interface Tool {
   id: string;
@@ -78,16 +76,15 @@ interface Tool {
   color: string;
   badge: string;
   badgeColor: string;
-  isServer: boolean;
-  category: "ai" | "organize" | "edit" | "convert" | "security";
+  category: "popular" | "security" | "print" | "business" | "ai";
   planRequired: PlanType;
   processing: "Client-side" | "Secure server";
-  outputType: "Report" | "CSV" | "ZIP" | "Batch" | "PDF" | "TXT" | "Images";
+  outputType: "Report" | "CSV" | "ZIP" | "Batch" | "PDF" | "TXT" | "Images" | "Audio";
   benefit: string;
 }
 
-const TOOLS: Tool[] = [
-  // --- POPULAR / ORGANIZE ---
+const ALL_TOOLS: Tool[] = [
+  // --- POPULAR ---
   {
     id: "merge",
     name: "Merge PDF",
@@ -97,8 +94,7 @@ const TOOLS: Tool[] = [
     color: "#8b5cf6",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "organize",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
@@ -113,8 +109,7 @@ const TOOLS: Tool[] = [
     color: "#ec4899",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "organize",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
@@ -129,8 +124,7 @@ const TOOLS: Tool[] = [
     color: "#06b6d4",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "convert",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
@@ -145,8 +139,7 @@ const TOOLS: Tool[] = [
     color: "#a855f7",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "organize",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
@@ -161,8 +154,7 @@ const TOOLS: Tool[] = [
     color: "#f59e0b",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "convert",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "Images",
@@ -177,8 +169,7 @@ const TOOLS: Tool[] = [
     color: "#10b981",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "convert",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
@@ -193,8 +184,7 @@ const TOOLS: Tool[] = [
     color: "#f97316",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "convert",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "TXT",
@@ -209,12 +199,26 @@ const TOOLS: Tool[] = [
     color: "#8b5cf6",
     badge: "Free",
     badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
-    isServer: false,
-    category: "organize",
+    category: "popular",
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
     benefit: "Type directly into active fields, toggle checkboxes, and download filled PDFs.",
+  },
+  {
+    id: "reading-time",
+    name: "Reading Time Estimator",
+    description: "Estimates page word count speed, narration time, and ARI readability index.",
+    icon: Clock,
+    href: "/tools/reading-time",
+    color: "#eab308",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-400 border-green-500/20",
+    category: "popular",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "TXT",
+    benefit: "Inspect text density, average syllable grids, and speak rates.",
   },
 
   // --- SECURITY & PRIVACY ---
@@ -227,7 +231,6 @@ const TOOLS: Tool[] = [
     color: "#14b8a6",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -243,7 +246,6 @@ const TOOLS: Tool[] = [
     color: "#3b82f6",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: true,
     category: "security",
     planRequired: "pro",
     processing: "Secure server",
@@ -259,7 +261,6 @@ const TOOLS: Tool[] = [
     color: "#ef4444",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -275,7 +276,6 @@ const TOOLS: Tool[] = [
     color: "#6366f1",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -291,7 +291,6 @@ const TOOLS: Tool[] = [
     color: "#14b8a6",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -307,7 +306,6 @@ const TOOLS: Tool[] = [
     color: "#f43f5e",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -323,7 +321,6 @@ const TOOLS: Tool[] = [
     color: "#06b6d4",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
@@ -339,12 +336,41 @@ const TOOLS: Tool[] = [
     color: "#ef4444",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
     outputType: "PDF",
     benefit: "Secure documents with custom metadata markers and Visual protection watermarks.",
+  },
+  {
+    id: "diff",
+    name: "Compare / Diff PDFs",
+    description: "Compare two PDFs side-by-side and highlight additions and edits.",
+    icon: GitCompare,
+    href: "/tools/diff",
+    color: "#06b6d4",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "security",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Extract text coordinates to generate character differences side-by-side.",
+  },
+  {
+    id: "redact",
+    name: "PDF Redactor",
+    description: "Scan and sanitize phone numbers, SSNs, credit cards, or names.",
+    icon: EyeOff,
+    href: "/tools/redact",
+    color: "#f43f5e",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "security",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "TXT",
+    benefit: "Automatically search regex keywords and redact sensitive strings.",
   },
 
   // --- PRINT & SCAN ---
@@ -357,8 +383,7 @@ const TOOLS: Tool[] = [
     color: "#10b981",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
-    category: "security",
+    category: "print",
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
@@ -373,8 +398,7 @@ const TOOLS: Tool[] = [
     color: "#eab308",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: true,
-    category: "security",
+    category: "print",
     planRequired: "pro",
     processing: "Secure server",
     outputType: "PDF",
@@ -389,12 +413,56 @@ const TOOLS: Tool[] = [
     color: "#ec4899",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
-    category: "security",
+    category: "print",
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
     benefit: "Analyze edge contrast and luminance to detect blur, rotation issues, or blank pages.",
+  },
+  {
+    id: "missing-pages",
+    name: "Missing Page Detector",
+    description: "Detect sequence gaps, repeated pages, or skipped sections using internal numbering.",
+    icon: FileWarning,
+    href: "/tools/missing-pages",
+    color: "#ef4444",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Scan text coordinates for page number labels to find missing sequence blocks.",
+  },
+  {
+    id: "margin-normalizer",
+    name: "Margin Normalizer",
+    description: "Automatically trim scan margins and align page borders for professional printing.",
+    icon: Maximize,
+    href: "/tools/margin-normalizer",
+    color: "#f43f5e",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Crops and recalculates margins to optimize physical printable areas.",
+  },
+  {
+    id: "font-fixer",
+    name: "Font Problem Fixer",
+    description: "Detect missing, non-embedded fonts, corrupted characters, or text copying risks.",
+    icon: Type,
+    href: "/tools/font-fixer",
+    color: "#06b6d4",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Standardizes resource dictionary grids to system Helvetica.",
   },
   {
     id: "weight-map",
@@ -405,25 +473,207 @@ const TOOLS: Tool[] = [
     color: "#10b981",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-    isServer: false,
-    category: "convert",
+    category: "print",
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
     benefit: "Map exact byte consumption of fonts, embedded streams, vector path structures, and images.",
   },
+  {
+    id: "page-labels",
+    name: "Smart Page Labels",
+    description: "Label pages/sections (e.g. Cover, Appendix) so PDF viewers display logical names.",
+    icon: Tags,
+    href: "/tools/page-labels",
+    color: "#a855f7",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Assign custom numbering labels (e.g. Cover, I, II, Appendix A) to document ranges.",
+  },
+  {
+    id: "watermark",
+    name: "Add Watermark",
+    description: "Overlay custom text watermarks with size and opacity controls.",
+    icon: Droplets,
+    href: "/tools/watermark",
+    color: "#0ea5e9",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Draw custom text stamps at various rotational dimensions.",
+  },
+
+  // --- BUSINESS / BATCH ---
+  {
+    id: "timeline",
+    name: "Version Diff Timeline",
+    description: "Upload multiple versions of a PDF and see exactly what changed over time.",
+    icon: History,
+    href: "/tools/timeline",
+    color: "#8b5cf6",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Compare incremental document drafts side-by-side on an audit timeline.",
+  },
+  {
+    id: "delivery-packager",
+    name: "Client Delivery Packager",
+    description: "Compile standard PDF, compressed web PDF, text extracts, and metadata report to ZIP.",
+    icon: FolderArchive,
+    href: "/tools/delivery-packager",
+    color: "#f97316",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Secure server",
+    outputType: "ZIP",
+    benefit: "Generates manifest files, stripped PDF variants, and logs inside an archive.",
+  },
+  {
+    id: "smart-rename",
+    name: "Smart Rename",
+    description: "Parse page text to auto-rename files based on invoice ID, date, customer, or title.",
+    icon: Heading,
+    href: "/tools/smart-rename",
+    color: "#06b6d4",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Detect fields like Date, Invoice ID, and Client tags to auto-rename files.",
+  },
+  {
+    id: "signature-positions",
+    name: "Signature Position Saver",
+    description: "Save signature coordinates as templates and apply them automatically to invoices/contracts.",
+    icon: Bookmark,
+    href: "/tools/signature-positions",
+    color: "#0ea5e9",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Map exact layout positions onto localStorage templates for stamp positioning.",
+  },
+  {
+    id: "stamp-consistency",
+    name: "Stamp Checker",
+    description: "Ensure required stamps like 'Approved' or 'Confidential' are present on all pages.",
+    icon: Stamp,
+    href: "/tools/stamp-consistency",
+    color: "#a855f7",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Audit pages for status keywords and automatically stamp missing ones.",
+  },
+  {
+    id: "form-extractor",
+    name: "Form Data Extractor",
+    description: "Extract all filled fields from interactive PDF forms into a structured CSV file.",
+    icon: FileSpreadsheet,
+    href: "/tools/form-extractor",
+    color: "#f59e0b",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "business",
+    planRequired: "business",
+    processing: "Client-side",
+    outputType: "CSV",
+    benefit: "Flatten PDF form components and parse values directly to structured spreadsheet datasets.",
+  },
+
+  // --- AI TOOLS ---
+  {
+    id: "pdf-chat",
+    name: "PDF Chat / Q&A",
+    description: "Interactive chat window to ask questions directly about your PDF content.",
+    icon: MessageSquare,
+    href: "/tools/pdf-chat",
+    color: "#818cf8",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "ai",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Run conversational prompts directly against document context using Groq AI.",
+  },
+  {
+    id: "summarize",
+    name: "PDF Summarizer",
+    description: "Instantly summarize pages into paragraphs or key takeaways.",
+    icon: Sparkles,
+    href: "/tools/summarize",
+    color: "#d946ef",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "ai",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "TXT",
+    benefit: "Condense long files into bullet points or summaries.",
+  },
+  {
+    id: "flashcards",
+    name: "PDF to Flashcards",
+    description: "Convert textbook pages into study Q&A flip card decks.",
+    icon: Layers,
+    href: "/tools/flashcards",
+    color: "#10b981",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+    category: "ai",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Parse chapters or lecture notes into educational flashcards.",
+  },
+  {
+    id: "pdf-to-audio",
+    name: "PDF to Audio",
+    description: "Convert any PDF into a translated audiobook in 100+ languages.",
+    icon: Mic,
+    href: "/tools/pdf-to-audio",
+    color: "#6366f1",
+    badge: "Business",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    category: "ai",
+    planRequired: "business",
+    processing: "Secure server",
+    outputType: "Audio",
+    benefit: "Render clean text-to-speech audiobooks in multiple global accents.",
+  },
 ];
 
-export default function HomePage() {
+export default function AllToolsDirectory() {
   const router = useRouter();
-  
+
   // App States
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userPlan, setUserPlan] = useState<PlanType>("free");
   const [tasksUsed, setTasksUsed] = useState(0);
-  const [userName, setUserName] = useState("Kavindu");
-  const [userEmail, setUserEmail] = useState("kavindu@example.com");
 
   // Modals
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -433,7 +683,7 @@ export default function HomePage() {
   const [gateToolName, setGateToolName] = useState("");
   const [gateToolRequired, setGateToolRequired] = useState<PlanType>("pro");
 
-  // Form Inputs
+  // Form inputs
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -441,50 +691,25 @@ export default function HomePage() {
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   useEffect(() => {
-    // Sync login status
-    const logged = localStorage.getItem("user_logged_in") === "true";
-    setIsLoggedIn(logged);
-    
-    // Sync plan and limits
-    const plan = getLocalPlan();
-    setUserPlan(plan);
-
-    const used = getLocalTasksUsed();
-    setTasksUsed(used);
-
-    // Sync profile
-    const savedName = localStorage.getItem("user_profile_name");
-    const savedEmail = localStorage.getItem("user_profile_email");
-    if (savedName) setUserName(savedName);
-    if (savedEmail) setUserEmail(savedEmail);
+    setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
+    setUserPlan(getLocalPlan());
+    setTasksUsed(getLocalTasksUsed());
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailInput) return;
-    
     localStorage.setItem("user_logged_in", "true");
     localStorage.setItem("user_profile_email", emailInput);
     
-    // Set mock display name from email prefix
-    const namePrefix = emailInput.split("@")[0];
-    const formattedName = namePrefix.charAt(0).toUpperCase() + namePrefix.slice(1);
-    localStorage.setItem("user_profile_name", formattedName);
-    
-    setUserName(formattedName);
-    setUserEmail(emailInput);
+    const prefix = emailInput.split("@")[0];
+    const name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    localStorage.setItem("user_profile_name", name);
+
     setIsLoggedIn(true);
     setIsSignInOpen(false);
     setEmailInput("");
     setPasswordInput("");
-  };
-
-  const handleSignOut = () => {
-    localStorage.setItem("user_logged_in", "false");
-    setIsLoggedIn(false);
-    // Reset back to free if signed out
-    setLocalPlan("free");
-    setUserPlan("free");
   };
 
   const handleUpgradeNow = () => {
@@ -501,11 +726,9 @@ export default function HomePage() {
     }, 1500);
   };
 
-  // Intercept tool routing checks
   const handleToolClick = (e: React.MouseEvent<HTMLAnchorElement>, tool: Tool) => {
     e.preventDefault();
     
-    // 1. Check Plan Authorization
     const allowed = isToolAllowed(tool.id, userPlan);
     if (!allowed) {
       setGateToolName(tool.name);
@@ -514,7 +737,6 @@ export default function HomePage() {
       return;
     }
 
-    // 2. Check Tasks limit remaining
     const cost = TOOL_COSTS[tool.id] || 1;
     const hasLimit = checkHasRemainingTasks(cost);
     if (!hasLimit) {
@@ -522,33 +744,34 @@ export default function HomePage() {
       return;
     }
 
-    // Deduct mock task & route
     incrementLocalTasksUsed(cost);
     setTasksUsed(getLocalTasksUsed());
     router.push(tool.href);
   };
 
-  const filteredTools = TOOLS.filter((tool) => {
+  const filteredTools = ALL_TOOLS.filter((tool) => {
     const query = searchQuery.toLowerCase().trim();
-    return (
+    const matchesSearch =
       tool.name.toLowerCase().includes(query) ||
       tool.description.toLowerCase().includes(query) ||
-      tool.benefit.toLowerCase().includes(query)
-    );
+      tool.benefit.toLowerCase().includes(query);
+      
+    if (activeCategory === "all") return matchesSearch;
+    return matchesSearch && tool.category === activeCategory;
   });
 
-  const getToolsByCategory = (category: string) => {
-    return filteredTools.filter((t) => t.category === category);
+  const getCategoryCount = (cat: string) => {
+    return ALL_TOOLS.filter(t => t.category === cat).length;
   };
 
-  const getToolsByProcessing = (proc: "Client-side" | "Secure server") => {
-    return filteredTools.filter((t) => t.processing === proc);
-  };
-
-  // Split selected homepage display tools
-  const popularTools = filteredTools.filter(t => ["merge", "split", "compress", "rotate"].includes(t.id));
-  const securityTools = filteredTools.filter(t => ["privacy-report", "evidence-locker", "fake-redaction", "attachments"].includes(t.id));
-  const printTools = filteredTools.filter(t => ["color-detector", "ink-saver", "bad-scan-detector", "weight-map"].includes(t.id));
+  const CATEGORY_TABS = [
+    { id: "all", name: "All Tools", count: ALL_TOOLS.length },
+    { id: "popular", name: "Popular Tools", count: getCategoryCount("popular") },
+    { id: "security", name: "Security & Privacy", count: getCategoryCount("security") },
+    { id: "print", name: "Print & Scan", count: getCategoryCount("print") },
+    { id: "business", name: "Business / Batch", count: getCategoryCount("business") },
+    { id: "ai", name: "AI Tools", count: getCategoryCount("ai") },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-950 text-white selection:bg-indigo-500/30 overflow-x-hidden relative font-sans">
@@ -556,44 +779,26 @@ export default function HomePage() {
       {/* Background Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute w-[850px] h-[850px] rounded-full bg-indigo-500/5 blur-[140px] -top-96 -left-48 animate-pulse duration-[12000ms]" />
-        <div className="absolute w-[700px] h-[700px] rounded-full bg-teal-500/3 blur-[120px] top-[30%] right-[-200px]" />
       </div>
 
       {/* Header */}
       <header className="relative border-b border-white/5 px-6 py-4 flex items-center justify-between z-10 backdrop-blur-md bg-gray-950/40">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <ShieldCheck size={18} className="text-white" />
-          </div>
-          <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-            DocuSafe PDF
-          </span>
+          <Link href="/" className="flex items-center gap-3 hover:opacity-85">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <ShieldCheck size={18} className="text-white" />
+            </div>
+            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              DocuSafe PDF
+            </span>
+          </Link>
         </div>
 
-        {/* Top Navbar */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400">
-          <Link href="/all-tools" className="hover:text-white transition-colors">Tools</Link>
-          <button onClick={() => {
-            const el = document.getElementById("security-section");
-            el?.scrollIntoView({ behavior: "smooth" });
-          }} className="hover:text-white transition-colors">Security</button>
-          <button onClick={() => {
-            const el = document.getElementById("print-section");
-            el?.scrollIntoView({ behavior: "smooth" });
-          }} className="hover:text-white transition-colors">Print &amp; Scan</button>
-          <button onClick={() => {
-            const el = document.getElementById("pricing-section");
-            el?.scrollIntoView({ behavior: "smooth" });
-          }} className="hover:text-white transition-colors">Pricing</button>
-          
+        <nav className="flex items-center gap-6 text-sm font-medium text-gray-400">
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
           {isLoggedIn ? (
             <>
               <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
-              <span className="text-gray-700">|</span>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-gray-300 truncate max-w-[100px]">{userName}</span>
-              </div>
             </>
           ) : (
             <button onClick={() => setIsSignInOpen(true)} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs">
@@ -601,101 +806,99 @@ export default function HomePage() {
             </button>
           )}
         </nav>
-
-        {/* Mobile profile link */}
-        <div className="flex md:hidden items-center gap-2">
-          {isLoggedIn ? (
-            <Link href="/dashboard" className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <User size={14} />
-            </Link>
-          ) : (
-            <button onClick={() => setIsSignInOpen(true)} className="text-xs text-indigo-400 font-bold">Sign In</button>
-          )}
-        </div>
       </header>
 
-      <main className="relative z-10">
+      <main className="max-w-7xl mx-auto px-6 py-12 space-y-10 relative z-10">
         
-        {/* Hero */}
-        <section className="px-6 pt-20 pb-12 text-center max-w-4xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/5 border border-indigo-500/15 text-xs text-indigo-300 animate-fade-in shadow-inner">
-            <Sparkles size={12} className="text-indigo-400 animate-pulse" />
-            Free PDF tools + Pro security reports
-          </div>
-          
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight bg-gradient-to-b from-white to-gray-200 bg-clip-text text-transparent">
-            Private PDF Tools for Work,
-            <br />
-            Print, Security &amp; Audit
-          </h1>
-          
-          <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed font-normal">
-            Free everyday PDF tools. Pro tools for advanced reports, batch jobs, and document safety.
+        {/* Title */}
+        <div className="space-y-3">
+          <h1 className="text-3xl font-black text-white">Full PDF Toolkit Directory</h1>
+          <p className="text-xs text-gray-400 max-w-xl">
+            Explore our complete suite of 38 hybrid client-side tools. Select a category tab or search below to filter the catalog.
           </p>
+        </div>
 
-          <p className="text-[11px] text-gray-500 max-w-lg mx-auto italic">
-            🛡️ Most tools run in your browser. Advanced tools use secure temporary processing when needed.
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-md mx-auto pt-6 relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-teal-500 rounded-2xl opacity-10 blur group-hover:opacity-20 transition-opacity duration-300" />
+        {/* Filter controls wrapper */}
+        <div className="space-y-6">
+          
+          {/* Search bar */}
+          <div className="max-w-md relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-teal-500 rounded-xl opacity-10 blur group-hover:opacity-20 transition-opacity duration-300" />
             <div className="relative flex items-center">
-              <Search className="absolute left-4 text-gray-500 group-hover:text-indigo-400 transition-colors" size={18} />
+              <Search className="absolute left-4 text-gray-500 group-hover:text-indigo-400 transition-colors" size={16} />
               <input
                 type="text"
-                placeholder="Search tools (e.g. redact, merge, metadata)..."
+                placeholder="Search all 38 tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-10 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder-gray-500 transition-all text-white backdrop-blur-md"
+                className="w-full pl-11 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl text-xs focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder-gray-500 text-white backdrop-blur-md"
               />
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 text-gray-400 hover:text-white transition-colors"
-                >
-                  <X size={16} />
+                <button onClick={() => setSearchQuery("")} className="absolute right-4 text-gray-400 hover:text-white">
+                  <X size={14} />
                 </button>
               )}
             </div>
           </div>
-        </section>
 
-        {/* Popular Tools Grid */}
-        <section className="px-6 py-12 max-w-7xl mx-auto space-y-6">
-          <div className="flex items-end justify-between border-b border-white/5 pb-3">
-            <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Popular Tools</h2>
-              <p className="text-xs text-gray-500">Everyday utility operations running 100% locally in your browser.</p>
-            </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-green-400">Free Tier</span>
+          {/* Category Tabs */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-4">
+            {CATEGORY_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 border backdrop-blur-md active:scale-95 ${
+                  activeCategory === tab.id
+                    ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/10"
+                    : "bg-white/5 border-white/10 hover:border-white/20 text-gray-400 hover:text-white"
+                }`}
+              >
+                {tab.name} ({tab.count})
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {popularTools.map((tool) => {
+        {/* Main Grid */}
+        {filteredTools.length === 0 ? (
+          <div className="text-center py-20 bg-white/[0.02] border border-white/5 rounded-3xl max-w-lg mx-auto space-y-4">
+            <Layers size={40} className="mx-auto text-gray-600 animate-bounce" />
+            <h3 className="font-semibold text-white text-lg">No tools matched your search</h3>
+            <p className="text-xs text-gray-500 max-w-xs mx-auto">Try typing alternative terms or switching the category tab filter.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTools.map((tool) => {
               const Icon = tool.icon;
               return (
                 <a
                   key={tool.id}
                   href={tool.href}
                   onClick={(e) => handleToolClick(e, tool)}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
+                  className="glass-card shimmer-border p-6 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
                 >
                   <div className="flex items-start justify-between">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-green-500/15 border border-green-500/20 text-green-400 uppercase tracking-wider">
+                    <span className={`text-[8px] font-extrabold px-2.5 py-0.5 rounded border uppercase tracking-wider ${
+                      tool.planRequired === "free"
+                        ? "bg-green-500/15 border-green-500/20 text-green-400"
+                        : tool.planRequired === "pro"
+                        ? "bg-indigo-500/15 border-indigo-500/20 text-indigo-400"
+                        : "bg-amber-500/15 border-amber-500/20 text-amber-400"
+                    }`}>
                       {tool.badge}
                     </span>
                   </div>
 
-                  <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
+                  <div className="space-y-1.5">
+                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors">{tool.name}</h3>
+                    <p className="text-[11px] text-gray-400 leading-relaxed min-h-[32px]">{tool.description}</p>
+                    <p className="text-[10px] text-gray-500 leading-relaxed pt-1.5 border-t border-white/5">{tool.benefit}</p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
+                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-2">
                     <span>{tool.processing}</span>
                     <span>·</span>
                     <span>{tool.outputType}</span>
@@ -704,251 +907,8 @@ export default function HomePage() {
               );
             })}
           </div>
-        </section>
+        )}
 
-        {/* Security & Privacy Tools */}
-        <section id="security-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
-          <div className="flex items-end justify-between border-b border-white/5 pb-3">
-            <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Security &amp; Privacy</h2>
-              <p className="text-xs text-gray-500">Scan metadata, verify integrity hashes, and audit document leaks before sharing.</p>
-            </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Pro Features</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {securityTools.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <a
-                  key={tool.id}
-                  href={tool.href}
-                  onClick={(e) => handleToolClick(e, tool)}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
-                      <Icon size={18} style={{ color: tool.color }} />
-                    </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">
-                      {tool.badge}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
-                    <span>{tool.processing}</span>
-                    <span>·</span>
-                    <span>{tool.outputType}</span>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Print & Scan Tools */}
-        <section id="print-section" className="px-6 py-12 max-w-7xl mx-auto space-y-6">
-          <div className="flex items-end justify-between border-b border-white/5 pb-3">
-            <div>
-              <h2 className="text-lg font-extrabold text-white tracking-tight">Print &amp; Scan</h2>
-              <p className="text-xs text-gray-500">Detect black-and-white page distribution, optimize vector ink paths, and spot bad scan crops.</p>
-            </div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Pro Features</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {printTools.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <a
-                  key={tool.id}
-                  href={tool.href}
-                  onClick={(e) => handleToolClick(e, tool)}
-                  className="glass-card shimmer-border p-5 flex flex-col gap-4 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-105 duration-300">
-                      <Icon size={18} style={{ color: tool.color }} />
-                    </div>
-                    <span className="text-[8px] font-extrabold px-2 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 uppercase tracking-wider">
-                      {tool.badge}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-white text-sm group-hover:text-indigo-300 transition-colors mb-1">{tool.name}</h3>
-                    <p className="text-[11px] text-gray-500 leading-relaxed min-h-[32px]">{tool.description}</p>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-[8px] text-gray-600 font-bold uppercase tracking-wider mt-auto pt-1">
-                    <span>{tool.processing}</span>
-                    <span>·</span>
-                    <span>{tool.outputType}</span>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Directory Link */}
-        <section className="px-6 py-12 text-center max-w-md mx-auto">
-          <Link
-            href="/all-tools"
-            className="flex items-center justify-center gap-2 w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/10 active:scale-95"
-          >
-            View All 38 Tools <ArrowRight size={16} />
-          </Link>
-        </section>
-
-        {/* Pricing Preview */}
-        <section id="pricing-section" className="px-6 py-20 max-w-6xl mx-auto space-y-12 border-t border-white/5">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">Flexible Pricing Plans</h2>
-            <p className="text-xs text-gray-400 max-w-sm mx-auto">Choose a plan that fits your document workflow and privacy audits.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Free */}
-            <div className="bg-white/[0.01] border border-white/5 p-6 rounded-2xl space-y-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-white">Free Plan</h3>
-                  <p className="text-[10px] text-gray-500">Everyday conversion utilities</p>
-                </div>
-                <p className="text-3xl font-extrabold text-white">$0</p>
-                <div className="space-y-2.5 text-xs text-gray-400">
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> 5 tasks per day</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Max file size: 25 MB</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Max pages: 50</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Basic tools only (No batch)</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Files deleted after 1 hour</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setLocalPlan("free");
-                  setUserPlan("free");
-                  router.push("/all-tools");
-                }}
-                className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-colors"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Pro */}
-            <div className="bg-indigo-600/[0.02] border-2 border-indigo-500/30 p-6 rounded-2xl space-y-6 flex flex-col justify-between relative">
-              <div className="absolute top-0 right-6 -translate-y-1/2 px-2.5 py-0.5 rounded bg-indigo-500 text-[8px] font-extrabold tracking-wider uppercase text-white">
-                Most Popular
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-indigo-300">Pro Plan</h3>
-                  <p className="text-[10px] text-indigo-400/50">Detailed privacy &amp; security reports</p>
-                </div>
-                <p className="text-3xl font-extrabold text-white">$9<span className="text-xs text-gray-500 font-normal">/month</span></p>
-                <div className="space-y-2.5 text-xs text-gray-300">
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> 300 tasks per month</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max file size: 250 MB</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Max pages: 500</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Access to Security &amp; Print tools</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-indigo-400" /> Batch process up to 25 files</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  if (isLoggedIn) {
-                    setIsUpgradeOpen(true);
-                  } else {
-                    setIsSignInOpen(true);
-                  }
-                }}
-                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-semibold text-white transition-colors"
-              >
-                Upgrade to Pro
-              </button>
-            </div>
-
-            {/* Business */}
-            <div className="bg-white/[0.01] border border-white/5 p-6 rounded-2xl space-y-6 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg text-white">Business Plan</h3>
-                  <p className="text-[10px] text-gray-500">Corporate-grade automation</p>
-                </div>
-                <p className="text-3xl font-extrabold text-white">$29<span className="text-xs text-gray-500 font-normal">/month</span></p>
-                <div className="space-y-2.5 text-xs text-gray-400">
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> 2000 tasks per month</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Max file size: 1 GB</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Batch process up to 250 files</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Business timeline &amp; signature template</p>
-                  <p className="flex items-center gap-2"><Check size={14} className="text-green-400" /> Team workspaces &amp; branding</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setLocalPlan("business");
-                  setUserPlan("business");
-                  router.push("/all-tools");
-                }}
-                className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold text-white transition-colors"
-              >
-                Contact Sales
-              </button>
-            </div>
-
-          </div>
-        </section>
-
-        {/* Why Use Us */}
-        <section className="border-t border-white/5 px-6 py-20 bg-white/[0.01]">
-          <div className="max-w-4xl mx-auto space-y-12">
-            <h2 className="text-xl font-bold text-center text-gray-300">Security &amp; Performance Built In</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              <div className="text-center space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto shadow-inner">
-                  <Zap size={18} className="text-indigo-400" />
-                </div>
-                <h3 className="font-semibold text-sm text-white">Browser Execution</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Most tools run fully client-side on your own browser engine. Zero upload latency.</p>
-              </div>
-              <div className="text-center space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto shadow-inner">
-                  <Shield size={18} className="text-indigo-400" />
-                </div>
-                <h3 className="font-semibold text-sm text-white">Temporary Cloud Pools</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Complex Pro layout operations utilize secure memory instances. Files are cleared dynamically.</p>
-              </div>
-              <div className="text-center space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center mx-auto shadow-inner">
-                  <Globe size={18} className="text-indigo-400" />
-                </div>
-                <h3 className="font-semibold text-sm text-white">Private &amp; Auditable</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">We focus on document hygiene. Strip trackers, remove fake redactions, and log certificates.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="border-t border-white/5 px-6 py-8 text-center text-xs text-gray-600">
-          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-indigo-600 flex items-center justify-center">
-                <ShieldCheck size={12} className="text-white" />
-              </div>
-              <span className="font-semibold text-white">DocuSafe PDF</span>
-            </div>
-            <p>© {new Date().getFullYear()} DocuSafe PDF · Hybrid Private Document Engine · Made with ⚡</p>
-          </div>
-        </footer>
       </main>
 
       {/* Login Modal */}
@@ -1105,10 +1065,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => {
-                setIsGateModalOpen(false);
-                router.push("/all-tools");
-              }} className="flex-1 py-2.5 border border-white/10 rounded-xl text-xs text-gray-400 hover:text-white font-bold transition-colors">
+              <button onClick={() => setIsGateModalOpen(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-xs text-gray-400 hover:text-white font-bold transition-colors">
                 View free tools
               </button>
               <button

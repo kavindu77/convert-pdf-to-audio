@@ -125,7 +125,7 @@ export default function PdfToAudioPage() {
           <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
             <Mic size={18} />
           </div>
-          <span className="font-semibold text-lg tracking-tight">PDF to Audio</span>
+          <span className="font-semibold text-lg tracking-tight">DocuSafe PDF</span>
         </Link>
         <div className="ml-auto flex items-center gap-2 text-xs text-gray-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
           <Lock size={12} />

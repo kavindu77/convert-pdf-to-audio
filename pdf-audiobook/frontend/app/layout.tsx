@@ -5,10 +5,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "PDF to Audio — PDF Toolkit & Converter",
+  title: "DocuSafe PDF — Private PDF Toolkit & Security Auditor",
   description:
-    "Convert PDFs to audiobooks, merge, split, compress, extract text, and more. Free online PDF tools — fast, private, no upload needed.",
-  keywords: "pdf to audio, pdf tools, merge pdf, split pdf, compress pdf, extract text, pdf to images, images to pdf",
+    "Private PDF Toolkit. Audit security, reduce file sizes, detect signatures, inspect attachments, and execute multi-version timelines completely locally.",
+  keywords: "pdf to audio, pdf tools, merge pdf, split pdf, compress pdf, extract text, pdf to images, images to pdf, docusafe, document safety, signature detection",
   themeColor: "#030712",
 };
 
