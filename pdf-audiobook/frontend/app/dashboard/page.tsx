@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser, useClerk, UserButton } from "@clerk/nextjs";
 import {
   ShieldCheck,
   User,
@@ -59,6 +60,8 @@ interface MockEvidence {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const clerk = useClerk();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   // Navigation states
   const [activeTab, setActiveTab] = useState<
@@ -107,27 +110,36 @@ export default function DashboardPage() {
   ]);
 
   useEffect(() => {
-    // 1. Check logged in
-    const logged = localStorage.getItem("user_logged_in") === "true";
-    setIsLoggedIn(logged);
-    if (!logged) {
-      // Redirect to home if unauthenticated
-      router.push("/");
-      return;
-    }
-
-    // 2. Load preferences
     setUserPlan(getLocalPlan());
     setTasksUsed(getLocalTasksUsed());
-
-    const savedName = localStorage.getItem("user_profile_name");
-    const savedEmail = localStorage.getItem("user_profile_email");
     const savedKey = localStorage.getItem("groq_api_key");
-
-    if (savedName) setUserName(savedName);
-    if (savedEmail) setUserEmail(savedEmail);
     if (savedKey) setGlobalApiKey(savedKey);
-  }, [router]);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (!isSignedIn) {
+        router.push("/");
+        return;
+      }
+      setIsLoggedIn(true);
+      if (user) {
+        const name = user.fullName || user.firstName || user.username || "User";
+        setUserName(name);
+        setUserEmail(user.primaryEmailAddress?.emailAddress || "");
+        localStorage.setItem("user_logged_in", "true");
+        localStorage.setItem("user_profile_name", name);
+        localStorage.setItem("user_profile_email", user.primaryEmailAddress?.emailAddress || "");
+      }
+    } else {
+      const logged = localStorage.getItem("user_logged_in") === "true";
+      setIsLoggedIn(logged);
+      const savedName = localStorage.getItem("user_profile_name");
+      const savedEmail = localStorage.getItem("user_profile_email");
+      if (savedName) setUserName(savedName);
+      if (savedEmail) setUserEmail(savedEmail);
+    }
+  }, [isLoaded, isSignedIn, user, router]);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,9 +164,10 @@ export default function DashboardPage() {
     }, 1200);
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     localStorage.setItem("user_logged_in", "false");
     setLocalPlan("free");
+    await clerk.signOut();
     router.push("/");
   };
 
@@ -195,6 +208,7 @@ export default function DashboardPage() {
           >
             All Tools
           </Link>
+          <UserButton afterSignOutUrl="/" />
           <button
             onClick={handleSignOut}
             className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:text-red-300 transition-all hover:scale-105 active:scale-95"

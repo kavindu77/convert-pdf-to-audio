@@ -56,6 +56,7 @@ import {
   RefreshCw,
   Server,
 } from "lucide-react";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, useClerk, useUser } from "@clerk/nextjs";
 import {
   PlanType,
   PLANS,
@@ -669,6 +670,8 @@ const ALL_TOOLS: Tool[] = [
 
 export default function AllToolsDirectory() {
   const router = useRouter();
+  const clerk = useClerk();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   // App States
   const [searchQuery, setSearchQuery] = useState("");
@@ -725,10 +728,27 @@ export default function AllToolsDirectory() {
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
     setUserPlan(getLocalPlan());
     setTasksUsed(getLocalTasksUsed());
   }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setIsLoggedIn(!!isSignedIn);
+      if (isSignedIn && user) {
+        const name = user.fullName || user.firstName || user.username || "User";
+        localStorage.setItem("user_logged_in", "true");
+        localStorage.setItem("user_profile_name", name);
+        localStorage.setItem("user_profile_email", user.primaryEmailAddress?.emailAddress || "");
+      } else {
+        localStorage.setItem("user_logged_in", "false");
+        localStorage.removeItem("user_profile_name");
+        localStorage.removeItem("user_profile_email");
+      }
+    } else {
+      setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
+    }
+  }, [isLoaded, isSignedIn, user]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -840,15 +860,19 @@ export default function AllToolsDirectory() {
 
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-400">
           <Link href="/" prefetch={false} className="hover:text-white transition-colors">Home</Link>
-          {isLoggedIn ? (
-            <>
-              <Link href="/dashboard" prefetch={false} className="text-indigo-400 hover:text-indigo-300 transition-colors">Dashboard</Link>
-            </>
-          ) : (
-            <button onClick={() => setIsSignInOpen(true)} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs">
-              Sign In
-            </button>
-          )}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs cursor-pointer">
+                Sign In
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" prefetch={false} className="text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-semibold">Dashboard</Link>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </SignedIn>
         </nav>
       </header>
 

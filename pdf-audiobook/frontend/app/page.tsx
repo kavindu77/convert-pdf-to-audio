@@ -56,6 +56,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton, useClerk, useUser } from "@clerk/nextjs";
 import {
   PlanType,
   PLANS,
@@ -692,6 +693,8 @@ const POPULAR_10_IDS = [
 
 export default function HomePage() {
   const router = useRouter();
+  const clerk = useClerk();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   // App States
   const [searchQuery, setSearchQuery] = useState("");
@@ -747,20 +750,37 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const logged = localStorage.getItem("user_logged_in") === "true";
-    setIsLoggedIn(logged);
-
     const plan = getLocalPlan();
     setUserPlan(plan);
 
     const used = getLocalTasksUsed();
     setTasksUsed(used);
-
-    const savedName = localStorage.getItem("user_profile_name");
-    const savedEmail = localStorage.getItem("user_profile_email");
-    if (savedName) setUserName(savedName);
-    if (savedEmail) setUserEmail(savedEmail);
   }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setIsLoggedIn(!!isSignedIn);
+      if (isSignedIn && user) {
+        const name = user.fullName || user.firstName || user.username || "User";
+        setUserName(name);
+        setUserEmail(user.primaryEmailAddress?.emailAddress || "");
+        localStorage.setItem("user_logged_in", "true");
+        localStorage.setItem("user_profile_name", name);
+        localStorage.setItem("user_profile_email", user.primaryEmailAddress?.emailAddress || "");
+      } else {
+        localStorage.setItem("user_logged_in", "false");
+        localStorage.removeItem("user_profile_name");
+        localStorage.removeItem("user_profile_email");
+      }
+    } else {
+      const logged = localStorage.getItem("user_logged_in") === "true";
+      setIsLoggedIn(logged);
+      const savedName = localStorage.getItem("user_profile_name");
+      const savedEmail = localStorage.getItem("user_profile_email");
+      if (savedName) setUserName(savedName);
+      if (savedEmail) setUserEmail(savedEmail);
+    }
+  }, [isLoaded, isSignedIn, user]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1016,14 +1036,21 @@ export default function HomePage() {
               All Tools
             </button>
 
-            {isLoggedIn ? (
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] text-[#7F77DD] font-bold">Hi, {userName}</span>
-                <button onClick={handleSignOut} className="nav-btn bg-[#534AB7] hover:bg-[#4339a0] text-white font-medium px-3.5 py-1.5 rounded-lg border-none cursor-pointer transition-colors">Sign Out</button>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-white/45 hover:text-white transition-colors bg-transparent border-none cursor-pointer font-bold text-xs">Log in</button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="nav-btn bg-[#534AB7] hover:bg-[#4339a0] text-white font-medium px-3.5 py-1.5 rounded-lg border-none cursor-pointer transition-colors">Sign up free</button>
+              </SignUpButton>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard" className="text-white/45 hover:text-white transition-colors no-underline font-bold text-xs">Dashboard</Link>
+                <UserButton afterSignOutUrl="/" />
               </div>
-            ) : (
-              <button onClick={() => setIsSignInOpen(true)} className="nav-btn bg-[#534AB7] hover:bg-[#4339a0] text-white font-medium px-3.5 py-1.5 rounded-lg border-none cursor-pointer transition-colors">Sign up free</button>
-            )}
+            </SignedIn>
           </div>
         </div>
 
@@ -1385,7 +1412,7 @@ export default function HomePage() {
                     if (isLoggedIn) {
                       setIsUpgradeOpen(true);
                     } else {
-                      setIsSignInOpen(true);
+                      clerk.openSignIn();
                     }
                   }}
                   className="w-full py-2.5 bg-[#5B4DFF] hover:bg-[#4a3ce6] rounded-xl text-xs font-bold text-white transition-colors shadow-sm cursor-pointer"

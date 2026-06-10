@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
+import ClerkSync from "./components/ClerkSync";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -17,15 +19,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={jakarta.variable}>
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-          crossOrigin="anonymous"
-        ></script>
-      </head>
-      <body className={`${jakarta.className} font-sans`}>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={jakarta.variable}>
+        <head>
+          <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+            crossOrigin="anonymous"
+          ></script>
+        </head>
+        <body className={`${jakarta.className} font-sans`}>
+          <ClerkSync />
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
