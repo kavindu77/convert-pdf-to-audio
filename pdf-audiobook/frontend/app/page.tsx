@@ -716,6 +716,8 @@ export default function HomePage() {
   const [gateToolRequired, setGateToolRequired] = useState<PlanType>("pro");
 
   // Form Inputs
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [nameInput, setNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -777,6 +779,34 @@ export default function HomePage() {
     setIsSignInOpen(false);
     setEmailInput("");
     setPasswordInput("");
+  };
+
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput || !nameInput) return;
+
+    localStorage.setItem("user_logged_in", "true");
+    localStorage.setItem("user_profile_email", emailInput);
+    localStorage.setItem("user_profile_name", nameInput);
+
+    setUserName(nameInput);
+    setUserEmail(emailInput);
+    setIsLoggedIn(true);
+    setIsSignInOpen(false);
+    setNameInput("");
+    setEmailInput("");
+    setPasswordInput("");
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    localStorage.setItem("user_logged_in", "true");
+    localStorage.setItem("user_profile_email", `${provider.toLowerCase()}@docusafepdf.com`);
+    localStorage.setItem("user_profile_name", `${provider} User`);
+
+    setUserName(`${provider} User`);
+    setUserEmail(`${provider.toLowerCase()}@docusafepdf.com`);
+    setIsLoggedIn(true);
+    setIsSignInOpen(false);
   };
 
   const handleSignOut = () => {
@@ -1523,18 +1553,46 @@ export default function HomePage() {
       {/* Login Modal */}
       {isSignInOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-6 relative text-slate-800">
-            <button onClick={() => setIsSignInOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-5 relative text-slate-800">
+            <button 
+              onClick={() => {
+                setIsSignInOpen(false);
+                setAuthMode("signin");
+              }} 
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer"
+            >
               <X size={16} />
             </button>
+            
             <div className="text-center space-y-1">
               <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-200/50 flex items-center justify-center mx-auto">
                 <User size={18} className="text-indigo-600" />
               </div>
-              <h3 className="font-bold text-slate-900 text-base">Sign in to DocuSafe</h3>
-              <p className="text-xs text-slate-400">Access your dashboard, check limits, and save keys</p>
+              <h3 className="font-bold text-slate-900 text-base">
+                {authMode === "signin" ? "Sign in to DocuSafe" : "Create your account"}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {authMode === "signin" 
+                  ? "Access your dashboard, check limits, and save keys" 
+                  : "Start auditing PDFs and managing local tasks free"}
+              </p>
             </div>
-            <form onSubmit={handleLogin} className="space-y-4">
+
+            <form onSubmit={authMode === "signin" ? handleLogin : handleSignUp} className="space-y-3">
+              {authMode === "signup" && (
+                <div className="space-y-1">
+                  <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="John Doe"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
+                  />
+                </div>
+              )}
+              
               <div className="space-y-1">
                 <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Email Address</label>
                 <input
@@ -1543,9 +1601,10 @@ export default function HomePage() {
                   placeholder="name@company.com"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-550 text-slate-800"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
                 />
               </div>
+
               <div className="space-y-1">
                 <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Password</label>
                 <input
@@ -1554,13 +1613,71 @@ export default function HomePage() {
                   placeholder="••••••••"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-550 text-slate-800"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
                 />
               </div>
-              <button type="submit" className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors border-none cursor-pointer">
-                Sign In
+
+              <button type="submit" className="w-full mt-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors border-none cursor-pointer">
+                {authMode === "signin" ? "Sign In" : "Create Free Account"}
               </button>
             </form>
+
+            <div className="relative flex items-center justify-center my-1.5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <span className="relative px-3.5 bg-white text-[9px] text-slate-400 font-bold uppercase tracking-wider">Or continue with</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button 
+                type="button" 
+                onClick={() => handleSocialLogin("Google")} 
+                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-slate-200 rounded-xl text-[10.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 14.98 1 12 1 7.35 1 3.37 3.65 1.42 7.5l3.85 2.99C6.2 7.42 8.87 5.04 12 5.04z" />
+                  <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2 3.7-4.99 3.7-8.62z" />
+                  <path fill="#FBBC05" d="M5.27 10.49c-.25-.75-.4-1.56-.4-2.4s.15-1.65.4-2.4L1.42 2.7C.51 4.5 0 6.69 0 9s.51 4.5 1.42 6.3l3.85-2.81z" />
+                  <path fill="#34A853" d="M12 18.96c-3.13 0-5.8-2.38-6.73-5.46L1.42 16.3c1.95 3.85 5.93 6.5 10.58 6.5 2.98 0 5.8-.99 7.84-2.69l-3.73-2.89c-1.09.73-2.47 1.24-4.11 1.24z" />
+                </svg>
+                Google
+              </button>
+              <button 
+                type="button" 
+                onClick={() => handleSocialLogin("GitHub")} 
+                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-slate-200 rounded-xl text-[10.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.48 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.577.688.479C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                </svg>
+                GitHub
+              </button>
+            </div>
+
+            <div className="text-center text-[11px] text-slate-400 pt-1">
+              {authMode === "signin" ? (
+                <>
+                  Don't have an account?{" "}
+                  <button 
+                    onClick={() => setAuthMode("signup")} 
+                    className="text-indigo-600 hover:text-indigo-700 font-extrabold border-none bg-transparent cursor-pointer p-0 underline"
+                  >
+                    Create Account
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button 
+                    onClick={() => setAuthMode("signin")} 
+                    className="text-indigo-600 hover:text-indigo-700 font-extrabold border-none bg-transparent cursor-pointer p-0 underline"
+                  >
+                    Sign In
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
