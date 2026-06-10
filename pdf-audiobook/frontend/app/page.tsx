@@ -206,29 +206,14 @@ const ALL_TOOLS: Tool[] = [
     planRequired: "free",
     processing: "Client-side",
     outputType: "PDF",
-    benefit: "Type directly into active fields, toggle checkboxes, and download filled PDFs.",
-  },
-  {
-    id: "reading-time",
-    name: "Reading Time Estimator",
-    description: "Estimates page word count speed, narration time, and ARI readability index.",
-    icon: Clock,
-    href: "/tools/reading-time",
-    color: "#eab308",
-    badge: "Free",
-    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
-    category: "popular",
-    planRequired: "free",
-    processing: "Client-side",
-    outputType: "TXT",
-    benefit: "Inspect text density, average syllable grids, and speak rates.",
+    benefit: "Fill out interactive layout structures client-side and download.",
   },
 
   // --- SECURITY & PRIVACY ---
   {
     id: "privacy-report",
     name: "Privacy Report",
-    description: "Scan and generate audit reports for metadata, creation tool, hidden texts, and forms.",
+    description: "Check metadata, structural details, and verify tracking endpoints.",
     icon: Eye,
     href: "/tools/privacy-report",
     color: "#14b8a6",
@@ -238,12 +223,12 @@ const ALL_TOOLS: Tool[] = [
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Find metadata, links, forms, attachments, hidden text, and risky content before sharing.",
+    benefit: "Inspect PDF details to strip author metadata, creation timestamps, and hidden tags.",
   },
   {
     id: "evidence-locker",
     name: "Evidence Locker",
-    description: "Generate hash, timestamp, screenshots, and verification ticket for legal records.",
+    description: "Add a cryptographic signature to a PDF and check modification status.",
     icon: ShieldCheck,
     href: "/tools/evidence-locker",
     color: "#3b82f6",
@@ -251,14 +236,14 @@ const ALL_TOOLS: Tool[] = [
     badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
     category: "security",
     planRequired: "pro",
-    processing: "Secure server",
-    outputType: "ZIP",
-    benefit: "Generate tamper-proof hash, page snapshots, metadata report, and verification record.",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Generate SHA-256 signatures to lock and audit document states locally.",
   },
   {
     id: "fake-redaction",
-    name: "Fake Redaction Checker",
-    description: "Identify if black redaction blocks are fake overlay graphics hiding selectable text.",
+    name: "Fake Redaction Scanner",
+    description: "Detect overlay boxes hiding text without stripping background layers.",
     icon: AlertOctagon,
     href: "/tools/fake-redaction",
     color: "#ef4444",
@@ -268,29 +253,59 @@ const ALL_TOOLS: Tool[] = [
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Ensure black boxes are actually redacting selectable text layered behind graphics.",
+    benefit: "Detect visual overlays that only mask text layout rather than deleting original characters.",
   },
   {
     id: "attachments",
     name: "Attachment Inspector",
-    description: "Scan, list, extract, or remove hidden files embedded inside the PDF container.",
+    description: "Inspect or strip embedded file payloads hiding in the catalog.",
     icon: Paperclip,
     href: "/tools/attachments",
     color: "#6366f1",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "security",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Extract hidden PDF catalog assets or delete envelope files safely.",
+  },
+  {
+    id: "password-protect",
+    name: "Protect PDF",
+    description: "Add permissions and password protect the PDF file.",
+    icon: Lock,
+    href: "/tools/password-protect",
+    color: "#ef4444",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "security",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Restrict print options, text copies, or document access keys.",
+  },
+  {
+    id: "hidden-layers",
+    name: "Hidden Layer Finder",
+    description: "Locate invisible layers, print templates, and hidden metadata groups.",
+    icon: Layers,
+    href: "/tools/hidden-layers",
+    color: "#ec4899",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
     category: "security",
     planRequired: "pro",
     processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Extract or safely strip hidden embedded attachment payloads inside the catalog.",
+    outputType: "Report",
+    benefit: "Audit layout files for hidden vector components or overlay templates.",
   },
   {
-    id: "hidden-layers",
-    name: "Hidden Layer Viewer",
-    description: "Detect and display optional content groups, white text, covered text, and off-page objects.",
-    icon: Layers,
-    href: "/tools/hidden-layers",
+    id: "link-safety",
+    name: "Link Safety Auditor",
+    description: "Extract and audit all external hyperlinks found inside the layout.",
+    icon: Link2,
+    href: "/tools/link-safety",
     color: "#14b8a6",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
@@ -298,72 +313,12 @@ const ALL_TOOLS: Tool[] = [
     planRequired: "pro",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Reveal hidden layouts, white text, covered text, and coordinates off the canvas boundary.",
-  },
-  {
-    id: "link-safety",
-    name: "Link Safety Scanner",
-    description: "Scan annotations to identify tracking params, shortened URLs, or suspicious domains.",
-    icon: Link2,
-    href: "/tools/link-safety",
-    color: "#f43f5e",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "security",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Strip marketing tracking UTM parameters and scan hyperlinks inside annotations.",
-  },
-  {
-    id: "barcode-scanner",
-    name: "QR / Barcode Scanner",
-    description: "Detect, decode, list values, and replace QR/barcodes embedded across pages.",
-    icon: QrCode,
-    href: "/tools/barcode-scanner",
-    color: "#06b6d4",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "security",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "CSV",
-    benefit: "Locate and decode machine-readable barcodes or QR values on all pages.",
-  },
-  {
-    id: "password-protect",
-    name: "Password Protect",
-    description: "Strip metadata and add security stamp watermarks for protection.",
-    icon: Lock,
-    href: "/tools/password-protect",
-    color: "#ef4444",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "security",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Secure documents with custom metadata markers and Visual protection watermarks.",
-  },
-  {
-    id: "diff",
-    name: "Compare / Diff PDFs",
-    description: "Compare two PDFs side-by-side and highlight additions and edits.",
-    icon: GitCompare,
-    href: "/tools/diff",
-    color: "#06b6d4",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "security",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "Report",
-    benefit: "Extract text coordinates to generate character differences side-by-side.",
+    benefit: "Detect hidden redirects, URL targets, and external assets.",
   },
   {
     id: "redact",
     name: "PDF Redactor",
-    description: "Scan and sanitize phone numbers, SSNs, credit cards, or names.",
+    description: "Scan for patterns (emails, phone numbers, SSNs) and redact them.",
     icon: EyeOff,
     href: "/tools/redact",
     color: "#f43f5e",
@@ -373,166 +328,151 @@ const ALL_TOOLS: Tool[] = [
     planRequired: "pro",
     processing: "Client-side",
     outputType: "TXT",
-    benefit: "Automatically search regex keywords and redact sensitive strings.",
+    benefit: "Safely filter out personal data using pattern recognition.",
   },
 
   // --- PRINT & SCAN ---
   {
     id: "color-detector",
-    name: "Color Page Detector",
-    description: "Scan pages to detect black-and-white vs color to save printing costs.",
+    name: "Color Detector",
+    description: "Audit pages to count color vs monochrome pages and optimize print jobs.",
     icon: Palette,
     href: "/tools/color-detector",
     color: "#10b981",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
     category: "print",
-    planRequired: "pro",
+    planRequired: "free",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Identify exact pages containing color vs monochrome layout to save printing costs.",
+    benefit: "Split color pages from black & white pages to save printing expenses.",
   },
   {
     id: "ink-saver",
-    name: "Ink Saver Optimizer",
-    description: "Reduce heavy backgrounds, large dark fills, and dark images to optimize printer ink.",
+    name: "Ink Saver",
+    description: "Convert colored text / backgrounds to clean monochrome styles.",
     icon: Sun,
     href: "/tools/ink-saver",
     color: "#eab308",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
     category: "print",
-    planRequired: "pro",
-    processing: "Secure server",
+    planRequired: "free",
+    processing: "Client-side",
     outputType: "PDF",
-    benefit: "Auto-invert dark backgrounds, strip color fills, and optimize document ink utilization.",
+    benefit: "Strip heavy color backgrounds to preserve ink cartridges.",
   },
   {
     id: "bad-scan-detector",
-    name: "Bad Scan Detector",
-    description: "Check scanned PDFs for blurriness, contrast, rotation, blank pages, and cut-off text.",
+    name: "Bad Scan Check",
+    description: "Locate skewed pages, blurry layout segments, and blank pages.",
     icon: ScanLine,
     href: "/tools/bad-scan-detector",
     color: "#ec4899",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
     category: "print",
-    planRequired: "pro",
+    planRequired: "free",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Analyze edge contrast and luminance to detect blur, rotation issues, or blank pages.",
-  },
-  {
-    id: "missing-pages",
-    name: "Missing Page Detector",
-    description: "Detect sequence gaps, repeated pages, or skipped sections using internal numbering.",
-    icon: FileWarning,
-    href: "/tools/missing-pages",
-    color: "#ef4444",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "print",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "Report",
-    benefit: "Scan text coordinates for page number labels to find missing sequence blocks.",
-  },
-  {
-    id: "margin-normalizer",
-    name: "Margin Normalizer",
-    description: "Automatically trim scan margins and align page borders for professional printing.",
-    icon: Maximize,
-    href: "/tools/margin-normalizer",
-    color: "#f43f5e",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "print",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Crops and recalculates margins to optimize physical printable areas.",
-  },
-  {
-    id: "font-fixer",
-    name: "Font Problem Fixer",
-    description: "Detect missing, non-embedded fonts, corrupted characters, or text copying risks.",
-    icon: Type,
-    href: "/tools/font-fixer",
-    color: "#06b6d4",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "print",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Standardizes resource dictionary grids to system Helvetica.",
-  },
-  {
-    id: "weight-map",
-    name: "File Weight Map",
-    description: "Visualize what makes your PDF heavy: images, fonts, embedded items, or vector shapes.",
-    icon: Activity,
-    href: "/tools/weight-map",
-    color: "#10b981",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "print",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "Report",
-    benefit: "Map exact byte consumption of fonts, embedded streams, vector path structures, and images.",
-  },
-  {
-    id: "page-labels",
-    name: "Smart Page Labels",
-    description: "Label pages/sections (e.g. Cover, Appendix) so PDF viewers display logical names.",
-    icon: Tags,
-    href: "/tools/page-labels",
-    color: "#a855f7",
-    badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-    category: "print",
-    planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Assign custom numbering labels (e.g. Cover, I, II, Appendix A) to document ranges.",
+    benefit: "Auto-detect crooked scan pages, blank separation papers, or soft text lines.",
   },
   {
     id: "watermark",
     name: "Add Watermark",
-    description: "Overlay custom text watermarks with size and opacity controls.",
+    description: "Apply text or vector overlay stamps across all pages.",
     icon: Droplets,
     href: "/tools/watermark",
     color: "#0ea5e9",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "print",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Apply confidential labels or author stamps with opacity sliders.",
+  },
+  {
+    id: "weight-map",
+    name: "Ink Density Map",
+    description: "Generate a heat map highlighting the heaviest ink pages.",
+    icon: Activity,
+    href: "/tools/weight-map",
+    color: "#10b981",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "print",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Visualize vector ink payloads to avoid excessive toner layouts.",
+  },
+  {
+    id: "margin-normalizer",
+    name: "Margin Normalizer",
+    description: "Resize page layout dimensions to standardize grid print boundaries.",
+    icon: Maximize,
+    href: "/tools/margin-normalizer",
+    color: "#6366f1",
     badge: "Pro",
     badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
     category: "print",
     planRequired: "pro",
     processing: "Client-side",
     outputType: "PDF",
-    benefit: "Draw custom text stamps at various rotational dimensions.",
+    benefit: "Pad or crop asymmetric templates to fit A4 layout specifications.",
   },
-
-  // --- BUSINESS / BATCH ---
   {
-    id: "timeline",
-    name: "Version Diff Timeline",
-    description: "Upload multiple versions of a PDF and see exactly what changed over time.",
-    icon: History,
-    href: "/tools/timeline",
+    id: "font-fixer",
+    name: "Font Fixer",
+    description: "Audit missing font weights and substitute fallback systems.",
+    icon: Type,
+    href: "/tools/font-fixer",
     color: "#8b5cf6",
-    badge: "Business",
-    badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    category: "business",
-    planRequired: "business",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    category: "print",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Fix broken lettering layout errors by replacing corrupted embedding tables.",
+  },
+  {
+    id: "barcode-scanner",
+    name: "Barcode Extractor",
+    description: "Scan pages for QR codes or barcodes and decode values.",
+    icon: QrCode,
+    href: "/tools/barcode-scanner",
+    color: "#f59e0b",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "print",
+    planRequired: "free",
     processing: "Client-side",
     outputType: "Report",
-    benefit: "Compare incremental document drafts side-by-side on an audit timeline.",
+    benefit: "Detect and scan visual code arrays to extract invoice numbers.",
+  },
+
+  // --- BUSINESS AUTOMATION ---
+  {
+    id: "diff",
+    name: "PDF Compare (Diff)",
+    description: "Compare text layouts of two PDFs and highlight line differences.",
+    icon: GitCompare,
+    href: "/tools/diff",
+    color: "#14b8a6",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    category: "business",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Compare line edits in contracts or financial spreadsheets side by side.",
   },
   {
     id: "delivery-packager",
-    name: "Client Delivery Packager",
-    description: "Compile standard PDF, compressed web PDF, text extracts, and metadata report to ZIP.",
+    name: "Delivery Packager",
+    description: "Compile multiple documents into organized folders with indexes.",
     icon: FolderArchive,
     href: "/tools/delivery-packager",
     color: "#f97316",
@@ -540,9 +480,69 @@ const ALL_TOOLS: Tool[] = [
     badgeColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
     category: "business",
     planRequired: "business",
-    processing: "Secure server",
+    processing: "Client-side",
     outputType: "ZIP",
-    benefit: "Generates manifest files, stripped PDF variants, and logs inside an archive.",
+    benefit: "Bundle files, audit lists, and dynamic index TXTs in a single delivery ZIP.",
+  },
+  {
+    id: "reading-time",
+    name: "Reading Speed Auditor",
+    description: "Analyze word logs to estimate study times and speaking rates.",
+    icon: Clock,
+    href: "/tools/reading-time",
+    color: "#f59e0b",
+    badge: "Free",
+    badgeColor: "bg-green-500/10 text-green-600 border-green-500/20",
+    category: "business",
+    planRequired: "free",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Estimate reading times and speech lengths at custom words-per-minute speeds.",
+  },
+  {
+    id: "timeline",
+    name: "Document Timeline",
+    description: "Detect chronological dates in text to plot history charts.",
+    icon: History,
+    href: "/tools/timeline",
+    color: "#06b6d4",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    category: "business",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Identify dates, years, and historical records to draw a visual timeline.",
+  },
+  {
+    id: "page-labels",
+    name: "Page Label Adjuster",
+    description: "Set logical layout numbering (I, II, III, 1, 2) in PDF catalogues.",
+    icon: Tags,
+    href: "/tools/page-labels",
+    color: "#8b5cf6",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    category: "business",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "PDF",
+    benefit: "Standardize index pagination in PDF reader bars.",
+  },
+  {
+    id: "missing-pages",
+    name: "Missing Page Auditor",
+    description: "Scan pages for sequence numbers (1, 2, 4...) and highlight gaps.",
+    icon: FileWarning,
+    href: "/tools/missing-pages",
+    color: "#ef4444",
+    badge: "Pro",
+    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    category: "business",
+    planRequired: "pro",
+    processing: "Client-side",
+    outputType: "Report",
+    benefit: "Audit batch scans to find missing pages or duplicate layout sequences.",
   },
   {
     id: "smart-rename",
@@ -669,12 +669,25 @@ const ALL_TOOLS: Tool[] = [
 ];
 
 const CATEGORY_TABS = [
-  { id: "all", name: "Popular Tools", color: "from-indigo-400 to-indigo-500" },
-  { id: "popular", name: "Organize PDF", color: "from-[#8b5cf6] to-[#ec4899]" },
-  { id: "security", name: "Security & Privacy", color: "from-[#14b8a6] to-[#10b981]" },
-  { id: "print", name: "Print & Scan", color: "from-[#f59e0b] to-[#f97316]" },
-  { id: "ai", name: "AI Tools", color: "from-[#d946ef] to-[#818cf8]" },
-  { id: "business", name: "Business", color: "from-[#0ea5e9] to-[#6366f1]" },
+  { id: "all", name: "Popular Tools", icon: "⭐" },
+  { id: "popular", name: "Organize PDF", icon: "🗂" },
+  { id: "security", name: "Security & Privacy", icon: "🔐" },
+  { id: "print", name: "Print & Scan", icon: "🖨" },
+  { id: "ai", name: "AI Tools", icon: "🧰" },
+  { id: "business", name: "Business", icon: "💼" },
+];
+
+const POPULAR_10_IDS = [
+  "merge",
+  "split",
+  "compress",
+  "rotate",
+  "pdf-to-images",
+  "images-to-pdf",
+  "extract-text",
+  "form-filler",
+  "pdf-chat",
+  "summarize",
 ];
 
 export default function HomePage() {
@@ -688,6 +701,10 @@ export default function HomePage() {
   const [tasksUsed, setTasksUsed] = useState(0);
   const [userName, setUserName] = useState("Kavindu");
   const [userEmail, setUserEmail] = useState("kavindu@example.com");
+
+  // Global Dropzone states
+  const [globalFile, setGlobalFile] = useState<File | null>(null);
+  const [isGlobalDragActive, setIsGlobalDragActive] = useState(false);
 
   // Mouse tracking for transparent background glow
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -815,8 +832,13 @@ export default function HomePage() {
     router.push(tool.href);
   };
 
-  // Define 10 popular tools that will display on the home page by default
-  const POPULAR_10_IDS = ["merge", "split", "compress", "rotate", "pdf-to-images", "images-to-pdf", "extract-text", "form-filler", "pdf-chat", "summarize"];
+  const handleGlobalFile = (f: File) => {
+    if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
+      alert("Only PDF files are accepted.");
+      return;
+    }
+    setGlobalFile(f);
+  };
 
   // Filter tools based on search query AND active category
   const filteredTools = ALL_TOOLS.filter((tool) => {
@@ -839,7 +861,7 @@ export default function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 selection:bg-indigo-500/20 overflow-x-hidden relative font-sans">
+    <div className="min-h-screen bg-[#F6F8FF] text-[#071B3A] selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
       
       {/* Background Glows (Pastel Light Mode blobs) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -849,7 +871,7 @@ export default function HomePage() {
       </div>
 
       {/* Header (iLovePDF Style - Light Mode dropdown mega menu) */}
-      <header className="sticky top-0 border-b border-slate-200/60 px-6 py-3 flex items-center justify-between z-40 backdrop-blur-md bg-white/90 shadow-sm text-slate-700">
+      <header className="sticky top-0 border-b border-slate-200/60 px-6 py-3 flex items-center justify-between z-40 backdrop-blur-md bg-white/90 shadow-sm text-slate-705 shrink-0">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-md shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-200">
@@ -861,7 +883,7 @@ export default function HomePage() {
           </Link>
 
           {/* Navigation Category Header with Hover Mega Menus */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-600">
+          <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-605">
             <Link href="/tools/merge" className="hover:text-indigo-600 transition-colors uppercase tracking-wider text-[10.5px]">Merge PDF</Link>
             <Link href="/tools/split" className="hover:text-indigo-600 transition-colors uppercase tracking-wider text-[10.5px]">Split PDF</Link>
             <Link href="/tools/compress" className="hover:text-indigo-600 transition-colors uppercase tracking-wider text-[10.5px]">Compress PDF</Link>
@@ -972,7 +994,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => setIsSignInOpen(true)}
-                  className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white font-bold rounded-xl hover:opacity-90 active:scale-[0.98] transition-all text-[11px] uppercase tracking-wider shadow shadow-indigo-500/10"
+                  className="px-3.5 py-1.5 bg-[#5B4DFF] hover:bg-[#4a3ce6] text-white font-bold rounded-xl active:scale-[0.98] transition-all text-[11px] uppercase tracking-wider shadow shadow-indigo-500/10"
                 >
                   Sign Up
                 </button>
@@ -1002,61 +1024,340 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="relative z-10">
+      <main className="relative z-10 flex-1">
         
-        {/* Sleek, Center Hero */}
-        <section className="px-6 pt-14 pb-10 text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/5 border border-indigo-500/10 text-[10px] text-indigo-600 shadow-sm font-bold uppercase tracking-wider">
-            <Sparkles size={11} className="text-indigo-500" />
-            100% Client-Side Private Document Toolkit
-          </div>
+        {/* 1. Sleek, Dual-Column Hero */}
+        <section className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          <h1 className="font-[800] tracking-[-0.04em] leading-[1.05] text-slate-900" style={{ fontSize: "clamp(30px, 4.5vw, 48px)" }}>
-            Private PDF Tools for Work, Print &amp; Security
-          </h1>
-          
-          <p className="text-[13.5px] text-slate-500 font-normal leading-relaxed max-w-xl mx-auto">
-            Check, clean, print, and safely share PDFs. All files remain completely private and process locally inside your browser.
-          </p>
-
-          {/* Search bar & filter chips */}
-          <div className="max-w-md mx-auto pt-3 relative group">
-            <div className="relative flex items-center z-10">
-              <Search className="absolute left-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" size={15} />
-              <input
-                type="text"
-                placeholder="Search tools: merge, split, compress, protect..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500/40 focus:ring-4 focus:ring-indigo-500/5 placeholder-slate-400 transition-all text-slate-800 shadow-sm"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3.5 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <X size={13} />
-                </button>
-              )}
+          {/* Left Column: Copy */}
+          <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/5 border border-indigo-500/10 text-[10px] text-indigo-600 shadow-sm font-bold uppercase tracking-wider">
+              <Sparkles size={11} className="text-indigo-500" />
+              100% Client-Side Private Document Toolkit
             </div>
             
-            {/* Quick chips keywords */}
-            <div className="flex flex-wrap items-center justify-center gap-1 mt-2.5 relative z-10">
-              {["compress", "diff", "watermark", "flashcards"].map((chip) => (
-                <button 
-                  key={chip} 
-                  onClick={() => setSearchQuery(chip)} 
-                  className="px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-[9.5px] text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all font-medium shadow-sm"
-                >
-                  {chip}
-                </button>
+            <h1 className="font-[900] tracking-[-0.04em] leading-[1.05] text-[#071B3A]" style={{ fontSize: "clamp(32px, 5vw, 56px)" }}>
+              Edit, clean, and secure PDFs directly in your browser
+            </h1>
+            
+            <p className="text-sm sm:text-base text-slate-500 font-normal leading-relaxed max-w-xl">
+              No uploads. No tracking. No server storage. Your documents are processed locally on your machine for maximum privacy.
+            </p>
+
+            <p className="text-xs text-slate-400 font-medium">
+              🛡️ Private PDF editing with zero upload required. Built for students, freelancers, offices, and privacy-focused teams.
+            </p>
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button 
+                onClick={() => document.getElementById("dropzone-section")?.scrollIntoView({ behavior: "smooth" })}
+                className="px-6 py-3 bg-[#5B4DFF] hover:bg-[#4a3ce6] text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-indigo-500/10 active:scale-95"
+              >
+                Start with PDF Tools
+              </button>
+              <button 
+                onClick={() => {
+                  setActiveCategory("all");
+                  document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="px-6 py-3 bg-white border border-slate-200 hover:bg-slate-50 font-extrabold text-sm text-slate-700 rounded-xl transition-all shadow-sm active:scale-95"
+              >
+                See All Tools
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Visual Mockup */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-full max-w-sm bg-white border border-slate-200 p-6 rounded-3xl shadow-xl space-y-4 animate-float-slow">
+              {/* Absolute badge */}
+              <div className="absolute -top-3 -right-3 px-3 py-1 bg-emerald-500 text-white text-[9px] font-extrabold uppercase rounded-full shadow-md flex items-center gap-1">
+                <Check size={10} strokeWidth={3} /> 100% Client-Side
+              </div>
+
+              <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                <div className="w-10 h-10 bg-indigo-50 border border-indigo-105 rounded-xl flex items-center justify-center text-[#5B4DFF]">
+                  <FileText size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-slate-800 truncate">annual_financial_report.pdf</p>
+                  <p className="text-[10px] text-slate-400">4.2 MB · 12 pages</p>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-slate-505 flex items-center gap-1.5"><ShieldCheck size={14} className="text-emerald-500" /> Document Security</span>
+                  <span className="font-bold text-emerald-600">Secure</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-slate-505 flex items-center gap-1.5"><Lock size={14} className="text-indigo-500" /> AES-256 Encryption</span>
+                  <span className="font-bold text-indigo-600">Ready</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  <span className="text-slate-505 flex items-center gap-1.5"><Zap size={14} className="text-amber-500 animate-pulse" /> Processing Speed</span>
+                  <span className="font-bold text-slate-700">0.4s (Instant)</span>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-center text-slate-400 pt-1">
+                No files are uploaded to our servers. All processing runs in your browser sandbox.
+              </p>
+            </div>
+          </div>
+
+        </section>
+
+        {/* 2. Global Dropzone Section */}
+        <section id="dropzone-section" className="max-w-4xl mx-auto px-6 py-8 scroll-mt-20">
+          <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-md text-center space-y-6 relative overflow-hidden">
+            
+            {!globalFile ? (
+              <div 
+                onDragOver={(e) => { e.preventDefault(); setIsGlobalDragActive(true); }}
+                onDragLeave={() => setIsGlobalDragActive(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsGlobalDragActive(false);
+                  if (e.dataTransfer.files?.[0]) handleGlobalFile(e.dataTransfer.files[0]);
+                }}
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = ".pdf,application/pdf";
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file) handleGlobalFile(file);
+                  };
+                  input.click();
+                }}
+                className={`border-2 border-dashed rounded-2xl p-10 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-3 group
+                  ${isGlobalDragActive 
+                    ? "border-[#5B4DFF] bg-indigo-50/50" 
+                    : "border-slate-200 hover:border-[#5B4DFF]/50 hover:bg-slate-50/50"
+                  }`}
+              >
+                <div className="w-14 h-14 bg-indigo-55 border border-indigo-100 rounded-2xl flex items-center justify-center text-[#5B4DFF] group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                  <Archive size={26} className="animate-pulse" />
+                </div>
+                <div>
+                  <p className="text-base font-extrabold text-[#071B3A]">Drop your PDF here</p>
+                  <p className="text-xs text-slate-400 mt-1">or click to choose a file from your device</p>
+                </div>
+                <p className="text-[10px] text-slate-450 uppercase tracking-widest font-extrabold bg-slate-100 px-3 py-1 rounded-full mt-2">
+                  Files stay in your browser. Nothing is uploaded.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-5 animate-fade-in text-left">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                      <FileText size={22} />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-slate-800 text-sm truncate max-w-md">{globalFile.name}</h3>
+                      <p className="text-[10px] text-slate-400">{(globalFile.size / 1024 / 1024).toFixed(2)} MB · PDF Document</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setGlobalFile(null)}
+                    className="text-xs text-slate-400 hover:text-slate-750 font-bold bg-slate-50 border border-slate-200 py-1.5 px-3 rounded-lg transition-colors"
+                  >
+                    Clear File
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">Choose a tool to apply to this file:</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                    {[
+                      { name: "Merge PDF", href: "/tools/merge", color: "#8b5cf6" },
+                      { name: "Split PDF", href: "/tools/split", color: "#ec4899" },
+                      { name: "Compress PDF", href: "/tools/compress", color: "#06b6d4" },
+                      { name: "Add Watermark", href: "/tools/watermark", color: "#0ea5e9" },
+                      { name: "Q&A Chat", href: "/tools/pdf-chat", color: "#818cf8" }
+                    ].map((act) => (
+                      <button
+                        key={act.name}
+                        onClick={() => {
+                          sessionStorage.setItem("pending_file_name", globalFile.name);
+                          sessionStorage.setItem("pending_file_size", globalFile.size.toString());
+                          router.push(act.href);
+                        }}
+                        className="p-3 border border-slate-200 hover:border-transparent hover:shadow-lg bg-slate-50/50 hover:bg-white rounded-xl text-xs font-bold text-slate-750 text-center transition-all hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center gap-1.5"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: act.color }} />
+                        {act.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Search bar segment (quick access below dropzone) */}
+        <section className="max-w-md mx-auto pt-3 pb-8 px-6 relative group">
+          <div className="relative flex items-center z-10">
+            <Search className="absolute left-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" size={15} />
+            <input
+              type="text"
+              placeholder="Search tools: merge, split, compress, protect..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500/40 focus:ring-4 focus:ring-indigo-500/5 placeholder-slate-400 transition-all text-slate-800 shadow-sm"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3.5 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          
+          {/* Quick chips keywords */}
+          <div className="flex flex-wrap items-center justify-center gap-1 mt-2.5 relative z-10">
+            {["compress", "diff", "watermark", "flashcards"].map((chip) => (
+              <button 
+                key={chip} 
+                onClick={() => setSearchQuery(chip)} 
+                className="px-2.5 py-0.5 rounded-full bg-white border border-slate-200 text-[9.5px] text-slate-500 hover:bg-slate-105 hover:text-slate-850 transition-all font-medium shadow-sm"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. Popular Workflows Section */}
+        <section className="max-w-7xl mx-auto px-6 py-10">
+          <div className="border-b border-slate-200/60 pb-3 mb-6">
+            <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Popular Workflows</h2>
+            <p className="text-[10.5px] text-slate-400 mt-0.5">Streamline multi-step document tasks directly in your browser</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                title: "Prepare PDF for Email",
+                desc: "Shrink layout size and block layout access.",
+                steps: ["Compress", "Remove metadata", "Protect"],
+              },
+              {
+                title: "Clean Scanned Document",
+                desc: "Audit quality logs and fix naming tags.",
+                steps: ["Bad Scan", "Compress", "Rename"],
+              },
+              {
+                title: "Print-Ready PDF",
+                desc: "Adjust layout alignments and branding.",
+                steps: ["Rotate", "Page numbers", "Watermark"],
+              },
+              {
+                title: "Secure Document",
+                desc: "Strip sensitive contents and lock file.",
+                steps: ["Redact", "Protect", "Verify"],
+              }
+            ].map((flow) => (
+              <div key={flow.title} className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                <div className="space-y-2">
+                  <h3 className="font-extrabold text-xs text-slate-850 uppercase tracking-wider">{flow.title}</h3>
+                  <p className="text-[11px] text-slate-500 leading-snug">{flow.desc}</p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                  <div className="flex flex-col gap-1.5">
+                    {flow.steps.map((st, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700">
+                        <span className="w-4 h-4 bg-slate-100 text-slate-500 text-[8px] flex items-center justify-center rounded-full font-mono">{i + 1}</span>
+                        <span>{st}</span>
+                        {i < flow.steps.length - 1 && <span className="text-slate-300">→</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. How It Works Section */}
+        <section className="bg-slate-100/50 border-y border-slate-200/50 px-6 py-12">
+          <div className="max-w-7xl mx-auto space-y-10">
+            <div className="text-center space-y-1">
+              <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">How It Works</h2>
+              <p className="text-[11px] text-slate-400 max-w-sm mx-auto">Get your documents processed locally in 4 simple steps.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { num: "01", name: "Choose a PDF tool", desc: "Select from our large suite of 38 privacy-first utilities." },
+                { num: "02", name: "Drop your file", desc: "Select or drag any PDF document. Files load in memory instantly." },
+                { num: "03", name: "Process safely", desc: "Execution runs 100% locally in your browser sandbox." },
+                { num: "04", name: "Download result", desc: "Grab your sanitized PDF file instantly with zero upload lag." }
+              ].map((step) => (
+                <div key={step.num} className="relative p-5 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-2 overflow-hidden group">
+                  <span className="absolute right-3 top-[-15px] text-5xl font-[900] text-slate-100 group-hover:text-[#5B4DFF]/5 transition-colors font-mono pointer-events-none">{step.num}</span>
+                  <h3 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider relative z-10">{step.name}</h3>
+                  <p className="text-[11px] text-slate-500 leading-snug relative z-10">{step.desc}</p>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Tab navigation below hero */}
-        <section className="border-y border-slate-200/60 bg-white/70 backdrop-blur-md py-1.5 px-6">
+        {/* 5. Trust Section (Why private PDF tools?) */}
+        <section className="max-w-4xl mx-auto px-6 py-12 space-y-8">
+          <div className="text-center space-y-1">
+            <h2 className="text-xs font-extrabold text-slate-405 uppercase tracking-widest">Why DocuSafePDF?</h2>
+            <p className="text-base font-extrabold text-slate-800">Visual PDF Hygiene without Server Storage Risk</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {[
+              {
+                icon: Shield,
+                title: "No File Uploads",
+                desc: "Your documents are processed inside your browser sandbox. They never leave your device or touch external clouds."
+              },
+              {
+                icon: User,
+                title: "No Account Required",
+                desc: "Get started instantly. Access all essential utilities without completing registrations or inputting emails."
+              },
+              {
+                icon: Lock,
+                title: "Private by Design",
+                desc: "We do not store, read, or track your PDF content. Clean document hygiene is achieved with zero logs."
+              },
+              {
+                icon: Zap,
+                title: "Fast Local Processing",
+                desc: "Since files don't need to be uploaded and downloaded from remote servers, processing is virtually instant."
+              }
+            ].map((val) => {
+              const ValIcon = val.icon;
+              return (
+                <div key={val.title} className="flex gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                  <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-[#5B4DFF] shrink-0">
+                    <ValIcon size={18} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">{val.title}</h3>
+                    <p className="text-[11.5px] text-slate-500 leading-normal">{val.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 6. Tabs & Category Grid */}
+        <section className="border-t border-slate-200/60 bg-white/50 py-1.5 px-6">
           <div className="max-w-7xl mx-auto flex items-center justify-center gap-1 overflow-x-auto no-scrollbar scroll-smooth">
             {CATEGORY_TABS.map((tab) => {
               const isActive = activeCategory === tab.id;
@@ -1067,23 +1368,23 @@ export default function HomePage() {
                     setActiveCategory(tab.id);
                     document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 border
+                  className={`px-3.5 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all duration-200 border flex items-center gap-1.5 shadow-sm
                     ${isActive 
-                      ? "bg-indigo-50 border-indigo-100 text-indigo-600 shadow-sm" 
-                      : "bg-transparent border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                      ? "bg-[#5B4DFF] border-transparent text-white shadow-[#5B4DFF]/15" 
+                      : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-55"
                     }`}
                 >
-                  {tab.name}
+                  <span>{tab.icon}</span>
+                  <span>{tab.name}</span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        {/* Clean Light mode Tool Grid */}
-        <section id="tools-grid-section" className="px-6 py-8 max-w-7xl mx-auto scroll-mt-24">
-          
-          <div className="space-y-4">
+        {/* 7. Tools Grid Section */}
+        <section id="tools-grid-section" className="px-6 py-10 max-w-7xl mx-auto scroll-mt-24">
+          <div className="space-y-6">
             <div className="border-b border-slate-200/60 pb-2 flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">
@@ -1102,14 +1403,14 @@ export default function HomePage() {
                 </p>
               </div>
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-[10px] text-indigo-600 hover:text-indigo-500 font-extrabold uppercase">
-                  Reset
+                <button onClick={() => setSearchQuery("")} className="text-[10px] text-[#5B4DFF] hover:text-[#4a3ce6] font-extrabold uppercase">
+                  Clear
                 </button>
               )}
             </div>
 
             {filteredTools.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredTools.map((tool, idx) => (
                   <ToolCard key={tool.id} tool={tool} index={idx} onClick={handleToolClick} onCardMouseMove={handleCardMouseMove} />
                 ))}
@@ -1122,31 +1423,29 @@ export default function HomePage() {
               </div>
             )}
           </div>
-
         </section>
 
-        {/* Pricing Preview */}
-        <section id="pricing-section" className="px-6 py-12 max-w-5xl mx-auto space-y-8 border-t border-slate-200/60 scroll-mt-20">
+        {/* 8. Pricing Section Redesign */}
+        <section id="pricing-section" className="px-6 py-14 max-w-5xl mx-auto space-y-10 border-t border-slate-200/60 scroll-mt-20">
           <div className="text-center space-y-1">
-            <h2 className="text-xl font-extrabold text-slate-900 uppercase tracking-wider">Flexible Pricing Plans</h2>
-            <p className="text-[11px] text-slate-400 max-w-sm mx-auto">Choose a plan that fits your document workflow and privacy audits.</p>
+            <h2 className="text-xl font-extrabold text-[#071B3A] uppercase tracking-wider">Flexible Pricing Plans</h2>
+            <p className="text-[11.5px] text-slate-400 max-w-sm mx-auto">Choose a plan that fits your document workflow and privacy audits.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Free */}
-            <div className="bg-white border border-slate-200/80 p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between h-[280px] shadow-sm hover:shadow-md transition-shadow">
               <div className="space-y-3">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-800">Free Plan</h3>
-                  <p className="text-[9px] text-slate-400">Everyday conversion utilities</p>
+                  <h3 className="font-extrabold text-sm text-slate-800">Free Plan</h3>
+                  <p className="text-[9.5px] text-slate-400">For quick everyday PDF tasks</p>
                 </div>
-                <p className="text-2xl font-extrabold text-slate-900">$0</p>
+                <p className="text-3xl font-extrabold text-slate-900">$0</p>
                 <div className="space-y-1.5 text-xs text-slate-500">
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> 5 tasks per day</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Max file size: 25 MB</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Max pages: 50</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Basic tools only (No batch)</p>
+                  <p className="flex items-center gap-2">✔ Basic PDF tools</p>
+                  <p className="flex items-center gap-2">✔ 5 tasks per day</p>
+                  <p className="flex items-center gap-2">✔ 25MB max file size</p>
                 </div>
               </div>
               <button
@@ -1155,7 +1454,7 @@ export default function HomePage() {
                   setUserPlan("free");
                   document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="w-full py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
               >
                 Get Started
               </button>
@@ -1164,21 +1463,20 @@ export default function HomePage() {
             {/* Pro */}
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-fuchsia-500/10 rounded-2xl blur-xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="bg-white border-2 border-indigo-500 p-5 rounded-2xl flex flex-col justify-between relative backdrop-blur-md h-full space-y-4 shadow-md">
-                <div className="absolute top-0 right-5 -translate-y-1/2 px-2 py-0.5 rounded bg-indigo-500 text-[8px] font-extrabold tracking-wider uppercase text-white shadow-md shadow-indigo-500/20">
-                  Most Popular
+              <div className="bg-white border-2 border-[#5B4DFF] p-6 rounded-2xl flex flex-col justify-between h-[280px] relative backdrop-blur-md shadow-md">
+                <div className="absolute top-0 right-5 -translate-y-1/2 px-2.5 py-0.5 rounded bg-[#5B4DFF] text-[8px] font-extrabold tracking-wider uppercase text-white shadow-md">
+                  Popular
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-bold text-sm text-indigo-600">Pro Plan</h3>
-                    <p className="text-[9px] text-indigo-400/50">Detailed privacy &amp; security reports</p>
+                    <h3 className="font-extrabold text-sm text-[#5B4DFF]">Pro Plan</h3>
+                    <p className="text-[9.5px] text-indigo-400">For heavy PDF users &amp; privacy reports</p>
                   </div>
-                  <p className="text-2xl font-extrabold text-slate-900">$9<span className="text-xs text-slate-400 font-normal">/month</span></p>
-                  <div className="space-y-1.5 text-xs text-slate-600">
-                    <p className="flex items-center gap-2"><Check size={13} className="text-indigo-500 shrink-0" /> 300 tasks per month</p>
-                    <p className="flex items-center gap-2"><Check size={13} className="text-indigo-500 shrink-0" /> Max file size: 250 MB</p>
-                    <p className="flex items-center gap-2"><Check size={13} className="text-indigo-500 shrink-0" /> Max pages: 500</p>
-                    <p className="flex items-center gap-2"><Check size={13} className="text-indigo-500 shrink-0" /> Access to Security &amp; Print tools</p>
+                  <p className="text-3xl font-extrabold text-slate-900">$9<span className="text-xs text-slate-400 font-normal">/mo</span></p>
+                  <div className="space-y-1.5 text-xs text-slate-650">
+                    <p className="flex items-center gap-2">✔ All 38 PDF tools</p>
+                    <p className="flex items-center gap-2">✔ 300 tasks per month</p>
+                    <p className="flex items-center gap-2">✔ 250MB max file size</p>
                   </div>
                 </div>
                 <button
@@ -1189,7 +1487,7 @@ export default function HomePage() {
                       setIsSignInOpen(true);
                     }
                   }}
-                  className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-bold text-white transition-colors shadow-sm"
+                  className="w-full py-2.5 bg-[#5B4DFF] hover:bg-[#4a3ce6] rounded-xl text-xs font-bold text-white transition-colors shadow-sm"
                 >
                   Upgrade to Pro
                 </button>
@@ -1197,18 +1495,17 @@ export default function HomePage() {
             </div>
 
             {/* Business */}
-            <div className="bg-white border border-slate-200/80 p-5 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between h-[280px] shadow-sm hover:shadow-md transition-shadow">
               <div className="space-y-3">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-800">Business Plan</h3>
-                  <p className="text-[9px] text-slate-400">Corporate-grade automation</p>
+                  <h3 className="font-extrabold text-sm text-slate-800">Business Plan</h3>
+                  <p className="text-[9.5px] text-slate-400">For teams and batch automation</p>
                 </div>
-                <p className="text-2xl font-extrabold text-slate-900">$29<span className="text-xs text-slate-400 font-normal">/month</span></p>
+                <p className="text-3xl font-extrabold text-slate-900">$29<span className="text-xs text-slate-400 font-normal">/mo</span></p>
                 <div className="space-y-1.5 text-xs text-slate-500">
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> 2000 tasks per month</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Max file size: 1 GB</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Batch process up to 250 files</p>
-                  <p className="flex items-center gap-2"><Check size={13} className="text-green-500 shrink-0" /> Team workspaces &amp; branding</p>
+                  <p className="flex items-center gap-2">✔ Team workspace</p>
+                  <p className="flex items-center gap-2">✔ 2000 tasks per month</p>
+                  <p className="flex items-center gap-2">✔ 1GB max file size</p>
                 </div>
               </div>
               <button
@@ -1217,70 +1514,139 @@ export default function HomePage() {
                   setUserPlan("business");
                   document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="w-full py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors"
               >
                 Start Business
               </button>
             </div>
 
           </div>
+
+          {/* Feature Differences Matrix */}
+          <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm mt-8">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/50 font-bold text-slate-800">
+                  <th className="p-3">Feature</th>
+                  <th className="p-3">Free</th>
+                  <th className="p-3 text-indigo-600">Pro</th>
+                  <th className="p-3">Business</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-655">
+                <tr>
+                  <td className="p-3 font-semibold text-slate-700">PDF Tools Available</td>
+                  <td className="p-3">Basic PDF tools</td>
+                  <td className="p-3 font-medium text-indigo-650">All PDF tools</td>
+                  <td className="p-3">Team workspace</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-slate-700">Daily Task Limits</td>
+                  <td className="p-3">5 tasks/day</td>
+                  <td className="p-3 font-medium text-indigo-650">300 tasks/month</td>
+                  <td className="p-3">2000 tasks/month</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-slate-700">Max File Size</td>
+                  <td className="p-3">25 MB</td>
+                  <td className="p-3 font-medium text-indigo-650">250 MB</td>
+                  <td className="p-3">1 GB</td>
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-slate-750">Batch Processing</td>
+                  <td className="p-3">No batch tools</td>
+                  <td className="p-3 font-medium text-indigo-650">Batch tools</td>
+                  <td className="p-3">Branding &amp; audit logs</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        {/* Security & Performance */}
-        <section className="border-t border-slate-200/60 px-6 py-12 bg-white">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <h2 className="text-xs font-extrabold text-center text-slate-400 uppercase tracking-widest">Security &amp; Performance Built In</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="text-center space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-200/50 flex items-center justify-center mx-auto shadow-inner">
-                  <Zap size={16} className="text-indigo-600" />
+        {/* 9. FAQ Section */}
+        <section className="bg-slate-100/50 border-t border-slate-200/50 px-6 py-12">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="text-center space-y-1">
+              <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Frequently Asked Questions</h2>
+              <p className="text-[11px] text-slate-400">Common questions about browser-based private PDF editing.</p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: "Do my files get uploaded to a server?",
+                  a: "No. DocuSafePDF runs entirely inside your browser sandbox. Your files are processed locally using Web Crypto and WebAssembly, meaning they never leave your device."
+                },
+                {
+                  q: "Is DocuSafePDF free to use?",
+                  a: "Yes. The free tier allows 5 tasks per day for standard utilities. Upgrade to Pro for high-limit processing and security reports."
+                },
+                {
+                  q: "How does the AI Q&A Chat work?",
+                  a: "The AI Q&A Chat reads your PDF text locally and communicates with Groq API using your own API key, keeping your data secure and under your control."
+                }
+              ].map((faq, idx) => (
+                <div key={idx} className="bg-white border border-slate-200 p-4 rounded-xl space-y-2">
+                  <h3 className="font-extrabold text-xs text-slate-850 uppercase tracking-wider">{faq.q}</h3>
+                  <p className="text-[11px] text-slate-500 leading-normal">{faq.a}</p>
                 </div>
-                <h3 className="font-semibold text-xs text-slate-800">Browser Execution</h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed">Most tools run fully client-side inside your browser engine. Zero upload latency, 100% private.</p>
-              </div>
-              <div className="text-center space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-200/50 flex items-center justify-center mx-auto shadow-inner">
-                  <Shield size={16} className="text-indigo-600" />
-                </div>
-                <h3 className="font-semibold text-xs text-slate-800">Secure Temporary Processing</h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed">Advanced tools use temporary secure processing when browser-only execution is not possible.</p>
-              </div>
-              <div className="text-center space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-200/50 flex items-center justify-center mx-auto shadow-inner">
-                  <Globe size={16} className="text-indigo-600" />
-                </div>
-                <h3 className="font-semibold text-xs text-slate-800">Private &amp; Auditable</h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed">Focus on document hygiene. Strip trackers, verify fake redactions, and log hashes locally.</p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="border-t border-slate-200/60 py-6 px-6 bg-slate-50 text-slate-500">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px]">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center">
-                <ShieldCheck size={12} className="text-white" />
+        {/* 10. Multi-column Premium Footer */}
+        <footer className="border-t border-slate-200/60 py-10 px-6 bg-slate-50 text-slate-500">
+          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-[11px] pb-8 border-b border-slate-200/60">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+                  <ShieldCheck size={14} className="text-white" />
+                </div>
+                <span className="font-bold text-sm text-slate-800 tracking-tight">DocuSafe PDF</span>
               </div>
-              <span className="font-bold text-xs text-slate-800 tracking-tight">DocuSafe PDF</span>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Your private document workspace. Edit, clean, and secure PDF documents locally with zero server storage logs.
+              </p>
             </div>
-            
-            <div className="flex flex-wrap items-center justify-center gap-4 text-slate-400">
-              <button onClick={() => {
-                setActiveCategory("all");
-                document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-              }} className="hover:text-slate-700 transition-colors">Tools</button>
-              <button onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })} className="hover:text-slate-700 transition-colors">Pricing</button>
-              <Link href="#" className="hover:text-slate-700 transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-slate-700 transition-colors">Terms</Link>
+
+            <div className="space-y-2.5">
+              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Tools</h4>
+              <div className="flex flex-col gap-1.5 text-slate-400">
+                <Link href="/tools/merge" className="hover:text-[#5B4DFF]">Merge PDF</Link>
+                <Link href="/tools/split" className="hover:text-[#5B4DFF]">Split PDF</Link>
+                <Link href="/tools/compress" className="hover:text-[#5B4DFF]">Compress PDF</Link>
+                <Link href="/tools/password-protect" className="hover:text-[#5B4DFF]">Protect PDF</Link>
+                <Link href="/tools/pdf-to-images" className="hover:text-[#5B4DFF]">PDF to Images</Link>
+              </div>
             </div>
-            
-            <div className="text-[10px] text-slate-400">
-              © {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor
+
+            <div className="space-y-2.5">
+              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Company</h4>
+              <div className="flex flex-col gap-1.5 text-slate-400">
+                <button onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })} className="text-left hover:text-[#5B4DFF]">Pricing Plans</button>
+                <Link href="/dashboard" className="hover:text-[#5B4DFF]">Dashboard</Link>
+                <Link href="#" className="hover:text-[#5B4DFF]">Contact Support</Link>
+                <Link href="#" className="hover:text-[#5B4DFF]">Product Roadmap</Link>
+              </div>
             </div>
+
+            <div className="space-y-2.5">
+              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Legal &amp; Security</h4>
+              <div className="flex flex-col gap-1.5 text-slate-400">
+                <Link href="#" className="hover:text-[#5B4DFF]">Privacy Policy</Link>
+                <Link href="#" className="hover:text-[#5B4DFF]">Terms of Service</Link>
+                <Link href="#" className="hover:text-[#5B4DFF]">Security Audits</Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-400">
+            <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
+            <p>Processing runs 100% locally in your browser sandbox.</p>
           </div>
         </footer>
+
       </main>
 
       {/* Login Modal */}
@@ -1358,7 +1724,7 @@ export default function HomePage() {
 
             <div className="space-y-2">
               {upgradeSuccess ? (
-                <div className="py-2.5 bg-green-100 border border-green-200 rounded-xl text-green-600 font-bold text-xs text-center flex items-center justify-center gap-1.5 animate-bounce">
+                <div className="py-2.5 bg-green-100 border border-green-200 rounded-xl text-green-655 font-bold text-xs text-center flex items-center justify-center gap-1.5 animate-bounce">
                   <Check size={14} /> Subscription Active! Welcome to Pro!
                 </div>
               ) : (
@@ -1403,7 +1769,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setIsLimitModalOpen(false)} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-500 hover:text-slate-800 font-bold transition-colors">
+              <button onClick={() => setIsLimitModalOpen(false)} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-505 hover:text-slate-800 font-bold transition-colors">
                 Cancel
               </button>
               <button
@@ -1411,7 +1777,7 @@ export default function HomePage() {
                   setIsLimitModalOpen(false);
                   setIsUpgradeOpen(true);
                 }}
-                className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors"
+                className="flex-1 py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors"
               >
                 Upgrade to Pro
               </button>
@@ -1440,7 +1806,7 @@ export default function HomePage() {
               <button onClick={() => {
                 setIsGateModalOpen(false);
                 document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-              }} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-500 hover:text-slate-800 font-bold transition-colors">
+              }} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-505 hover:text-slate-800 font-bold transition-colors">
                 View Free Tools
               </button>
               <button
@@ -1490,7 +1856,7 @@ function ToolCard({ tool, index, onClick, onCardMouseMove }: ToolCardProps) {
   
   const planColor = 
     tool.planRequired === "free" 
-      ? "text-green-600 bg-green-50 border-green-100" 
+      ? "text-emerald-600 bg-emerald-50 border-emerald-100" 
       : tool.planRequired === "pro" 
         ? "text-indigo-600 bg-indigo-50 border-indigo-100" 
         : "text-amber-600 bg-amber-50 border-amber-100";
@@ -1500,41 +1866,52 @@ function ToolCard({ tool, index, onClick, onCardMouseMove }: ToolCardProps) {
       href={tool.href}
       onClick={(e) => onClick(e, tool)}
       onMouseMove={onCardMouseMove}
-      className="glass-card shimmer-border p-3 flex flex-col gap-2.5 cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
+      className="glass-card shimmer-border p-5 flex flex-col justify-between h-[180px] cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in"
       style={{
         animationDelay: `${index * 20}ms`,
         // @ts-ignore
         "--hover-color": tool.color,
       }}
     >
-      <div className="flex items-start justify-between relative z-10">
-        <div 
-          className="w-8.5 h-8.5 rounded-lg flex items-center justify-center border transition-all duration-300 shadow-inner group-hover:scale-105"
-          style={{ 
-            backgroundColor: `${tool.color}10`, 
-            borderColor: `${tool.color}20` 
-          }}
-        >
-          <Icon size={15} style={{ color: tool.color }} />
+      <div>
+        <div className="flex items-start justify-between relative z-10 mb-3">
+          <div 
+            className="w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 shadow-inner group-hover:scale-105"
+            style={{ 
+              backgroundColor: `${tool.color}12`, 
+              borderColor: `${tool.color}20` 
+            }}
+          >
+            <Icon size={22} style={{ color: tool.color }} />
+          </div>
+          
+          <div className="flex items-center gap-1.5">
+            {POPULAR_10_IDS.includes(tool.id) && (
+              <span className="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500 text-white shadow-sm">
+                Most Used
+              </span>
+            )}
+            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border capitalize ${planColor}`}>
+              {tool.planRequired}
+            </span>
+          </div>
         </div>
-        
-        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border capitalize ${planColor}`}>
-          {tool.planRequired}
-        </span>
+
+        <div className="relative z-10">
+          <h3 className="font-extrabold text-slate-800 text-[14px] leading-tight group-hover:text-indigo-600 transition-colors duration-150 mb-1">
+            {tool.name}
+          </h3>
+          <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">
+            {tool.description}
+          </p>
+        </div>
       </div>
 
-      <div className="relative z-10 flex-1">
-        <h3 className="font-extrabold text-slate-800 text-[12.5px] leading-tight group-hover:text-indigo-600 transition-colors duration-150 mb-0.5">
-          {tool.name}
-        </h3>
-        <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 min-h-[30px] group-hover:text-slate-600 transition-colors">
-          {tool.description}
-        </p>
-      </div>
-
-      <div className="relative z-10 flex items-center justify-between text-[8.5px] font-bold text-slate-400 uppercase tracking-wider pt-1.5 border-t border-slate-100">
+      <div className="relative z-10 flex items-center justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wider pt-3 border-t border-slate-100">
         <span>{tool.processing.split("-")[0]}</span>
-        <span>{tool.outputType}</span>
+        <span className="text-[#5B4DFF] font-extrabold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+          Open Tool <ArrowRight size={10} className="mt-0.5" />
+        </span>
       </div>
     </a>
   );
