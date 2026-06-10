@@ -34,6 +34,11 @@ import {
   AlertOctagon,
   Lock,
   Paperclip,
+  Scissors,
+  Archive,
+  RotateCw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 interface PDFFileEntry {

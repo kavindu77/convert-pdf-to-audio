@@ -32,6 +32,9 @@ import {
   Paperclip,
   Scissors,
   Merge,
+  RotateCw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 function formatSize(bytes: number): string {

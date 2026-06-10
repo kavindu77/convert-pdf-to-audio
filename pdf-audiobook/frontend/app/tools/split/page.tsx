@@ -32,6 +32,9 @@ import {
   Paperclip,
   Merge,
   Archive,
+  RotateCw,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 type SplitMode = "every-page" | "custom-ranges";
