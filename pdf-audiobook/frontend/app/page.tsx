@@ -91,7 +91,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "merge",
     name: "Merge PDF",
-    description: "Combine multiple PDF files into a single document.",
+    description: "Combine multiple PDFs into one.",
     icon: Merge,
     href: "/tools/merge",
     color: "#8b5cf6",
@@ -106,7 +106,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "split",
     name: "Split PDF",
-    description: "Split a PDF into individual pages or custom ranges.",
+    description: "Extract ranges or separate pages.",
     icon: Scissors,
     href: "/tools/split",
     color: "#ec4899",
@@ -121,7 +121,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "compress",
     name: "Compress PDF",
-    description: "Reduce PDF file size by stripping metadata and structure.",
+    description: "Reduce file size in seconds.",
     icon: Archive,
     href: "/tools/compress",
     color: "#06b6d4",
@@ -136,7 +136,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "rotate",
     name: "Rotate PDF Pages",
-    description: "Rotate individual or all pages inside the document layout.",
+    description: "Rotate scan layouts easily.",
     icon: RotateCw,
     href: "/tools/rotate",
     color: "#a855f7",
@@ -151,7 +151,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "pdf-to-images",
     name: "PDF to Images",
-    description: "Convert each PDF page into high-quality PNG or JPG images.",
+    description: "Convert page sheets to images.",
     icon: Image,
     href: "/tools/pdf-to-images",
     color: "#f59e0b",
@@ -166,7 +166,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "images-to-pdf",
     name: "Images to PDF",
-    description: "Combine multiple images into a single PDF document.",
+    description: "Merge your photos into PDFs.",
     icon: FileImage,
     href: "/tools/images-to-pdf",
     color: "#10b981",
@@ -181,7 +181,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "extract-text",
     name: "Extract Text",
-    description: "Pull all text from a PDF and download it as a .txt file.",
+    description: "Extract all text contents.",
     icon: FileText,
     href: "/tools/extract-text",
     color: "#f97316",
@@ -196,7 +196,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "form-filler",
     name: "PDF Form Filler",
-    description: "Detect interactive input form fields in your PDF and fill them out.",
+    description: "Fill PDF form fields locally.",
     icon: FileEdit,
     href: "/tools/form-filler",
     color: "#8b5cf6",
@@ -213,7 +213,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "privacy-report",
     name: "Privacy Report",
-    description: "Check metadata, structural details, and verify tracking endpoints.",
+    description: "Audit author details and metadata.",
     icon: Eye,
     href: "/tools/privacy-report",
     color: "#14b8a6",
@@ -228,7 +228,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "evidence-locker",
     name: "Evidence Locker",
-    description: "Add a cryptographic signature to a PDF and check modification status.",
+    description: "Sign and verify SHA-256 hashes.",
     icon: ShieldCheck,
     href: "/tools/evidence-locker",
     color: "#3b82f6",
@@ -243,7 +243,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "fake-redaction",
     name: "Fake Redaction Scanner",
-    description: "Detect overlay boxes hiding text without stripping background layers.",
+    description: "Find masked unredacted text.",
     icon: AlertOctagon,
     href: "/tools/fake-redaction",
     color: "#ef4444",
@@ -258,7 +258,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "attachments",
     name: "Attachment Inspector",
-    description: "Inspect or strip embedded file payloads hiding in the catalog.",
+    description: "Extract or delete embedded attachments.",
     icon: Paperclip,
     href: "/tools/attachments",
     color: "#6366f1",
@@ -273,7 +273,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "password-protect",
     name: "Protect PDF",
-    description: "Add permissions and password protect the PDF file.",
+    description: "Password protect your files.",
     icon: Lock,
     href: "/tools/password-protect",
     color: "#ef4444",
@@ -288,7 +288,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "hidden-layers",
     name: "Hidden Layer Finder",
-    description: "Locate invisible layers, print templates, and hidden metadata groups.",
+    description: "Detect invisible background vectors.",
     icon: Layers,
     href: "/tools/hidden-layers",
     color: "#ec4899",
@@ -303,7 +303,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "link-safety",
     name: "Link Safety Auditor",
-    description: "Extract and audit all external hyperlinks found inside the layout.",
+    description: "Verify safety of links.",
     icon: Link2,
     href: "/tools/link-safety",
     color: "#14b8a6",
@@ -318,7 +318,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "redact",
     name: "PDF Redactor",
-    description: "Scan for patterns (emails, phone numbers, SSNs) and redact them.",
+    description: "Redact emails, phone numbers, SSNs.",
     icon: EyeOff,
     href: "/tools/redact",
     color: "#f43f5e",
@@ -335,7 +335,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "color-detector",
     name: "Color Detector",
-    description: "Audit pages to count color vs monochrome pages and optimize print jobs.",
+    description: "Optimize printing costs easily.",
     icon: Palette,
     href: "/tools/color-detector",
     color: "#10b981",
@@ -350,7 +350,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "ink-saver",
     name: "Ink Saver",
-    description: "Convert colored text / backgrounds to clean monochrome styles.",
+    description: "Convert backgrounds to white.",
     icon: Sun,
     href: "/tools/ink-saver",
     color: "#eab308",
@@ -365,7 +365,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "bad-scan-detector",
     name: "Bad Scan Check",
-    description: "Locate skewed pages, blurry layout segments, and blank pages.",
+    description: "Check scans for blurriness.",
     icon: ScanLine,
     href: "/tools/bad-scan-detector",
     color: "#ec4899",
@@ -380,7 +380,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "watermark",
     name: "Add Watermark",
-    description: "Apply text or vector overlay stamps across all pages.",
+    description: "Overlay text watermark stamps.",
     icon: Droplets,
     href: "/tools/watermark",
     color: "#0ea5e9",
@@ -395,7 +395,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "weight-map",
     name: "Ink Density Map",
-    description: "Generate a heat map highlighting the heaviest ink pages.",
+    description: "Map high ink usage sheets.",
     icon: Activity,
     href: "/tools/weight-map",
     color: "#10b981",
@@ -410,7 +410,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "margin-normalizer",
     name: "Margin Normalizer",
-    description: "Resize page layout dimensions to standardize grid print boundaries.",
+    description: "Standardize printing margins.",
     icon: Maximize,
     href: "/tools/margin-normalizer",
     color: "#6366f1",
@@ -425,7 +425,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "font-fixer",
     name: "Font Fixer",
-    description: "Audit missing font weights and substitute fallback systems.",
+    description: "Fix broken embedded lettering.",
     icon: Type,
     href: "/tools/font-fixer",
     color: "#8b5cf6",
@@ -440,7 +440,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "barcode-scanner",
     name: "Barcode Extractor",
-    description: "Scan pages for QR codes or barcodes and decode values.",
+    description: "Decode QR codes instantly.",
     icon: QrCode,
     href: "/tools/barcode-scanner",
     color: "#f59e0b",
@@ -457,7 +457,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "diff",
     name: "PDF Compare (Diff)",
-    description: "Compare text layouts of two PDFs and highlight line differences.",
+    description: "Diff text changes side-by-side.",
     icon: GitCompare,
     href: "/tools/diff",
     color: "#14b8a6",
@@ -472,7 +472,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "delivery-packager",
     name: "Delivery Packager",
-    description: "Compile multiple documents into organized folders with indexes.",
+    description: "ZIP package files with index.",
     icon: FolderArchive,
     href: "/tools/delivery-packager",
     color: "#f97316",
@@ -487,7 +487,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "reading-time",
     name: "Reading Speed Auditor",
-    description: "Analyze word logs to estimate study times and speaking rates.",
+    description: "Audit document word counts.",
     icon: Clock,
     href: "/tools/reading-time",
     color: "#f59e0b",
@@ -502,7 +502,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "timeline",
     name: "Document Timeline",
-    description: "Detect chronological dates in text to plot history charts.",
+    description: "Plot chronological date graphs.",
     icon: History,
     href: "/tools/timeline",
     color: "#06b6d4",
@@ -517,7 +517,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "page-labels",
     name: "Page Label Adjuster",
-    description: "Set logical layout numbering (I, II, III, 1, 2) in PDF catalogues.",
+    description: "Set Roman or digit numbering.",
     icon: Tags,
     href: "/tools/page-labels",
     color: "#8b5cf6",
@@ -532,7 +532,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "missing-pages",
     name: "Missing Page Auditor",
-    description: "Scan pages for sequence numbers (1, 2, 4...) and highlight gaps.",
+    description: "Audit missing page sheets.",
     icon: FileWarning,
     href: "/tools/missing-pages",
     color: "#ef4444",
@@ -547,7 +547,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "smart-rename",
     name: "Smart Rename",
-    description: "Parse page text to auto-rename files based on invoice ID, date, customer, or title.",
+    description: "Auto-rename files from text.",
     icon: Heading,
     href: "/tools/smart-rename",
     color: "#06b6d4",
@@ -562,7 +562,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "signature-positions",
     name: "Signature Position Saver",
-    description: "Save signature coordinates as templates and apply them automatically to invoices/contracts.",
+    description: "Save templates for stamping.",
     icon: Bookmark,
     href: "/tools/signature-positions",
     color: "#0ea5e9",
@@ -577,7 +577,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "stamp-consistency",
     name: "Stamp Checker",
-    description: "Ensure required stamps like 'Approved' or 'Confidential' are present on all pages.",
+    description: "Verify approval stamp layouts.",
     icon: Stamp,
     href: "/tools/stamp-consistency",
     color: "#a855f7",
@@ -592,7 +592,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "form-extractor",
     name: "Form Data Extractor",
-    description: "Extract all filled fields from interactive PDF forms into a structured CSV file.",
+    description: "Convert form data to CSV.",
     icon: FileSpreadsheet,
     href: "/tools/form-extractor",
     color: "#f59e0b",
@@ -609,7 +609,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "pdf-chat",
     name: "PDF Chat / Q&A",
-    description: "Interactive chat window to ask questions directly about your PDF content.",
+    description: "Chat with document text.",
     icon: MessageSquare,
     href: "/tools/pdf-chat",
     color: "#818cf8",
@@ -624,7 +624,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "summarize",
     name: "PDF Summarizer",
-    description: "Instantly summarize pages into paragraphs or key takeaways.",
+    description: "Summarize pages into bullets.",
     icon: Sparkles,
     href: "/tools/summarize",
     color: "#d946ef",
@@ -639,7 +639,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "flashcards",
     name: "PDF to Flashcards",
-    description: "Convert textbook pages into study Q&A flip card decks.",
+    description: "Generate study card decks.",
     icon: Layers,
     href: "/tools/flashcards",
     color: "#10b981",
@@ -654,7 +654,7 @@ const ALL_TOOLS: Tool[] = [
   {
     id: "pdf-to-audio",
     name: "PDF to Audio",
-    description: "Convert any PDF into a translated audiobook in 100+ languages.",
+    description: "Generate text-to-speech audiobooks.",
     icon: Mic,
     href: "/tools/pdf-to-audio",
     color: "#6366f1",
@@ -701,6 +701,11 @@ export default function HomePage() {
   const [tasksUsed, setTasksUsed] = useState(0);
   const [userName, setUserName] = useState("Kavindu");
   const [userEmail, setUserEmail] = useState("kavindu@example.com");
+
+  // Search autocomplete state
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeSearchIndex, setActiveSearchIndex] = useState(0);
 
   // Modals
   const [isSignInOpen, setIsSignInOpen] = useState(false);
@@ -846,6 +851,45 @@ export default function HomePage() {
     return matchesSearch && tool.category === activeCategory;
   });
 
+  const searchResults = searchQuery.trim() !== ""
+    ? ALL_TOOLS.filter(t => 
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : ALL_TOOLS.filter(t => ["merge", "split", "compress", "password-protect", "pdf-chat"].includes(t.id));
+
+  useEffect(() => {
+    setActiveSearchIndex(0);
+  }, [searchQuery]);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSearchDropdown) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveSearchIndex((prev) => (prev + 1) % searchResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchResults[activeSearchIndex]) {
+        const targetTool = searchResults[activeSearchIndex];
+        const allowed = isToolAllowed(targetTool.id, userPlan);
+        if (!allowed) {
+          setGateToolName(targetTool.name);
+          setGateToolRequired(targetTool.planRequired);
+          setIsGateModalOpen(true);
+          return;
+        }
+        router.push(targetTool.href);
+        setShowSearchDropdown(false);
+      }
+    } else if (e.key === "Escape") {
+      setShowSearchDropdown(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F6F8FF] text-[#071B3A] selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
       
@@ -861,7 +905,7 @@ export default function HomePage() {
             DocuSafe<span className="text-[#7F77DD]">PDF</span>
           </Link>
 
-          {/* Search bar inside navigation menu to avoid orphan state */}
+          {/* Search bar inside navigation menu with instant results autocomplete */}
           <div className="relative hidden md:block w-48 lg:w-64">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/35" size={13} />
             <input 
@@ -870,10 +914,62 @@ export default function HomePage() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
+                setShowSearchDropdown(true);
               }}
-              className="w-full pl-8 pr-3 py-1.5 bg-[#16161C] border border-white/10 rounded-lg text-[11px] focus:outline-none focus:border-[#7F77DD] placeholder-white/25 text-white"
+              onFocus={() => {
+                setShowSearchDropdown(true);
+                setIsSearchFocused(true);
+              }}
+              onBlur={() => {
+                setIsSearchFocused(false);
+                setTimeout(() => setShowSearchDropdown(false), 250);
+              }}
+              onKeyDown={handleSearchKeyDown}
+              className="w-full pl-8 pr-3 py-1.5 bg-[#16161C] border border-[#7F77DD]/20 rounded-lg text-[11px] focus:outline-none focus:border-[#7F77DD] placeholder-white/25 text-white transition-all focus:ring-2 focus:ring-[#7F77DD]/20"
             />
+            {showSearchDropdown && (searchQuery.trim() !== "" || isSearchFocused) && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#16161C] border border-white/10 rounded-xl shadow-2xl p-2 z-50 max-h-60 overflow-y-auto flex flex-col gap-1 animate-fade-in">
+                <div className="text-[9px] text-white/30 font-bold uppercase tracking-wider px-2 py-1 border-b border-white/5 mb-1 flex justify-between items-center">
+                  <span>{searchQuery.trim() !== "" ? "Search Results" : "Popular Tools"}</span>
+                  <span className="text-[8px] opacity-65 lowercase text-[#7F77DD]">↑↓ to navigate, enter to open</span>
+                </div>
+                {searchResults.map((t, idx) => {
+                  const CardIcon = t.icon;
+                  const isHighlighted = idx === activeSearchIndex;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        const allowed = isToolAllowed(t.id, userPlan);
+                        if (!allowed) {
+                          setGateToolName(t.name);
+                          setGateToolRequired(t.planRequired);
+                          setIsGateModalOpen(true);
+                          return;
+                        }
+                        router.push(t.href);
+                        setShowSearchDropdown(false);
+                      }}
+                      onMouseEnter={() => setActiveSearchIndex(idx)}
+                      className={`w-full flex items-center gap-2 p-2 rounded-lg text-left border-none bg-transparent cursor-pointer text-white transition-colors ${
+                        isHighlighted ? "bg-white/10" : "hover:bg-white/5"
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: `${t.color}20` }}>
+                        <CardIcon size={12} style={{ color: t.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-bold truncate">{t.name}</div>
+                        <div className="text-[9px] text-white/40 truncate">{t.description}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+                {searchResults.length === 0 && (
+                  <div className="text-[10px] text-white/40 text-center py-2">No matching tools</div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="nav-r flex items-center gap-5 text-xs">
@@ -935,10 +1031,15 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* Social Proof trust indicator */}
-            <div className="pt-6 border-t border-white/5 mt-6 max-w-sm">
-              <p className="text-[10px] text-white/30 font-medium leading-relaxed">
-                ⭐ Trusted by 10,000+ privacy-focused students, freelancers, and security teams with zero document leaks.
+            {/* Social Proof trust indicator with avatar faces */}
+            <div className="pt-6 border-t border-white/5 mt-6 max-w-sm flex items-center gap-3">
+              <div className="flex -space-x-2 shrink-0">
+                <div className="w-6 h-6 rounded-full bg-slate-800 border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-[#7F77DD]">K</div>
+                <div className="w-6 h-6 rounded-full bg-[#534AB7] border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-white">S</div>
+                <div className="w-6 h-6 rounded-full bg-[#7F77DD] border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-slate-900">A</div>
+              </div>
+              <p className="text-[10px] text-white/35 font-medium leading-relaxed">
+                Trusted by 10,000+ privacy-focused students, freelancers, and offices.
               </p>
             </div>
           </div>
@@ -1152,7 +1253,7 @@ export default function HomePage() {
         {/* 4. Why Private PDF Tools (Trust Grid) */}
         <section className="max-w-4xl mx-auto px-6 py-12 space-y-8 border-t border-slate-200/50">
           <div className="text-center space-y-1">
-            <h2 className="text-xs font-extrabold text-slate-450 uppercase tracking-widest">Why DocuSafePDF?</h2>
+            <h2 className="text-xs font-extrabold text-slate-455 uppercase tracking-widest">Why DocuSafePDF?</h2>
             <p className="text-base font-extrabold text-slate-800">Visual PDF Hygiene without Server Storage Risk</p>
           </div>
 
@@ -1730,7 +1831,10 @@ function ToolCard({ tool, index, onClick, onCardMouseMove }: ToolCardProps) {
       </div>
 
       <div className="relative z-10 flex items-center justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wider pt-3 border-t border-slate-100">
-        <span>{tool.processing.split("-")[0]}</span>
+        <span className="flex items-center gap-1 text-[9px] text-slate-450 font-semibold lowercase first-letter:uppercase">
+          <Globe size={11} className="text-slate-400 shrink-0" />
+          in-browser
+        </span>
         <span className="text-[#5B4DFF] font-extrabold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
           Open Tool <ArrowRight size={10} className="mt-0.5" />
         </span>
