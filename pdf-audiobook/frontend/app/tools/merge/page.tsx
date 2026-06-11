@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useUsageStore } from "../../utils/useUsageStore";
+import { verifyUsageAndGetToken, recordUsageSuccess } from "../../utils/usageClient";
 import UsageGateModal from "../../components/UsageGateModal";
 import {
   Merge,
@@ -204,40 +205,20 @@ export default function MergePDFPage() {
       const totalSizeMb = totalSizeBytes / (1024 * 1024);
       const totalPages = files.reduce((sum, f) => sum + (f.pageCount ?? 0), 0);
 
-      const checkRes = await fetch("/api/usage/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          toolSlug: "merge",
-          fileSizeMb: totalSizeMb,
-          pageCount: totalPages,
-          fileCount: files.length,
-        }),
+      const checkResult = await verifyUsageAndGetToken({
+        toolSlug: "merge",
+        toolName: "Merge PDF",
+        fileSizeMb: totalSizeMb,
+        pageCount: totalPages,
+        fileCount: files.length,
       });
 
-      if (!checkRes.ok) {
-        const errData = await checkRes.json().catch(() => ({}));
-        const errCode = errData.error || "ACCESS_DENIED";
-
-        if (errCode === "UPGRADE_REQUIRED") {
-          openGate("pro-gate", "Merge PDF");
-        } else if (errCode === "FILE_TOO_LARGE") {
-          openGate("file-too-large", "Merge PDF", { currentVal: totalSizeMb.toFixed(1) });
-        } else if (errCode === "PAGE_LIMIT_EXCEEDED") {
-          openGate("pages-exceeded", "Merge PDF", { currentVal: totalPages });
-        } else if (errCode === "BATCH_LIMIT_EXCEEDED") {
-          openGate("batch-limit-exceeded", "Merge PDF", { currentVal: files.length });
-        } else if (errCode === "DAILY_LIMIT_REACHED" || errCode === "MONTHLY_LIMIT_REACHED") {
-          openGate("limit-reached", "Merge PDF");
-        } else {
-          setError(errData.error || "Access check failed. Please try again.");
-        }
+      if (!checkResult.allowed) {
         setIsMerging(false);
         return;
       }
 
-      const checkData = await checkRes.json();
-      jobToken = checkData.jobToken;
+      const { jobToken, jobId, taskCost } = checkResult;
 
       // 2. Perform the actual PDF merge locally
       const { PDFDocument } = await import("pdf-lib");
@@ -257,22 +238,21 @@ export default function MergePDFPage() {
       const blob = new Blob([mergedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
 
       // 3. Record successful execution
-      const recordRes = await fetch("/api/usage/record", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobToken,
-          fileSizeMb: blob.size / (1024 * 1024),
-          pageCount: mergedPdf.getPageCount(),
-        }),
+      const recordSuccess = await recordUsageSuccess({
+        jobToken: jobToken!,
+        jobId: jobId!,
+        toolSlug: "merge",
+        fileSizeMb: blob.size / (1024 * 1024),
+        pageCount: mergedPdf.getPageCount(),
+        fileCount: files.length,
       });
 
-      if (!recordRes.ok) {
+      if (!recordSuccess) {
         throw new Error("Failed to record usage event. Please try again.");
       }
 
       // Sync local storage tasksUsed cache
-      const updatedTasksUsed = tasksUsed + (checkData.taskCost || 1);
+      const updatedTasksUsed = tasksUsed + (taskCost || 1);
       setTasksUsed(updatedTasksUsed);
       localStorage.setItem("user_tasks_used_today", String(updatedTasksUsed));
       window.dispatchEvent(new Event("storage"));
@@ -648,8 +628,10 @@ export default function MergePDFPage() {
           <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
           <div className="flex gap-4">
             <Link href="/" className="hover:underline">Home</Link>
-            <Link href="#" className="hover:underline">Privacy Policy</Link>
-            <Link href="#" className="hover:underline">Terms of Service</Link>
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            <Link href="/refund" className="hover:underline">Refund Policy</Link>
+            <Link href="/contact" className="hover:underline">Contact Us</Link>
           </div>
         </div>
       </footer>

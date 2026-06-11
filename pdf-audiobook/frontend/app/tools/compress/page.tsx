@@ -3,6 +3,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import UsageGateModal from "../../components/UsageGateModal";
+import { verifyUsageAndGetToken, recordUsageSuccess } from "../../utils/usageClient";
 import {
   Archive,
   Upload,
@@ -133,9 +135,24 @@ export default function CompressPdfPage() {
       setProgress(35);
       setProgressLabel("Parsing PDF structure...");
 
-      const pdfDoc = await PDFDocument.load(arrayBuffer, {
-        ignoreEncryption: true,
+      const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+      const pageCount = pdfDoc.getPageCount();
+      const fileSizeMb = originalSize / (1024 * 1024);
+
+      // Perform server-side access check & token creation
+      const checkResult = await verifyUsageAndGetToken({
+        toolSlug: "compress",
+        toolName: "Compress PDF",
+        fileSizeMb,
+        pageCount,
+        fileCount: 1,
       });
+
+      if (!checkResult.allowed) {
+        setIsCompressing(false);
+        return;
+      }
+
       setProgress(55);
       setProgressLabel("Stripping metadata...");
 
@@ -151,8 +168,25 @@ export default function CompressPdfPage() {
       const compressedBytes = await pdfDoc.save({
         useObjectStreams: false,
       });
-      setProgress(90);
+      setProgress(85);
       setProgressLabel("Finalizing...");
+
+      // Record successful execution
+      const recordSuccess = await recordUsageSuccess({
+        jobToken: checkResult.jobToken!,
+        jobId: checkResult.jobId!,
+        toolSlug: "compress",
+        fileSizeMb: compressedBytes.byteLength / (1024 * 1024),
+        pageCount,
+        fileCount: 1,
+      });
+
+      if (!recordSuccess) {
+        throw new Error("Failed to record usage event. Please try again.");
+      }
+
+      setProgress(100);
+      setProgressLabel("Complete!");
 
       const compressedSize = compressedBytes.byteLength;
       const savingsPercent =
@@ -162,9 +196,6 @@ export default function CompressPdfPage() {
 
       const blob = new Blob([compressedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const baseName = file.name.replace(/\.pdf$/i, "");
-
-      setProgress(100);
-      setProgressLabel("Complete!");
 
       setResult({
         originalSize,
@@ -522,11 +553,16 @@ export default function CompressPdfPage() {
           <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
           <div className="flex gap-4">
             <Link href="/" className="hover:underline">Home</Link>
-            <Link href="#" className="hover:underline">Privacy Policy</Link>
-            <Link href="#" className="hover:underline">Terms of Service</Link>
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            <Link href="/refund" className="hover:underline">Refund Policy</Link>
+            <Link href="/contact" className="hover:underline">Contact Us</Link>
           </div>
         </div>
       </footer>
+
+      {/* Usage Gate Modal */}
+      <UsageGateModal />
 
       <style jsx global>{`
         @keyframes fadeIn {

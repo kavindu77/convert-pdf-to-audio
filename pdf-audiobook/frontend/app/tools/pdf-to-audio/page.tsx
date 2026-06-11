@@ -46,6 +46,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { uploadPDF, getJobStatus, JobStatus } from "@/lib/api";
+import UsageGateModal from "../../components/UsageGateModal";
+import { verifyUsageAndGetToken, recordUsageSuccess } from "../../utils/usageClient";
 
 const API_URL = "https://convert-pdf-to-audio.onrender.com";
 
@@ -92,6 +94,11 @@ export default function PdfToAudioPage() {
   const [estimatedTime, setEstimatedTime] = useState<string | null>(null);
   const [isFreePlan, setIsFreePlan] = useState(true);
 
+  // Secure job token tracking states
+  const [activeJobToken, setActiveJobToken] = useState<string | null>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [activePageCount, setActivePageCount] = useState<number>(0);
+
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -102,6 +109,17 @@ export default function PdfToAudioPage() {
         setJobStatus(status);
         if (status.status === "completed" || status.status === "failed") {
           if (pollRef.current) clearInterval(pollRef.current);
+
+          if (status.status === "completed" && activeJobToken && activeJobId) {
+            await recordUsageSuccess({
+              jobToken: activeJobToken,
+              jobId: activeJobId,
+              toolSlug: "pdf-to-audio",
+              fileSizeMb: file ? file.size / (1024 * 1024) : 0,
+              pageCount: activePageCount,
+              fileCount: 1,
+            });
+          }
         }
       } catch (e) {
         console.error("Polling error", e);
@@ -110,7 +128,7 @@ export default function PdfToAudioPage() {
     poll();
     pollRef.current = setInterval(poll, 3000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [jobId]);
+  }, [jobId, activeJobToken, activeJobId, activePageCount, file]);
 
   const onDrop = useCallback((accepted: File[]) => {
     if (accepted[0]) {
@@ -138,6 +156,30 @@ export default function PdfToAudioPage() {
     setIsUploading(true);
     setError(null);
     try {
+      const { PDFDocument } = await import("pdf-lib");
+      const buffer = await file.arrayBuffer();
+      const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
+      const pageCount = pdf.getPageCount();
+      const fileSizeMb = file.size / (1024 * 1024);
+
+      // Perform server-side access check & token creation
+      const checkResult = await verifyUsageAndGetToken({
+        toolSlug: "pdf-to-audio",
+        toolName: "PDF to Audio",
+        fileSizeMb,
+        pageCount,
+        fileCount: 1,
+      });
+
+      if (!checkResult.allowed) {
+        setIsUploading(false);
+        return;
+      }
+
+      setActiveJobToken(checkResult.jobToken || null);
+      setActiveJobId(checkResult.jobId || null);
+      setActivePageCount(pageCount);
+
       const res = await uploadPDF(file, targetLang, "auto", voiceGender);
       setJobId(res.job_id);
       setEstimatedTime(res.estimated_time ? String(res.estimated_time) : null);
@@ -523,6 +565,23 @@ export default function PdfToAudioPage() {
           </section>
         )}
       </main>
+
+      {/* Minimal Footer */}
+      <footer className="border-t border-slate-200/60 py-4 px-6 relative z-10 bg-slate-50 text-slate-500 shadow-inner mt-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px]">
+          <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
+          <div className="flex gap-4">
+            <Link href="/" className="hover:underline">Home</Link>
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+            <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            <Link href="/refund" className="hover:underline">Refund Policy</Link>
+            <Link href="/contact" className="hover:underline">Contact Us</Link>
+          </div>
+        </div>
+      </footer>
+
+      {/* Usage Gate Modal */}
+      <UsageGateModal />
     </div>
   );
 }

@@ -62,8 +62,8 @@ export async function POST(req: Request) {
     where: { eventKey },
   });
 
-  if (exists && exists.status === "processed") {
-    return new Response("OK (already processed)");
+  if (exists && (exists.status === "processed" || exists.status === "processing")) {
+    return new Response("OK (already processed or processing)");
   }
 
   // Create or update webhook event to "processing"

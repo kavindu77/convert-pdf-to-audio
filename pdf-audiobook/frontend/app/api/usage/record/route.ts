@@ -11,16 +11,20 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { jobToken, fileSizeMb, pageCount } = body;
+    const { jobToken, jobId, toolSlug, fileSizeMb, pageCount, fileCount } = body;
 
-    if (!jobToken || fileSizeMb === undefined || pageCount === undefined) {
+    if (!jobToken || !jobId || !toolSlug || fileSizeMb === undefined || pageCount === undefined) {
       return Response.json({ error: "Missing required parameters" }, { status: 400 });
     }
 
     const result = await recordUsage({
-      jobTokenId: jobToken,
+      rawToken: jobToken,
+      jobId,
+      toolSlug,
+      userId: user.id,
       fileSizeMb: parseFloat(fileSizeMb),
       pageCount: parseInt(pageCount, 10),
+      fileCount: fileCount ? parseInt(fileCount, 10) : 1,
     });
 
     return Response.json({ success: true, eventId: result.id });

@@ -1564,7 +1564,7 @@ export default function HomePage() {
               <div className="flex flex-col gap-1.5 text-slate-400 text-left">
                 <button onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })} className="text-left hover:text-[#5B4DFF] bg-transparent border-none p-0 cursor-pointer text-[11px] text-slate-400">Pricing Plans</button>
                 <Link href="/dashboard" className="hover:text-[#5B4DFF] no-underline">Dashboard</Link>
-                <Link href="#" className="hover:text-[#5B4DFF] no-underline">Contact Support</Link>
+                <Link href="/contact" className="hover:text-[#5B4DFF] no-underline">Contact Support</Link>
                 <Link href="#" className="hover:text-[#5B4DFF] no-underline">Product Roadmap</Link>
               </div>
             </div>
@@ -1572,8 +1572,9 @@ export default function HomePage() {
             <div className="space-y-2.5">
               <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Legal &amp; Security</h4>
               <div className="flex flex-col gap-1.5 text-slate-400">
-                <Link href="#" className="hover:text-[#5B4DFF] no-underline">Privacy Policy</Link>
-                <Link href="#" className="hover:text-[#5B4DFF] no-underline">Terms of Service</Link>
+                <Link href="/privacy" className="hover:text-[#5B4DFF] no-underline">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-[#5B4DFF] no-underline">Terms of Service</Link>
+                <Link href="/refund" className="hover:text-[#5B4DFF] no-underline">Refund Policy</Link>
                 <Link href="#" className="hover:text-[#5B4DFF] no-underline">Security Audits</Link>
               </div>
             </div>

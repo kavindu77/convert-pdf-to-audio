@@ -1,19 +1,22 @@
+import crypto from "crypto";
 import { db } from "./db";
 import { TOOLS, PLANS_CONFIG } from "./tools";
 
 /**
  * Calculates user's consumed tasks in the current active period.
- * - Free: sum task costs incurred today (since 00:00).
- * - Paid: sum task costs incurred in the current calendar month.
+ * - Free: sum task costs incurred today (since 00:00 UTC).
+ * - Paid: sum task costs incurred in the current calendar month (in UTC).
  */
 export async function getUsageForCurrentPeriod(userId: string, plan: string) {
   const now = new Date();
   let fromDate: Date;
 
   if (plan === "free") {
-    fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Start of today in UTC
+    fromDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   } else {
-    fromDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Start of the month in UTC
+    fromDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   }
 
   const result = await db.usageEvent.aggregate({
@@ -40,7 +43,7 @@ export async function getUsageForCurrentPeriod(userId: string, plan: string) {
 
 /**
  * Validates plan level, file sizes, page counts, and task allocations.
- * On success, yields a single-use token valid for 5 minutes.
+ * On success, yields a single-use token valid for 10 minutes.
  */
 export async function checkToolAccess({
   userId,
@@ -48,12 +51,14 @@ export async function checkToolAccess({
   fileSizeMb,
   pageCount,
   fileCount = 1,
+  jobId,
 }: {
   userId: string;
   toolSlug: string;
   fileSizeMb: number;
   pageCount: number;
   fileCount?: number;
+  jobId?: string;
 }) {
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("UNAUTHORIZED");
@@ -100,12 +105,18 @@ export async function checkToolAccess({
     }
   }
 
-  // Generate a short-lived JobToken
-  const expiresAt = new Date(Date.now() + 1000 * 60 * 5); // 5 minutes expiration
-  const jobToken = await db.jobToken.create({
+  // Generate a short-lived cryptographically secure random token and a unique jobId
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const finalJobId = jobId || crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 10); // 10 minutes expiration
+
+  await db.jobToken.create({
     data: {
+      tokenHash,
       userId: user.id,
       toolSlug,
+      jobId: finalJobId,
       taskCost,
       expiresAt,
     },
@@ -113,7 +124,8 @@ export async function checkToolAccess({
 
   return {
     allowed: true,
-    jobToken: jobToken.id,
+    jobToken: rawToken, // Return the raw token to the client
+    jobId: finalJobId,
     taskCost,
     plan: user.plan,
   };
@@ -121,19 +133,28 @@ export async function checkToolAccess({
 
 /**
  * Consumes the pre-allocated JobToken and registers a successful usage event.
- * Prevents client-side manipulation of task logging.
+ * Prevents client-side manipulation of task logging by checking token validity.
  */
 export async function recordUsage({
-  jobTokenId,
+  rawToken,
+  jobId,
+  toolSlug,
+  userId,
   fileSizeMb,
   pageCount,
+  fileCount = 1,
 }: {
-  jobTokenId: string;
+  rawToken: string;
+  jobId: string;
+  toolSlug: string;
+  userId: string;
   fileSizeMb: number;
   pageCount: number;
+  fileCount?: number;
 }) {
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
   const token = await db.jobToken.findUnique({
-    where: { id: jobTokenId },
+    where: { tokenHash },
   });
 
   if (!token) {
@@ -148,10 +169,22 @@ export async function recordUsage({
     throw new Error("TOKEN_EXPIRED");
   }
 
+  if (token.userId !== userId) {
+    throw new Error("UNAUTHORIZED_TOKEN_USER");
+  }
+
+  if (token.jobId !== jobId) {
+    throw new Error("INVALID_JOB_ID");
+  }
+
+  if (token.toolSlug !== toolSlug) {
+    throw new Error("INVALID_TOOL_SLUG");
+  }
+
   return await db.$transaction(async (tx) => {
     // 1. Mark token as consumed
     await tx.jobToken.update({
-      where: { id: jobTokenId },
+      where: { id: token.id },
       data: { isUsed: true },
     });
 
@@ -163,6 +196,7 @@ export async function recordUsage({
         taskCost: token.taskCost,
         fileSizeMb,
         pageCount,
+        fileCount,
         status: "success",
       },
     });

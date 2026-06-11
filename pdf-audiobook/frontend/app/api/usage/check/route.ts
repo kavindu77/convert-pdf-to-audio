@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { toolSlug, fileSizeMb, pageCount, fileCount } = body;
+    const { toolSlug, fileSizeMb, pageCount, fileCount, jobId } = body;
 
     if (!toolSlug || fileSizeMb === undefined || pageCount === undefined) {
       return Response.json({ error: "Missing required parameters" }, { status: 400 });
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       fileSizeMb: parseFloat(fileSizeMb),
       pageCount: parseInt(pageCount, 10),
       fileCount: fileCount ? parseInt(fileCount, 10) : 1,
+      jobId,
     });
 
     return Response.json(access);

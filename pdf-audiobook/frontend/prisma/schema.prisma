@@ -58,6 +58,7 @@ model UsageEvent {
   taskCost    Int      @map("task_cost")
   fileSizeMb  Float    @map("file_size_mb")
   pageCount   Int      @map("page_count")
+  fileCount   Int      @default(1) @map("file_count")
   status      String   @default("success") // "success" | "failed"
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -68,8 +69,10 @@ model UsageEvent {
 
 model JobToken {
   id          String   @id @default(uuid())
+  tokenHash   String   @unique @map("token_hash")
   userId      String   @map("user_id")
   toolSlug    String   @map("tool_slug")
+  jobId       String   @map("job_id")
   taskCost    Int      @map("task_cost")
   isUsed      Boolean  @default(false) @map("is_used")
   expiresAt   DateTime @map("expires_at")
