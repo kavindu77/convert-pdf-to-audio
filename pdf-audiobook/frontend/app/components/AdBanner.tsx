@@ -40,7 +40,7 @@ export default function AdBanner({
             ref={adRef}
             className="adsbygoogle"
             style={{ display: "block", width: "100%" }}
-            data-ad-client="ca-pub-5839181890476971" // REPLACE WITH ACTUAL CLIENT ID
+            data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID}
             data-ad-slot={adSlot}
             data-ad-format={adFormat}
             data-full-width-responsive={fullWidthResponsive ? "true" : "false"}
