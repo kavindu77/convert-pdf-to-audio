@@ -73,12 +73,32 @@ export async function checkToolAccess({
   };
 
   const userPlan = (user.plan || "free") as "free" | "pro" | "business";
+  const isProTool = tool.minPlan === "pro";
+  let usingProTrial = false;
 
   if (planRank[userPlan] < planRank[tool.minPlan]) {
-    throw new Error("UPGRADE_REQUIRED");
+    const paymentsEnabled = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === "true";
+    if (!paymentsEnabled && userPlan === "free" && isProTool) {
+      const proToolSlugs = TOOLS.filter((t) => t.minPlan === "pro").map((t) => t.slug);
+      const proTrialsUsed = await db.usageEvent.count({
+        where: {
+          userId: user.id,
+          toolSlug: { in: proToolSlugs },
+          status: "success",
+        },
+      });
+
+      if (proTrialsUsed < 2) {
+        usingProTrial = true;
+      } else {
+        throw new Error("TRIAL_LIMIT_REACHED");
+      }
+    } else {
+      throw new Error("UPGRADE_REQUIRED");
+    }
   }
 
-  const limits = PLANS_CONFIG[userPlan];
+  const limits = PLANS_CONFIG[usingProTrial ? "pro" : userPlan];
 
   if (fileSizeMb > limits.maxFileSizeMb) {
     throw new Error("FILE_TOO_LARGE");
@@ -95,11 +115,11 @@ export async function checkToolAccess({
   const taskCost = tool.taskCost * fileCount;
   const usage = await getUsageForCurrentPeriod(user.id, userPlan);
 
-  if (userPlan === "free") {
+  if (userPlan === "free" && !usingProTrial) {
     if (usage.dailyTasksUsed + taskCost > limits.dailyTasks!) {
       throw new Error("DAILY_LIMIT_REACHED");
     }
-  } else {
+  } else if (userPlan !== "free") {
     if (usage.monthlyTasksUsed + taskCost > limits.monthlyTasks!) {
       throw new Error("MONTHLY_LIMIT_REACHED");
     }
@@ -128,6 +148,7 @@ export async function checkToolAccess({
     jobId: finalJobId,
     taskCost,
     plan: user.plan,
+    isProTrial: usingProTrial,
   };
 }
 

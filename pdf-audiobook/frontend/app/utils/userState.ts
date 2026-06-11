@@ -84,10 +84,10 @@ export const TOOL_COSTS: Record<string, number> = {
   "form-extractor": 1,
   
   // AI Tools
-  "pdf-chat": 1,
-  summarize: 1,
-  flashcards: 1,
-  "pdf-to-audio": 1,
+  "pdf-chat": 2,
+  summarize: 2,
+  flashcards: 3,
+  "pdf-to-audio": 5,
 };
 
 // Returns which tier is required for a tool
@@ -107,6 +107,9 @@ export function getRequiredPlanForTool(toolId: string): PlanType {
     "margin-normalizer",
     "font-fixer",
     "weight-map",
+    "pdf-chat",
+    "summarize",
+    "flashcards",
   ];
   
   const bizTools = [
@@ -116,6 +119,7 @@ export function getRequiredPlanForTool(toolId: string): PlanType {
     "signature-positions",
     "stamp-consistency",
     "form-extractor",
+    "pdf-to-audio",
   ];
 
   if (bizTools.includes(toolId)) return "business";

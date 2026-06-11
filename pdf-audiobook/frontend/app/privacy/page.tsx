@@ -41,11 +41,10 @@ export default function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">1. Local Processing Guarantee</h2>
             <p>
-              At DocuSafe PDF, we prioritize the confidentiality of your documents. 
-              <strong> All core operations including merging, splitting, compressing, rotating, watermarking, password protection, and metadata inspection are performed entirely inside your web browser.</strong>
+              At DocuSafe PDF, we prioritize the confidentiality of your documents. Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required.
             </p>
             <p>
-              Your PDF files, document pages, text contents, and images never touch our servers, nor do we ever view or retain your files.
+              All core operations including merging, splitting, compressing, rotating, watermarking, password protection, and metadata inspection are performed entirely inside your web browser. Your PDF files, document pages, text contents, and images for those core tools never touch our servers.
             </p>
           </section>
 
@@ -69,7 +68,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-5 space-y-1.5">
               <li><strong>Clerk:</strong> Provides secure authentication, identity verification, and profile management.</li>
               <li><strong>LemonSqueezy:</strong> Securely processes checkouts, stores customer credentials, manages subscriptions, and handles tax compliance.</li>
-              <li><strong>Groq API:</strong> For AI-powered tools (PDF Chat, Summarizer, Flashcards), text extracts are securely transmitted to the AI endpoint. No document logs are cached or saved on our servers for these tools.</li>
+              <li><strong>Groq API:</strong> AI tools send extracted document text to our secure server and AI provider to generate responses. We do not use user-provided API keys, and we do not store full document text after processing.</li>
             </ul>
           </section>
 

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, ShieldCheck, ArrowLeft, HelpCircle } from "lucide-react";
+import { Check, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useUsageStore } from "../utils/useUsageStore";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const { triggerCheckout, isLoadingCheckout } = useUsageStore();
+
+  const paymentsEnabled = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === "true";
 
   const handleUpgrade = async (plan: "pro" | "business") => {
     await triggerCheckout(plan, billingCycle);
@@ -26,8 +28,9 @@ export default function PricingPage() {
         "Basic client-side tools only",
         "No batch operations",
         "Local browser processing",
+        ...(!paymentsEnabled ? ["2 Pro trials included temporarily"] : []),
       ],
-      cta: "Get Started",
+      cta: "Start Free",
       action: null,
       highlight: false,
     },
@@ -46,8 +49,10 @@ export default function PricingPage() {
         "Up to 25 files in batch processing",
         "Priority customer support",
       ],
-      cta: "Upgrade to Pro",
-      action: () => handleUpgrade("pro"),
+      cta: paymentsEnabled ? "Upgrade to Pro" : "Notify Me",
+      action: paymentsEnabled
+        ? () => handleUpgrade("pro")
+        : () => { window.location.href = "mailto:ikavinduw@gmail.com?subject=DocuSafe%20PDF%20Pro%20Waitlist"; },
       highlight: true,
     },
     {
@@ -66,8 +71,10 @@ export default function PricingPage() {
         "Up to 250 files in batch processing",
         "Custom storage deletion policies",
       ],
-      cta: "Upgrade to Business",
-      action: () => handleUpgrade("business"),
+      cta: paymentsEnabled ? "Upgrade to Business" : "Notify Me",
+      action: paymentsEnabled
+        ? () => handleUpgrade("business")
+        : () => { window.location.href = "mailto:ikavinduw@gmail.com?subject=DocuSafe%20PDF%20Business%20Waitlist"; },
       highlight: false,
     },
   ];
@@ -95,15 +102,27 @@ export default function PricingPage() {
       <main className="max-w-6xl mx-auto px-8 py-16 w-full relative z-10 flex-1 flex flex-col justify-center gap-12">
         <div className="space-y-4">
           <Link href="/" className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white transition-colors no-underline">
-            <ArrowLeft size={13} /> Back to Homepage
+            <ArrowLeft size={13} /> Back to Dashboard
           </Link>
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-4">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Simple, transparent plans</h1>
             <p className="text-xs sm:text-sm text-white/40 max-w-md mx-auto">
               Choose the perfect plan to edit, clean, and secure PDFs. All processing runs completely in your browser.
             </p>
           </div>
         </div>
+
+        {/* Temporary Activation notice */}
+        {!paymentsEnabled && (
+          <div className="max-w-xl mx-auto bg-gradient-to-r from-indigo-500/10 via-[#534AB7]/10 to-fuchsia-500/10 border border-[#534AB7]/25 rounded-2xl p-4 text-center space-y-1 shadow-lg shadow-indigo-500/5">
+            <span className="inline-block text-[9px] px-2.5 py-0.5 rounded-full font-extrabold uppercase bg-[#534AB7]/20 text-indigo-300 border border-[#7F77DD]/35 mb-1">
+              Trial Access Available
+            </span>
+            <p className="text-xs sm:text-sm font-bold text-slate-100 leading-relaxed">
+              Payments are being activated. Signed-in users get 2 free Pro trials for now.
+            </p>
+          </div>
+        )}
 
         {/* Cycle Switcher */}
         <div className="flex bg-[#16161C] border border-white/5 p-1 rounded-xl text-xs font-bold w-48 mx-auto relative z-10">
@@ -168,19 +187,19 @@ export default function PricingPage() {
               {p.action ? (
                 <button
                   onClick={p.action}
-                  disabled={isLoadingCheckout}
+                  disabled={isLoadingCheckout && paymentsEnabled}
                   className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all border-none cursor-pointer ${
                     p.highlight
                       ? "bg-[#534AB7] hover:bg-[#4339a0] text-white shadow-lg shadow-[#534AB7]/20"
                       : "bg-white/10 hover:bg-white/15 text-white"
                   }`}
                 >
-                  {isLoadingCheckout ? "Loading..." : p.cta}
+                  {isLoadingCheckout && paymentsEnabled ? "Loading..." : p.cta}
                 </button>
               ) : (
                 <Link
                   href="/dashboard"
-                  className="w-full py-2.5 rounded-xl text-xs font-bold text-center bg-white/5 hover:bg-white/10 text-white transition-all no-underline block"
+                  className="w-full py-2.5 rounded-xl text-xs font-bold text-center bg-white/5 hover:bg-white/10 text-white transition-all no-underline block font-sans"
                 >
                   {p.cta}
                 </Link>
@@ -191,7 +210,7 @@ export default function PricingPage() {
       </main>
 
       <footer className="border-t border-white/5 py-6 text-center text-[10px] text-white/35 relative z-10">
-        © 2026 DocuSafe PDF. All calculations occur locally. Payments processed securely by LemonSqueezy.
+        © {new Date().getFullYear()} DocuSafe PDF. All calculations occur locally. Payments processed securely by LemonSqueezy.
       </footer>
     </div>
   );

@@ -21,6 +21,7 @@ export default function ClerkSync() {
           if (res.ok) {
             const data = await res.json();
             localStorage.setItem("user_plan", data.plan || "free");
+            localStorage.setItem("pro_trials_used", String(data.proTrialsUsed || 0));
             
             const tasksUsed = data.plan === "free" 
               ? data.usage.dailyTasksUsed 
@@ -36,6 +37,7 @@ export default function ClerkSync() {
       } else {
         localStorage.setItem("user_logged_in", "false");
         localStorage.setItem("user_plan", "free");
+        localStorage.setItem("pro_trials_used", "0");
         localStorage.setItem("user_tasks_used_today", "0");
         localStorage.removeItem("user_profile_name");
         localStorage.removeItem("user_profile_email");

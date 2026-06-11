@@ -5,6 +5,7 @@ export interface UsageCheckResult {
   jobToken?: string;
   jobId?: string;
   taskCost?: number;
+  isProTrial?: boolean;
   error?: string;
 }
 
@@ -47,10 +48,13 @@ export async function verifyUsageAndGetToken({
           "smart-rename",
           "signature-positions",
           "stamp-consistency",
-          "form-extractor"
+          "form-extractor",
+          "pdf-to-audio"
         ];
         const isBiz = bizTools.includes(toolSlug);
         openGate(isBiz ? "biz-gate" : "pro-gate", toolName);
+      } else if (errCode === "TRIAL_LIMIT_REACHED") {
+        openGate("pro-trial-limit", toolName);
       } else if (errCode === "FILE_TOO_LARGE") {
         openGate("file-too-large", toolName, { currentVal: fileSizeMb.toFixed(1) });
       } else if (errCode === "PAGE_LIMIT_EXCEEDED") {
@@ -70,6 +74,7 @@ export async function verifyUsageAndGetToken({
       jobToken: data.jobToken,
       jobId: data.jobId,
       taskCost: data.taskCost,
+      isProTrial: data.isProTrial,
     };
   } catch (err: any) {
     console.error("verifyUsageAndGetToken failed:", err);

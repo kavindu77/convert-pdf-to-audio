@@ -617,12 +617,12 @@ const ALL_TOOLS: Tool[] = [
     href: "/tools/pdf-chat",
     color: "#818cf8",
     badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badgeColor: "bg-indigo-500/10 text-indigo-650 border-indigo-500/20",
     category: "ai",
     planRequired: "pro",
-    processing: "Client-side",
-    outputType: "PDF",
-    benefit: "Run conversational prompts directly against document context using Groq AI.",
+    processing: "Secure server",
+    outputType: "Report",
+    benefit: "Run conversational prompts directly against document context using secure server-side AI.",
   },
   {
     id: "summarize",
@@ -632,12 +632,12 @@ const ALL_TOOLS: Tool[] = [
     href: "/tools/summarize",
     color: "#d946ef",
     badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badgeColor: "bg-indigo-500/10 text-indigo-650 border-indigo-500/20",
     category: "ai",
     planRequired: "pro",
-    processing: "Client-side",
+    processing: "Secure server",
     outputType: "TXT",
-    benefit: "Condense long files into bullet points or summaries.",
+    benefit: "Condense long files into bullet points or summaries using secure server-side AI.",
   },
   {
     id: "flashcards",
@@ -647,12 +647,12 @@ const ALL_TOOLS: Tool[] = [
     href: "/tools/flashcards",
     color: "#10b981",
     badge: "Pro",
-    badgeColor: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    badgeColor: "bg-indigo-500/10 text-indigo-650 border-indigo-500/20",
     category: "ai",
     planRequired: "pro",
-    processing: "Client-side",
+    processing: "Secure server",
     outputType: "Report",
-    benefit: "Parse chapters or lecture notes into educational flashcards.",
+    benefit: "Parse chapters or lecture notes into educational flashcards using secure server-side AI.",
   },
   {
     id: "pdf-to-audio",
@@ -1513,7 +1513,7 @@ export default function HomePage() {
               {[
                 {
                   q: "Do my files get uploaded to a server?",
-                  a: "No. DocuSafePDF runs entirely inside your browser sandbox. Your files are processed locally using Web Crypto and WebAssembly, meaning they never leave your device."
+                  a: "Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required."
                 },
                 {
                   q: "Is DocuSafePDF free to use?",
@@ -1521,7 +1521,7 @@ export default function HomePage() {
                 },
                 {
                   q: "How does the AI Q&A Chat work?",
-                  a: "The AI Q&A Chat reads your PDF text locally and communicates with Groq API using your own API key, keeping your data secure and under your control."
+                  a: "AI tools send extracted document text to our secure server and AI provider to generate responses. We do not use user-provided API keys, and we do not store full document text after processing."
                 }
               ].map((faq, idx) => (
                 <div key={idx} className="bg-white border border-slate-200 p-4 rounded-xl space-y-2">
@@ -1582,7 +1582,7 @@ export default function HomePage() {
 
           <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-400">
             <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
-            <p>Processing runs 100% locally in your browser sandbox.</p>
+            <p>Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required.</p>
           </div>
         </footer>
 

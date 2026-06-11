@@ -76,7 +76,6 @@ export default function DashboardPage() {
   const [tasksUsed, setTasksUsed] = useState(0);
   const [userName, setUserName] = useState("Kavindu");
   const [userEmail, setUserEmail] = useState("kavindu@example.com");
-  const [globalApiKey, setGlobalApiKey] = useState("");
 
   // Simulated billing & upgrade states
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -137,8 +136,6 @@ export default function DashboardPage() {
   useEffect(() => {
     setUserPlan(getLocalPlan());
     setTasksUsed(getLocalTasksUsed());
-    const savedKey = localStorage.getItem("groq_api_key");
-    if (savedKey) setGlobalApiKey(savedKey);
   }, []);
 
   useEffect(() => {
@@ -175,7 +172,6 @@ export default function DashboardPage() {
     e.preventDefault();
     localStorage.setItem("user_profile_name", userName);
     localStorage.setItem("user_profile_email", userEmail);
-    localStorage.setItem("groq_api_key", globalApiKey);
     
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
@@ -349,7 +345,7 @@ export default function DashboardPage() {
                 activeTab === "settings" ? "bg-indigo-600 text-white" : "text-gray-400 hover:bg-white/5 hover:text-white"
               }`}
             >
-              <Settings size={14} /> Settings &amp; API Key
+              <Settings size={14} /> Settings
             </button>
           </nav>
         </aside>
@@ -688,23 +684,6 @@ export default function DashboardPage() {
                     className="w-full px-3.5 py-2 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-1 text-xs max-w-md">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Groq API Key</label>
-                  <a href="https://console.groq.com/" target="_blank" rel="noopener noreferrer" className="text-[10px] text-indigo-400 hover:underline">Console console</a>
-                </div>
-                <input
-                  type="password"
-                  placeholder="gsk_..."
-                  value={globalApiKey}
-                  onChange={(e) => setGlobalApiKey(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white font-mono"
-                />
-                <p className="text-[9px] text-gray-500 leading-relaxed pt-0.5">
-                  Saved locally. Automatically loaded inside AI Summarize and Chat utilities.
-                </p>
               </div>
 
               <div className="pt-4 border-t border-white/5 flex items-center justify-between">

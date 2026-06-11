@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getUsageForCurrentPeriod } from "@/lib/usage";
+import { db } from "@/lib/db";
+import { TOOLS } from "@/lib/tools";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +14,15 @@ export async function GET() {
 
     const usage = await getUsageForCurrentPeriod(user.id, user.plan);
 
+    const proToolSlugs = TOOLS.filter((t) => t.minPlan === "pro").map((t) => t.slug);
+    const proTrialsUsed = await db.usageEvent.count({
+      where: {
+        userId: user.id,
+        toolSlug: { in: proToolSlugs },
+        status: "success",
+      },
+    });
+
     return Response.json({
       id: user.id,
       email: user.email,
@@ -20,6 +31,7 @@ export async function GET() {
       subscriptionStatus: user.subscriptionStatus,
       planExpiresAt: user.planExpiresAt,
       cancelAtPeriodEnd: user.cancelAtPeriodEnd,
+      proTrialsUsed,
       usage: {
         dailyTasksUsed: usage.dailyTasksUsed,
         monthlyTasksUsed: usage.monthlyTasksUsed,

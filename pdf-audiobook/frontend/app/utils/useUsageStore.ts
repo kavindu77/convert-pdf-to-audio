@@ -7,7 +7,9 @@ export type GateModalType =
   | "limit-reached"
   | "file-too-large"
   | "pages-exceeded"
-  | "batch-limit-exceeded";
+  | "batch-limit-exceeded"
+  | "pro-trial-info"
+  | "pro-trial-limit";
 
 interface UsageState {
   activeGate: GateModalType;
@@ -17,6 +19,7 @@ interface UsageState {
     maxVal?: number | string;
   };
   isLoadingCheckout: boolean;
+  targetHref: string;
 
   openGate: (
     type: GateModalType,
@@ -24,6 +27,7 @@ interface UsageState {
     details?: { currentVal?: number | string; maxVal?: number | string }
   ) => void;
   closeGate: () => void;
+  setTargetHref: (href: string) => void;
   triggerCheckout: (
     plan: "pro" | "business",
     billingCycle: "monthly" | "yearly"
@@ -35,10 +39,12 @@ export const useUsageStore = create<UsageState>((set) => ({
   toolName: "",
   limitDetails: {},
   isLoadingCheckout: false,
+  targetHref: "",
 
   openGate: (type, toolName = "", details = {}) =>
     set({ activeGate: type, toolName, limitDetails: details }),
-  closeGate: () => set({ activeGate: null, toolName: "", limitDetails: {} }),
+  closeGate: () => set({ activeGate: null, toolName: "", limitDetails: {}, targetHref: "" }),
+  setTargetHref: (href) => set({ targetHref: href }),
   triggerCheckout: async (plan, billingCycle) => {
     set({ isLoadingCheckout: true });
     try {
