@@ -3,6 +3,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useUsageStore } from "../../utils/useUsageStore";
+import UsageGateModal from "../../components/UsageGateModal";
 import {
   Merge,
   Upload,
@@ -57,6 +60,10 @@ function formatFileSize(bytes: number): string {
 
 export default function MergePDFPage() {
   const router = useRouter();
+  const { isSignedIn, isLoaded } = useUser();
+  const clerk = useClerk();
+  const { openGate } = useUsageStore();
+
   const [files, setFiles] = useState<PDFFileEntry[]>([]);
   const [isMerging, setIsMerging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +77,19 @@ export default function MergePDFPage() {
   // App header states (synced with localStorage)
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Kavindu");
+  const [tasksUsed, setTasksUsed] = useState(0);
 
   useEffect(() => {
-    setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
-    const savedName = localStorage.getItem("user_profile_name");
-    if (savedName) setUserName(savedName);
+    const updateLocalState = () => {
+      setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
+      const savedName = localStorage.getItem("user_profile_name");
+      if (savedName) setUserName(savedName);
+      const used = localStorage.getItem("user_tasks_used_today");
+      if (used) setTasksUsed(parseInt(used, 10));
+    };
+    updateLocalState();
+    window.addEventListener("storage", updateLocalState);
+    return () => window.removeEventListener("storage", updateLocalState);
   }, []);
 
   const loadPageCount = async (file: File): Promise<number | null> => {
@@ -172,11 +187,59 @@ export default function MergePDFPage() {
       return;
     }
 
+    if (!isSignedIn) {
+      clerk.openSignIn();
+      return;
+    }
+
     setIsMerging(true);
     setError(null);
     setMergedBlob(null);
 
+    let jobToken = "";
+
     try {
+      // 1. Perform server-side access check & token creation
+      const totalSizeBytes = files.reduce((sum, f) => sum + f.size, 0);
+      const totalSizeMb = totalSizeBytes / (1024 * 1024);
+      const totalPages = files.reduce((sum, f) => sum + (f.pageCount ?? 0), 0);
+
+      const checkRes = await fetch("/api/usage/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toolSlug: "merge",
+          fileSizeMb: totalSizeMb,
+          pageCount: totalPages,
+          fileCount: files.length,
+        }),
+      });
+
+      if (!checkRes.ok) {
+        const errData = await checkRes.json().catch(() => ({}));
+        const errCode = errData.error || "ACCESS_DENIED";
+
+        if (errCode === "UPGRADE_REQUIRED") {
+          openGate("pro-gate", "Merge PDF");
+        } else if (errCode === "FILE_TOO_LARGE") {
+          openGate("file-too-large", "Merge PDF", { currentVal: totalSizeMb.toFixed(1) });
+        } else if (errCode === "PAGE_LIMIT_EXCEEDED") {
+          openGate("pages-exceeded", "Merge PDF", { currentVal: totalPages });
+        } else if (errCode === "BATCH_LIMIT_EXCEEDED") {
+          openGate("batch-limit-exceeded", "Merge PDF", { currentVal: files.length });
+        } else if (errCode === "DAILY_LIMIT_REACHED" || errCode === "MONTHLY_LIMIT_REACHED") {
+          openGate("limit-reached", "Merge PDF");
+        } else {
+          setError(errData.error || "Access check failed. Please try again.");
+        }
+        setIsMerging(false);
+        return;
+      }
+
+      const checkData = await checkRes.json();
+      jobToken = checkData.jobToken;
+
+      // 2. Perform the actual PDF merge locally
       const { PDFDocument } = await import("pdf-lib");
       const mergedPdf = await PDFDocument.create();
 
@@ -192,6 +255,27 @@ export default function MergePDFPage() {
 
       const mergedBytes = await mergedPdf.save();
       const blob = new Blob([mergedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
+
+      // 3. Record successful execution
+      const recordRes = await fetch("/api/usage/record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobToken,
+          fileSizeMb: blob.size / (1024 * 1024),
+          pageCount: mergedPdf.getPageCount(),
+        }),
+      });
+
+      if (!recordRes.ok) {
+        throw new Error("Failed to record usage event. Please try again.");
+      }
+
+      // Sync local storage tasksUsed cache
+      const updatedTasksUsed = tasksUsed + (checkData.taskCost || 1);
+      setTasksUsed(updatedTasksUsed);
+      localStorage.setItem("user_tasks_used_today", String(updatedTasksUsed));
+      window.dispatchEvent(new Event("storage"));
 
       setMergedBlob(blob);
       setMergedSize(blob.size);
@@ -569,6 +653,9 @@ export default function MergePDFPage() {
           </div>
         </div>
       </footer>
+
+      {/* Global Usage Gate Modal */}
+      <UsageGateModal />
 
       <style jsx global>{`
         @keyframes fadeIn {

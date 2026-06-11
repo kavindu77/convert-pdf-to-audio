@@ -1,0 +1,132 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   String         @id // Matches Clerk's userId
+  email                String         @unique
+  name                 String?
+  plan                 String         @default("free") // "free" | "pro" | "business"
+  subscriptionStatus   String         @default("none") @map("subscription_status") // "none" | "active" | "past_due" | "cancelled" | "expired"
+  lsCustomerId         String?        @map("ls_customer_id")
+  lsSubscriptionId     String?        @map("ls_subscription_id")
+  lsSubscriptionItemId String?        @map("ls_subscription_item_id")
+  planExpiresAt        DateTime?      @map("plan_expires_at")
+  cancelAtPeriodEnd    Boolean        @default(false) @map("cancel_at_period_end")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  
+  subscriptions        Subscription[]
+  usageEvents          UsageEvent[]
+  jobTokens            JobToken[]
+  pdfJobs              PdfJob[]
+  reports              Report[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                         String    @id @default(uuid())
+  userId                     String    @map("user_id")
+  provider                   String    @default("lemonsqueezy")
+  providerCustomerId         String    @map("provider_customer_id")
+  providerSubscriptionId     String    @unique @map("provider_subscription_id")
+  providerSubscriptionItemId String    @map("provider_subscription_item_id")
+  plan                       String // "pro" | "business"
+  status                     String
+  variantId                  String    @map("variant_id")
+  renewsAt                   DateTime? @map("renews_at")
+  endsAt                     DateTime? @map("ends_at")
+  cancelledAt                DateTime? @map("cancelled_at")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model UsageEvent {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  toolSlug    String   @map("tool_slug")
+  taskCost    Int      @map("task_cost")
+  fileSizeMb  Float    @map("file_size_mb")
+  pageCount   Int      @map("page_count")
+  status      String   @default("success") // "success" | "failed"
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("usage_events")
+}
+
+model JobToken {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  toolSlug    String   @map("tool_slug")
+  taskCost    Int      @map("task_cost")
+  isUsed      Boolean  @default(false) @map("is_used")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("job_tokens")
+}
+
+model WebhookEvent {
+  id           String    @id @default(uuid())
+  provider     String
+  eventKey     String    @unique @map("event_key")
+  eventName    String    @map("event_name")
+  resourceType String    @map("resource_type")
+  resourceId   String    @map("resource_id")
+  rawPayload   Json      @map("raw_payload")
+  status       String    @default("processing") // "processing" | "processed" | "failed"
+  processedAt  DateTime? @map("processed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("webhook_events")
+}
+
+model PdfJob {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  toolSlug       String    @map("tool_slug")
+  status         String // "processing" | "completed" | "failed"
+  inputFileName  String    @map("input_file_name")
+  outputFileName String?   @map("output_file_name")
+  taskCost       Int       @map("task_cost")
+  fileSizeMb     Float     @map("file_size_mb")
+  pageCount      Int       @map("page_count")
+  errorMessage   String?   @map("error_message")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  expiresAt      DateTime  @map("expires_at")
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports        Report[]
+
+  @@map("pdf_jobs")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  jobId       String   @map("job_id")
+  reportType  String   @map("report_type")
+  fileName    String   @map("file_name")
+  reportJson  Json     @map("report_json")
+  downloadUrl String?  @map("download_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         PdfJob   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}

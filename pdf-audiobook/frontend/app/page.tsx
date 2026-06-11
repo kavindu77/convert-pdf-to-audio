@@ -70,6 +70,8 @@ import {
   getLocalTasksLimit,
   checkHasRemainingTasks,
 } from "./utils/userState";
+import { useUsageStore } from "./utils/useUsageStore";
+import UsageGateModal from "./components/UsageGateModal";
 
 interface Tool {
   id: string;
@@ -695,6 +697,7 @@ export default function HomePage() {
   const router = useRouter();
   const clerk = useClerk();
   const { isSignedIn, user, isLoaded } = useUser();
+  const { openGate } = useUsageStore();
 
   // App States
   const [searchQuery, setSearchQuery] = useState("");
@@ -713,10 +716,6 @@ export default function HomePage() {
   // Modals
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
-  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
-  const [isGateModalOpen, setIsGateModalOpen] = useState(false);
-  const [gateToolName, setGateToolName] = useState("");
-  const [gateToolRequired, setGateToolRequired] = useState<PlanType>("pro");
 
   // Form Inputs
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
@@ -750,11 +749,13 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const plan = getLocalPlan();
-    setUserPlan(plan);
-
-    const used = getLocalTasksUsed();
-    setTasksUsed(used);
+    const updateLocalState = () => {
+      setUserPlan(getLocalPlan());
+      setTasksUsed(getLocalTasksUsed());
+    };
+    updateLocalState();
+    window.addEventListener("storage", updateLocalState);
+    return () => window.removeEventListener("storage", updateLocalState);
   }, []);
 
   useEffect(() => {
@@ -855,21 +856,18 @@ export default function HomePage() {
 
     const allowed = isToolAllowed(tool.id, userPlan);
     if (!allowed) {
-      setGateToolName(tool.name);
-      setGateToolRequired(tool.planRequired);
-      setIsGateModalOpen(true);
+      const gateType = tool.planRequired === "business" ? "biz-gate" : "pro-gate";
+      openGate(gateType, tool.name);
       return;
     }
 
     const cost = TOOL_COSTS[tool.id] || 1;
     const hasLimit = checkHasRemainingTasks(cost);
     if (!hasLimit) {
-      setIsLimitModalOpen(true);
+      openGate("limit-reached", tool.name);
       return;
     }
 
-    incrementLocalTasksUsed(cost);
-    setTasksUsed(getLocalTasksUsed());
     router.push(tool.href);
   };
 
@@ -927,9 +925,14 @@ export default function HomePage() {
         const targetTool = searchResults[activeSearchIndex];
         const allowed = isToolAllowed(targetTool.id, userPlan);
         if (!allowed) {
-          setGateToolName(targetTool.name);
-          setGateToolRequired(targetTool.planRequired);
-          setIsGateModalOpen(true);
+          const gateType = targetTool.planRequired === "business" ? "biz-gate" : "pro-gate";
+          openGate(gateType, targetTool.name);
+          return;
+        }
+        const cost = TOOL_COSTS[targetTool.id] || 1;
+        const hasLimit = checkHasRemainingTasks(cost);
+        if (!hasLimit) {
+          openGate("limit-reached", targetTool.name);
           return;
         }
         router.push(targetTool.href);
@@ -992,9 +995,14 @@ export default function HomePage() {
                       onClick={() => {
                         const allowed = isToolAllowed(t.id, userPlan);
                         if (!allowed) {
-                          setGateToolName(t.name);
-                          setGateToolRequired(t.planRequired);
-                          setIsGateModalOpen(true);
+                          const gateType = t.planRequired === "business" ? "biz-gate" : "pro-gate";
+                          openGate(gateType, t.name);
+                          return;
+                        }
+                        const cost = TOOL_COSTS[t.id] || 1;
+                        const hasLimit = checkHasRemainingTasks(cost);
+                        if (!hasLimit) {
+                          openGate("limit-reached", t.name);
                           return;
                         }
                         router.push(t.href);
@@ -1410,7 +1418,7 @@ export default function HomePage() {
                 <button
                   onClick={() => {
                     if (isLoggedIn) {
-                      setIsUpgradeOpen(true);
+                      router.push("/pricing");
                     } else {
                       clerk.openSignIn();
                     }
@@ -1438,9 +1446,11 @@ export default function HomePage() {
               </div>
               <button
                 onClick={() => {
-                  setLocalPlan("business");
-                  setUserPlan("business");
-                  document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
+                  if (isLoggedIn) {
+                    router.push("/pricing");
+                  } else {
+                    clerk.openSignIn();
+                  }
                 }}
                 className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
               >
@@ -1764,79 +1774,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Task Limit Modal */}
-      {isLimitModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5 space-y-5 relative text-center text-slate-800">
-            <button onClick={() => setIsLimitModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer">
-              <X size={16} />
-            </button>
-            <div className="w-10 h-10 rounded-xl bg-red-100 border border-red-200 flex items-center justify-center mx-auto text-red-500 animate-pulse">
-              <AlertTriangle size={20} />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-extrabold text-slate-900 text-base">Limit Reached</h3>
-              <p className="text-xs text-slate-400">
-                You used your {userPlan === "free" ? "5 free" : userPlan === "pro" ? "300 Pro" : "2000 Business"} tasks today.
-              </p>
-              <p className="text-[10px] text-slate-450 leading-relaxed">
-                Upgrade to Pro for 300 monthly tasks, full security reports, larger files, and batch processing.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setIsLimitModalOpen(false)} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-500 hover:text-slate-800 font-bold transition-colors border-none bg-transparent cursor-pointer">
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setIsLimitModalOpen(false);
-                  setIsUpgradeOpen(true);
-                }}
-                className="flex-1 py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors border-none cursor-pointer"
-              >
-                Upgrade to Pro
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pro Tool Gate Modal */}
-      {isGateModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5 space-y-5 relative text-center text-slate-800">
-            <button onClick={() => setIsGateModalOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer">
-              <X size={16} />
-            </button>
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-indigo-600">
-              <Lock size={18} />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-extrabold text-slate-900 text-base">This is a {gateToolRequired === "business" ? "Business" : "Pro"} tool</h3>
-              <p className="text-xs text-slate-400">
-                Upgrade to unlock {gateToolName}, Privacy Report, Evidence Locker, and more specialized tools.
-              </p>
-            </div>
-            <div className="flex gap-2 pt-1">
-              <button onClick={() => {
-                setIsGateModalOpen(false);
-                document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-              }} className="flex-1 py-2 border border-slate-200 rounded-xl text-xs text-slate-500 hover:text-slate-800 font-bold transition-colors border-none bg-transparent cursor-pointer">
-                View Free Tools
-              </button>
-              <button
-                onClick={() => {
-                  setIsGateModalOpen(false);
-                  setIsUpgradeOpen(true);
-                }}
-                className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors border-none cursor-pointer"
-              >
-                Upgrade
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Global Usage Gate Modal */}
+      <UsageGateModal />
 
       {/* Exact style block matching user's custom CSS and sequential animations */}
       <style jsx global>{`

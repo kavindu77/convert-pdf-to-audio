@@ -34,6 +34,7 @@ import {
   getLocalTasksLimit,
   incrementLocalTasksUsed,
 } from "../utils/userState";
+import { useUsageStore } from "../utils/useUsageStore";
 
 interface MockFile {
   id: string;
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const clerk = useClerk();
   const { isSignedIn, user, isLoaded } = useUser();
+  const { triggerCheckout, isLoadingCheckout } = useUsageStore();
 
   // Navigation states
   const [activeTab, setActiveTab] = useState<
@@ -83,6 +85,29 @@ export default function DashboardPage() {
 
   // Form notifications
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const fetchUserData = async () => {
+    try {
+      const res = await fetch("/api/user");
+      if (res.ok) {
+        const data = await res.json();
+        setUserPlan(data.plan || "free");
+        setLocalPlan(data.plan || "free");
+        
+        const used = data.plan === "free"
+          ? data.usage.dailyTasksUsed
+          : data.usage.monthlyTasksUsed;
+        setTasksUsed(used);
+        
+        // Cache in local storage for other views
+        localStorage.setItem("user_plan", data.plan || "free");
+        localStorage.setItem("user_tasks_used_today", String(used));
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch (err) {
+      console.error("Failed to fetch user data from API:", err);
+    }
+  };
 
   // Mock Data lists (users can delete items!)
   const [files, setFiles] = useState<MockFile[]>([
@@ -130,6 +155,7 @@ export default function DashboardPage() {
         localStorage.setItem("user_logged_in", "true");
         localStorage.setItem("user_profile_name", name);
         localStorage.setItem("user_profile_email", user.primaryEmailAddress?.emailAddress || "");
+        fetchUserData();
       }
     } else {
       const logged = localStorage.getItem("user_logged_in") === "true";
@@ -138,6 +164,10 @@ export default function DashboardPage() {
       const savedEmail = localStorage.getItem("user_profile_email");
       if (savedName) setUserName(savedName);
       if (savedEmail) setUserEmail(savedEmail);
+      const plan = localStorage.getItem("user_plan") as PlanType;
+      if (plan) setUserPlan(plan);
+      const used = localStorage.getItem("user_tasks_used_today");
+      if (used) setTasksUsed(parseInt(used, 10));
     }
   }, [isLoaded, isSignedIn, user, router]);
 
@@ -151,17 +181,33 @@ export default function DashboardPage() {
     setTimeout(() => setSaveSuccess(false), 2000);
   };
 
-  const handleUpgradePlan = (plan: PlanType) => {
+  const handleUpgradePlan = async (plan: PlanType) => {
     if (plan === userPlan) return;
-    setIsUpgrading(true);
-    setTimeout(() => {
-      setIsUpgrading(false);
-      setUpgradeSuccess(true);
-      setLocalPlan(plan);
-      setUserPlan(plan);
-      setTasksUsed(getLocalTasksUsed());
-      setTimeout(() => setUpgradeSuccess(false), 2000);
-    }, 1200);
+    
+    if (userPlan === "free") {
+      if (plan !== "free") {
+        await triggerCheckout(plan, billingInterval);
+      }
+    } else {
+      setIsUpgrading(true);
+      try {
+        const res = await fetch("/api/billing-portal");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            alert("Billing portal URL not found. Please try again.");
+          }
+        } else {
+          alert("Failed to load billing portal. Please manage your subscription via email or try again later.");
+        }
+      } catch (err) {
+        console.error("Billing portal redirect error:", err);
+      } finally {
+        setIsUpgrading(false);
+      }
+    }
   };
 
   const handleSignOut = async () => {
@@ -544,10 +590,28 @@ export default function DashboardPage() {
                 <p className="text-[11px] text-gray-500">Re-evaluate pricing tiers or switch plans instantly.</p>
               </div>
 
+              {userPlan !== "free" && (
+                <div className="p-5 bg-indigo-950/20 border border-indigo-500/20 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-white">Manage Billing &amp; Subscriptions</p>
+                    <p className="text-[10px] text-gray-400 leading-relaxed">
+                      Update your payment method, view invoices, download billing history, or cancel your active subscription in our customer portal.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleUpgradePlan("free")}
+                    disabled={isUpgrading || isLoadingCheckout}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-xs transition-all cursor-pointer border-none"
+                  >
+                    {isUpgrading ? "Loading Portal..." : "Open Billing Portal"}
+                  </button>
+                </div>
+              )}
+
               {/* Billing Toggle */}
               <div className="bg-white/5 border border-white/10 p-1 rounded-xl flex max-w-[200px] text-[10px]">
-                <button onClick={() => setBillingInterval("monthly")} className={`flex-1 py-1 rounded-lg font-bold transition-all ${billingInterval === "monthly" ? "bg-white/10 text-white" : "text-gray-400"}`}>Monthly</button>
-                <button onClick={() => setBillingInterval("yearly")} className={`flex-1 py-1 rounded-lg font-bold transition-all ${billingInterval === "yearly" ? "bg-white/10 text-white" : "text-gray-400"}`}>Yearly</button>
+                <button onClick={() => setBillingInterval("monthly")} className={`flex-1 py-1 rounded-lg font-bold transition-all border-none cursor-pointer ${billingInterval === "monthly" ? "bg-white/10 text-white" : "text-gray-400 bg-transparent"}`}>Monthly</button>
+                <button onClick={() => setBillingInterval("yearly")} className={`flex-1 py-1 rounded-lg font-bold transition-all border-none cursor-pointer ${billingInterval === "yearly" ? "bg-white/10 text-white" : "text-gray-400 bg-transparent"}`}>Yearly</button>
               </div>
 
               {/* Switch Grid */}
@@ -572,24 +636,24 @@ export default function DashboardPage() {
                       
                       <button
                         onClick={() => handleUpgradePlan(plan)}
-                        disabled={isCurrent || isUpgrading}
-                        className={`w-full py-2 rounded-xl text-[10px] font-bold transition-colors ${
+                        disabled={isCurrent || isUpgrading || isLoadingCheckout}
+                        className={`w-full py-2 rounded-xl text-[10px] font-bold transition-colors border-none cursor-pointer ${
                           isCurrent
                             ? "bg-white/5 border border-white/10 text-gray-500 cursor-default"
                             : "bg-indigo-600 hover:bg-indigo-700 text-white"
                         }`}
                       >
-                        {isCurrent ? "Current Plan" : "Switch Plan"}
+                        {isCurrent ? "Current Plan" : isUpgrading || isLoadingCheckout ? "Loading..." : "Switch Plan"}
                       </button>
                     </div>
                   );
                 })}
               </div>
 
-              {isUpgrading && (
-                <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs flex items-center justify-center gap-2">
+              {(isUpgrading || isLoadingCheckout) && (
+                <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-xs flex items-center justify-center gap-2 animate-pulse">
                   <RefreshCw size={14} className="animate-spin text-indigo-400" />
-                  <span>Processing plan migration...</span>
+                  <span>Connecting to secure checkout/portal...</span>
                 </div>
               )}
             </div>
