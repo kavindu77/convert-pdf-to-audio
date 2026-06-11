@@ -1,6 +1,8 @@
 import { getCurrentUser } from "@/lib/auth";
 import { recordUsage } from "@/lib/usage";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();

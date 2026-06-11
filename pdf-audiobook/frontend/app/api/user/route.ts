@@ -1,6 +1,8 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getUsageForCurrentPeriod } from "@/lib/usage";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const user = await getCurrentUser();
