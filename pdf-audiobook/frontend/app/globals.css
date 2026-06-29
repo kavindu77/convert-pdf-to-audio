@@ -268,3 +268,54 @@ a, button, [role="button"], select, input[type="submit"], input[type="button"], 
 input[type="text"], input[type="email"], input[type="password"], textarea, [contenteditable="true"], .win95-in {
   cursor: text;
 }
+
+/* Retro Windows 95 UI Overrides for Internal Tool Page Panels */
+.win95-in .bg-white.border.border-slate-200\/85,
+.win95-in .bg-white.border.border-slate-200\/80,
+.win95-in .bg-white.border.border-slate-200,
+.win95-in .bg-slate-50.border.border-slate-200\/60,
+.win95-in .bg-slate-50.border.border-slate-200,
+.win95-in .bg-white.border.border-slate-200\/80.p-6,
+.win95-in .bg-white.border.border-slate-200\/85.p-5 {
+  background-color: var(--win-grey) !important;
+  border-radius: 0px !important;
+  box-shadow: inset 1.5px 1.5px 0px var(--win-light), 
+              inset -1.5px -1.5px 0px var(--win-shadow), 
+              1.5px 1.5px 0px var(--win-dark) !important;
+  border: none !important;
+}
+
+/* File list item details styling */
+.win95-in .bg-slate-50.border.border-slate-200\/60.max-w-xl,
+.win95-in .bg-slate-50.border.border-slate-200\/60.p-5 {
+  background-color: white !important;
+  border-radius: 0px !important;
+  box-shadow: inset 1.5px 1.5px 0px var(--win-shadow), 
+              inset -1.5px -1.5px 0px var(--win-light) !important;
+  border: none !important;
+}
+
+/* Form input, textarea, and select elements */
+.win95-in input, 
+.win95-in textarea, 
+.win95-in select {
+  border-radius: 0px !important;
+  background-color: white !important;
+  box-shadow: inset 1.5px 1.5px 0px var(--win-shadow), 
+              inset -1.5px -1.5px 0px var(--win-light) !important;
+  border: 1px solid #808080 !important;
+  color: black !important;
+}
+
+/* Buttons inside pages (e.g. clear button, upload options) */
+.win95-in .bg-slate-50.hover\:bg-red-50.rounded-xl,
+.win95-in button.flex.items-center.gap-1,
+.win95-in .bg-slate-100.border.border-slate-200 {
+  background-color: var(--win-grey) !important;
+  border-radius: 0px !important;
+  box-shadow: inset 1.5px 1.5px 0px var(--win-light), 
+              inset -1.5px -1.5px 0px var(--win-shadow), 
+              1.5px 1.5px 0px var(--win-dark) !important;
+  border: none !important;
+  color: black !important;
+}

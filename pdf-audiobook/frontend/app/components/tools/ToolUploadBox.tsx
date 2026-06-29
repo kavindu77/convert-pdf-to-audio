@@ -58,10 +58,10 @@ export default function ToolUploadBox({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={triggerInput}
-      className={`w-full max-w-2xl mx-auto border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 bg-white/50 backdrop-blur-sm ${
+      className={`w-full max-w-2xl mx-auto p-8 text-center cursor-pointer select-none border-2 border-dashed ${
         isDragActive
-          ? "border-indigo-500 bg-indigo-50/20 scale-[1.01]"
-          : "border-slate-200 hover:border-indigo-500/50 hover:bg-white shadow-sm hover:shadow-md"
+          ? "border-[#000080] bg-[#dfdfdf] scale-[1.01]"
+          : "border-[#808080] hover:border-black bg-white"
       }`}
     >
       <input
@@ -73,18 +73,19 @@ export default function ToolUploadBox({
         className="hidden"
       />
       <div className="space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-indigo-650 animate-float-slow">
-          <Upload size={22} />
+        {/* Retro upload button container */}
+        <div className="win95-out w-12 h-12 bg-[#c0c0c0] flex items-center justify-center mx-auto text-black active:scale-[0.98]">
+          <Upload size={20} />
         </div>
         <div className="space-y-1">
-          <p className="font-extrabold text-slate-800 text-sm">
+          <p className="font-bold text-black text-xs font-mono">
             {label || defaultLabel}
           </p>
-          <p className="text-xs text-slate-400 font-medium">
+          <p className="text-[10px] text-gray-500 font-mono">
             {subLabel}
           </p>
         </div>
-        <span className="inline-block text-[10px] text-indigo-600 font-bold uppercase tracking-wider bg-indigo-50 px-2.5 py-1 rounded-lg">
+        <span className="win95-btn inline-block text-[9px] font-bold font-sans uppercase tracking-wider bg-[#c0c0c0] text-black px-3 py-1">
           or drag & drop files here
         </span>
       </div>

@@ -24,15 +24,11 @@ export default function ToolActionButton({
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className={`w-full py-3 px-6 rounded-xl font-extrabold text-sm text-white transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-none ${
-        disabled || loading
-          ? "bg-slate-350 cursor-not-allowed"
-          : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/10 hover:-translate-y-0.5 active:translate-y-0"
-      } ${className}`}
+      className={`win95-btn w-full py-2 px-6 font-bold text-xs text-black flex items-center justify-center gap-1.5 disabled:text-gray-500 disabled:cursor-not-allowed ${className}`}
     >
       {loading ? (
         <>
-          <Loader2 size={16} className="animate-spin shrink-0" />
+          <Loader2 size={12} className="animate-spin shrink-0" />
           <span>{loadingLabel}</span>
         </>
       ) : (

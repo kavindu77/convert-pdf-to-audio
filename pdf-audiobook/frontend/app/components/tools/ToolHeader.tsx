@@ -6,10 +6,10 @@ interface ToolHeaderProps {
   title: string;
   description: string;
   slug: string;
-  minPlan?: string; // retained for backwards compat, ignored
+  minPlan?: string;
   processing: "client" | "server" | "hybrid" | "ai";
   output: string;
-  taskCost?: number; // retained for backwards compat, ignored
+  taskCost?: number;
 }
 
 export default function ToolHeader({
@@ -37,29 +37,31 @@ export default function ToolHeader({
   const engineBadge = getEngineBadge(processing);
 
   return (
-    <div className="w-full max-w-3xl mx-auto text-center space-y-4 mb-8">
-      <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto shadow-sm text-indigo-600">
+    <div className="w-full max-w-2xl mx-auto text-center space-y-3 mb-6 select-none">
+      {/* Retro Icon Frame */}
+      <div className="win95-in w-12 h-12 bg-white flex items-center justify-center mx-auto text-[#000080]">
         <IconComponent size={22} />
       </div>
 
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold text-black uppercase tracking-wide">
           {title}
         </h1>
-        <p className="text-slate-500 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+        <p className="text-gray-600 text-xs max-w-lg mx-auto leading-relaxed">
           {description}
         </p>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-green-500/10 text-green-600 border border-green-500/20">
-          Free
+      {/* Retro Button Badges */}
+      <div className="flex flex-wrap justify-center gap-1.5 pt-1.5 font-sans">
+        <span className="win95-btn px-3 py-0.5 text-[9px] font-bold uppercase bg-[#c0c0c0] text-black border border-transparent">
+          🎁 Free to use
         </span>
-        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-slate-100 text-slate-600 border border-slate-200">
-          {engineBadge}
+        <span className="win95-btn px-3 py-0.5 text-[9px] font-bold uppercase bg-[#c0c0c0] text-black border border-transparent">
+          ⚙️ {engineBadge}
         </span>
-        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-slate-100 text-slate-600 border border-slate-200">
-          {output.toUpperCase()}
+        <span className="win95-btn px-3 py-0.5 text-[9px] font-bold uppercase bg-[#c0c0c0] text-black border border-transparent">
+          💾 {output.toUpperCase()}
         </span>
       </div>
     </div>

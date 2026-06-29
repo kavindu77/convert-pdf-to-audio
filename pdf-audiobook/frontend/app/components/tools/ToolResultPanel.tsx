@@ -21,31 +21,32 @@ export default function ToolResultPanel({
   children,
 }: ToolResultPanelProps) {
   return (
-    <div className="w-full max-w-xl mx-auto bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm space-y-4 animate-in">
-      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-xs">
-        <CheckCircle2 size={16} className="shrink-0" />
-        <div className="text-left">
-          <p className="font-extrabold text-slate-900">{title}</p>
-          {subTitle && <p className="text-[10px] text-slate-500 mt-0.5">{subTitle}</p>}
+    <div className="w-full max-w-xl mx-auto win95-out p-5 bg-[#c0c0c0] space-y-4 font-mono select-none">
+      {/* Retro Alert Dialog Box Header */}
+      <div className="win95-in p-3 bg-white flex items-start gap-3 select-text">
+        <CheckCircle2 size={18} className="text-green-700 shrink-0 mt-0.5" />
+        <div className="text-left font-mono text-xs">
+          <p className="font-bold text-black uppercase">{title}</p>
+          {subTitle && <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">{subTitle}</p>}
         </div>
       </div>
 
-      {children && <div className="py-1">{children}</div>}
+      {children && <div className="win95-in p-3 bg-white text-xs">{children}</div>}
 
-      <div className="space-y-2 pt-2">
+      <div className="flex flex-col gap-2 pt-1 font-sans">
         {onDownload && (
           <button
             onClick={onDownload}
-            className="w-full py-3.5 rounded-xl font-extrabold text-sm text-white bg-green-500 hover:bg-green-600 transition-all shadow-md shadow-green-500/10 flex items-center justify-center gap-2 border-none cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+            className="win95-btn w-full py-2 font-bold text-xs text-black flex items-center justify-center gap-1.5"
           >
-            <Download size={15} />
-            {downloadLabel}
+            <Download size={14} className="shrink-0" />
+            <span>{downloadLabel}</span>
           </button>
         )}
 
         <button
           onClick={onReset}
-          className="w-full py-2.5 rounded-xl border border-slate-200 text-xs text-slate-400 hover:text-slate-650 hover:bg-slate-50 font-bold transition-all bg-transparent cursor-pointer"
+          className="win95-btn w-full py-1 text-xs text-gray-600 font-bold"
         >
           {resetLabel}
         </button>
