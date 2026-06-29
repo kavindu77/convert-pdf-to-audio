@@ -856,6 +856,14 @@ export default function HomePage() {
     router.push(tool.href);
   };
 
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  };
+
   // Filter tools based on search query AND active category
   const filteredTools = ALL_TOOLS.filter((tool) => {
     const query = searchQuery.toLowerCase().trim();
@@ -882,16 +890,33 @@ export default function HomePage() {
         t.description.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : ALL_TOOLS.filter(t => ["merge", "split", "compress", "password-protect", "pdf-chat"].includes(t.id));
-
   useEffect(() => {
     setActiveSearchIndex(0);
   }, [searchQuery]);
 
-      
-      {/* 1. Cinematic Dark Hero Section Block */}
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSearchDropdown) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveSearchIndex((prev) => (prev + 1) % searchResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchResults[activeSearchIndex]) {
+        router.push(searchResults[activeSearchIndex].href);
+        setShowSearchDropdown(false);
+      }
+    } else if (e.key === "Escape") {
+      setShowSearchDropdown(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F6F8FF] text-[#071B3A] selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
       <div className="wrap bg-[#0E0E12] w-full text-white shrink-0">
-        
-        {/* Header Navbar */}
         <div className="nav flex items-center justify-between px-8 py-4 border-b border-white/5 relative z-25">
           <Link href="/" className="logo flex items-center gap-2 text-sm font-semibold text-white no-underline">
             <div className="logo-mark w-6 h-6 bg-[#534AB7] rounded-lg flex items-center justify-center text-white">
@@ -935,18 +960,6 @@ export default function HomePage() {
                     <button
                       key={t.id}
                       onClick={() => {
-                        const allowed = isToolAllowed(t.id, userPlan);
-                        if (!allowed) {
-                          const gateType = t.planRequired === "business" ? "biz-gate" : "pro-gate";
-                          openGate(gateType, t.name);
-                          return;
-                        }
-                        const cost = TOOL_COSTS[t.id] || 1;
-                        const hasLimit = checkHasRemainingTasks(cost);
-                        if (!hasLimit) {
-                          openGate("limit-reached", t.name);
-                          return;
-                        }
                         router.push(t.href);
                         setShowSearchDropdown(false);
                       }}

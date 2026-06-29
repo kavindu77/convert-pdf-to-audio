@@ -22,9 +22,7 @@ interface CompressionResult {
   blob: Blob;
   fileName: string;
 }
-
 export default function CompressPdfPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
