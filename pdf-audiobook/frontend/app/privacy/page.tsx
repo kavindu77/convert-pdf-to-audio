@@ -1,106 +1,138 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
-      {/* Background glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute w-[800px] h-[800px] rounded-full bg-indigo-500/5 blur-[120px] top-[-20%] left-[-10%]" />
-        <div className="absolute w-[600px] h-[600px] rounded-full bg-fuchsia-500/5 blur-[130px] bottom-[-20%] right-[-10%]" />
+    <div className="min-h-screen bg-[#008080] text-black font-mono selection:bg-[#000080] selection:text-white flex flex-col justify-between select-none p-3 sm:p-5 overflow-hidden h-screen">
+      {/* Workspace */}
+      <div className="flex-1 flex justify-center items-center overflow-hidden pb-12">
+        
+        {/* Help/Document Window */}
+        <div className="win95-out w-full max-w-3xl flex flex-col h-full max-h-[85vh] shadow-2xl">
+          {/* Title Bar */}
+          <div className="flex items-center justify-between px-2 py-1 select-none font-bold text-xs win95-title">
+            <div className="flex items-center gap-1">
+              <span>📄</span>
+              <span>DocuSafe Help - Privacy Policy</span>
+            </div>
+            <div className="flex gap-0.5">
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">-</button>
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">▢</button>
+              <Link 
+                href="/" 
+                className="win95-btn w-4 h-4 text-[9px] font-bold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf] no-underline"
+              >
+                X
+              </Link>
+            </div>
+          </div>
+
+          {/* Menus Row */}
+          <div className="bg-[#c0c0c0] px-2 py-0.5 border-b border-[#808080] flex items-center justify-between text-xs select-none font-sans">
+            <div className="flex gap-4">
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">File</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Edit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Bookmark</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Options</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Help</span>
+            </div>
+          </div>
+
+          {/* Toolbar */}
+          <div className="bg-[#c0c0c0] px-2 py-1 border-b border-[#808080] flex items-center gap-2 text-xs select-none border-t border-white/40">
+            <Link 
+              href="/"
+              className="win95-btn flex items-center gap-1 px-3 py-0.5 text-xs font-sans text-black font-semibold hover:bg-[#dfdfdf] no-underline"
+            >
+              ⬅️ Back to Desktop
+            </Link>
+            <div className="w-[1px] h-4 bg-[#808080] border-r border-white/40" />
+            <span className="text-[10px] text-gray-500 font-sans pl-2">Document: C:\Windows\System32\DocuSafe\PRIVACY.TXT</span>
+          </div>
+
+          {/* Content Pane */}
+          <div className="win95-in p-6 bg-white text-black text-xs font-mono overflow-y-auto flex-1 select-text">
+            <h1 className="text-sm font-bold border-b border-black/20 pb-1 mb-3">🔒 PRIVACY POLICY (LAST REVISED: JUNE 29, 2026)</h1>
+            
+            <p className="mb-4 leading-relaxed">
+              At DocuSafe, we prioritize the confidentiality of your documents. Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required.
+            </p>
+
+            <h3 className="font-bold mb-1 uppercase text-[#000080]">1. 100% Client-Side Hygiene</h3>
+            <p className="mb-3 leading-relaxed">
+              All core document operations (Merging, Splitting, Compressing, Rotating, Watermarking, Password Protection, and Metadata Inspection) are executed entirely in your local browser sandbox. Your PDF files, document text, and images are loaded into local RAM, processed, and saved back to your device without ever being transmitted to our servers.
+            </p>
+
+            <h3 className="font-bold mb-1 uppercase text-[#000080]">2. AI and Audio Processing</h3>
+            <p className="mb-3 leading-relaxed">
+              For tools that leverage artificial intelligence (such as PDF Chat, Summarizer, and Flashcard generators) or speech compilation (PDF to Audiobook), text is temporarily processed server-side.
+              We use secure server gateways to communicate with the Groq API. Your document contents are never saved or stored on our servers once the response generation is complete. We do not collect or log full document text after task execution.
+            </p>
+
+            <h3 className="font-bold mb-1 uppercase text-[#000080]">3. Free Ad-Supported Model</h3>
+            <p className="mb-3 leading-relaxed">
+              DocuSafe is 100% free to use. We do not require accounts, logins, or billing details. To support server hosting costs, we display advertisements provided by Google AdSense. Google and third-party vendors use cookies to serve ads based on your visits to this website and other sites on the Internet.
+            </p>
+
+            <h3 className="font-bold mb-1 uppercase text-[#000080]">4. Cookies and Web Identifiers</h3>
+            <p className="mb-3 leading-relaxed">
+              You can choose to opt-out of personalized advertising by visiting Google's Ads Settings, or by using cookie preference settings in your web browser.
+            </p>
+
+            <h3 className="font-bold mb-1 uppercase text-[#000080]">5. Contacts</h3>
+            <p className="mb-4 leading-relaxed">
+              If you have inquiries regarding this privacy framework, contact us at support@docusafepdf.com or launch our <Link href="/contact" className="text-[#000080] underline font-bold hover:text-blue-800">Contact Dialog</Link>.
+            </p>
+          </div>
+
+          {/* Status Bar */}
+          <div className="bg-[#c0c0c0] border-t border-[#808080] px-2 py-0.5 text-[11px] font-sans flex justify-between select-none">
+            <div>Help File Loaded</div>
+            <div className="border-l border-[#808080] pl-4">100% Private Sandbox</div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 relative border-b border-slate-200/60 px-6 py-3 flex items-center justify-between z-40 backdrop-blur-md bg-white/90 shadow-sm">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-md shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-200">
-            <ShieldCheck size={16} className="text-white" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-slate-900">
-            DocuSafe<span className="text-indigo-600 font-medium">PDF</span>
-          </span>
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all shadow-sm"
-        >
-          <ArrowLeft size={13} /> Back to Dashboard
-        </Link>
-      </header>
-
-      {/* Content */}
-      <main className="relative z-10 flex-1 max-w-3xl mx-auto w-full px-6 py-12 space-y-8 animate-in">
-        <div className="space-y-3 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Privacy Policy</h1>
-          <p className="text-slate-500 text-sm">Last updated: June 11, 2026</p>
-        </div>
-
-        <div className="bg-white border border-slate-200/80 p-6 sm:p-8 rounded-2xl shadow-sm space-y-6 text-sm leading-relaxed text-slate-655">
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">1. Local Processing Guarantee</h2>
-            <p>
-              At DocuSafe PDF, we prioritize the confidentiality of your documents. Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required.
-            </p>
-            <p>
-              All core operations including merging, splitting, compressing, rotating, watermarking, password protection, and metadata inspection are performed entirely inside your web browser. Your PDF files, document pages, text contents, and images for those core tools never touch our servers.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">2. Information We Collect</h2>
-            <p>
-              To manage your account, enforce limits, and bill for premium subscriptions, we collect the following data:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong>Account Info:</strong> Usernames, email addresses, and profile details provided by our identity provider, Clerk.</li>
-              <li><strong>Billing Info:</strong> Subscription status, tier, and subscription identifiers managed securely via our merchant of record, LemonSqueezy.</li>
-              <li><strong>Usage Metrics:</strong> We log the tool type, task cost, file size, page count, and status of tasks to audit usage constraints and ensure fair play. These metrics contain metadata only—never actual file contents.</li>
-            </ul>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">3. Third-Party Integrations</h2>
-            <p>
-              We integrate third-party services only where necessary to run the service:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5">
-              <li><strong>Clerk:</strong> Provides secure authentication, identity verification, and profile management.</li>
-              <li><strong>LemonSqueezy:</strong> Securely processes checkouts, stores customer credentials, manages subscriptions, and handles tax compliance.</li>
-              <li><strong>Groq API:</strong> AI tools send extracted document text to our secure server and AI provider to generate responses. We do not use user-provided API keys, and we do not store full document text after processing.</li>
-            </ul>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">4. Security Rules</h2>
-            <p>
-              We implement industry-standard cryptographic practices. All backend communication requires SSL encryption. Sensitive credentials, webhook keys, and API tokens are restricted strictly to secure, server-side environments.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-1.5">5. Contact Us</h2>
-            <p>
-              If you have any questions about this Privacy Policy or your data, you can email us at support@docusafepdf.com or visit our <Link href="/contact" className="text-indigo-650 hover:underline">Contact Page</Link>.
-            </p>
-          </section>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200/60 py-4 px-6 relative z-10 bg-slate-50 text-slate-500 shadow-inner">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px]">
-          <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
-          <div className="flex gap-4">
-            <Link href="/" className="hover:underline">Home</Link>
-            <Link href="/privacy" className="hover:underline font-bold text-indigo-650">Privacy Policy</Link>
-            <Link href="/terms" className="hover:underline">Terms of Service</Link>
-            <Link href="/refund" className="hover:underline">Refund Policy</Link>
-            <Link href="/contact" className="hover:underline">Contact Us</Link>
+      {/* Taskbar */}
+      <div className="win95-out h-10 w-full flex items-center justify-between p-1 bg-[#c0c0c0] border-t border-slate-400 select-none z-50 fixed bottom-0 left-0 right-0">
+        <div className="flex items-center gap-1.5 h-full">
+          <Link 
+            href="/"
+            className="flex items-center gap-1 px-3 py-1 font-bold text-xs h-full border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] bg-[#c0c0c0] text-black no-underline"
+          >
+            <ShieldCheck size={12} className="text-[#000080]" />
+            <span className="font-sans font-bold">Start</span>
+          </Link>
+          <div className="h-full flex items-center gap-1 pl-2">
+            <button className="win95-btn flex items-center gap-1.5 px-2.5 h-full text-[10px] font-sans font-bold border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#dfdfdf] max-w-[130px] truncate">
+              <span>📄</span>
+              <span className="truncate">Privacy Policy</span>
+            </button>
           </div>
         </div>
-      </footer>
+
+        {/* System Tray */}
+        <div className="win95-in px-2.5 py-0.5 bg-[#c0c0c0] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white flex items-center gap-2.5 text-[10.5px] font-sans font-semibold">
+          <span>🔐</span>
+          <span className="border-l border-[#808080] pl-2 tabular-nums">{time}</span>
+        </div>
+      </div>
     </div>
   );
 }

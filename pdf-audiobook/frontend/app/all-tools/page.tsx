@@ -931,6 +931,13 @@ export default function AllToolsDirectory() {
                 <li>AI Chat &amp; Flashcard converters (uses your Groq key)</li>
               </ul>
               
+              <p className="font-bold mb-1">🔗 IMPORTANT LINKS:</p>
+              <div className="flex gap-4 mb-4 select-text">
+                <Link href="/privacy" className="text-[#000080] underline font-bold hover:text-blue-800">Privacy Policy</Link>
+                <Link href="/terms" className="text-[#000080] underline font-bold hover:text-blue-800">Terms of Service</Link>
+                <Link href="/contact" className="text-[#000080] underline font-bold hover:text-blue-800">Contact Us</Link>
+              </div>
+
               <p className="text-[10px] text-gray-500 border-t border-dashed border-gray-300 pt-2">© ${new Date().getFullYear()} DocuSafe PDF Retro. All rights reserved.</p>
             </div>
             {/* Status bar */}
@@ -1196,6 +1203,18 @@ export default function AllToolsDirectory() {
                 >
                   📄 <span>View README.txt</span>
                 </button>
+                <Link 
+                  href="/privacy"
+                  className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent text-black no-underline"
+                >
+                  🔒 <span>Privacy Policy</span>
+                </Link>
+                <Link 
+                  href="/terms"
+                  className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent text-black no-underline"
+                >
+                  📜 <span>Terms of Service</span>
+                </Link>
                 <Link 
                   href="/contact"
                   className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent text-black no-underline"

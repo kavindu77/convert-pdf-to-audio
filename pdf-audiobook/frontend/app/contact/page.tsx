@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck, ArrowLeft, Mail, MessageSquare, CheckCircle2, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, MessageSquare, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -12,6 +12,17 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,175 +46,182 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
-      {/* Background glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute w-[800px] h-[800px] rounded-full bg-indigo-500/5 blur-[120px] top-[-20%] left-[-10%]" />
-        <div className="absolute w-[600px] h-[600px] rounded-full bg-fuchsia-500/5 blur-[130px] bottom-[-20%] right-[-10%]" />
+    <div className="min-h-screen bg-[#008080] text-black font-mono selection:bg-[#000080] selection:text-white flex flex-col justify-between select-none p-3 sm:p-5 overflow-hidden h-screen">
+      {/* Workspace */}
+      <div className="flex-1 flex justify-center items-center overflow-hidden pb-12">
+        
+        {/* Contact Program Window */}
+        <div className="win95-out w-full max-w-2xl flex flex-col h-full max-h-[85vh] shadow-2xl">
+          {/* Title Bar */}
+          <div className="flex items-center justify-between px-2 py-1 select-none font-bold text-xs win95-title">
+            <div className="flex items-center gap-1">
+              <span>✉️</span>
+              <span>DocuSafe Mail - Contact Support</span>
+            </div>
+            <div className="flex gap-0.5">
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">-</button>
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">▢</button>
+              <Link 
+                href="/" 
+                className="win95-btn w-4 h-4 text-[9px] font-bold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf] no-underline"
+              >
+                X
+              </Link>
+            </div>
+          </div>
+
+          {/* Menus Row */}
+          <div className="bg-[#c0c0c0] px-2 py-0.5 border-b border-[#808080] flex items-center justify-between text-xs select-none font-sans">
+            <div className="flex gap-4">
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Message</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Edit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">View</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Help</span>
+            </div>
+          </div>
+
+          {/* Contact Main Split Workspace */}
+          <div className="flex-1 flex overflow-hidden bg-[#dfdfdf] p-4 gap-4">
+            
+            {/* Left Column: Details */}
+            <div className="w-1/3 flex flex-col gap-3 font-sans shrink-0">
+              <div className="win95-in p-3 bg-white flex flex-col gap-1.5 select-text">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Support Email</span>
+                <span className="font-bold text-[11px] text-[#000080] break-words">support@docusafepdf.com</span>
+                <span className="text-[9px] text-gray-500 leading-normal">For general tool support and assistance.</span>
+              </div>
+              <div className="win95-in p-3 bg-white flex flex-col gap-1.5 select-text">
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Feedback</span>
+                <span className="font-bold text-[11px] text-[#000080] break-words">feedback@docusafepdf.com</span>
+                <span className="text-[9px] text-gray-500 leading-normal">Send feature requests and audit reports.</span>
+              </div>
+            </div>
+
+            {/* Right Column: Form Container */}
+            <div className="flex-1 win95-in p-4 bg-white overflow-y-auto flex flex-col justify-between">
+              {submitted ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 select-none font-sans">
+                  <span className="text-3xl">📧</span>
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-xs text-black uppercase">Message Sent</h3>
+                    <p className="text-[10px] text-gray-500 max-w-xs leading-normal">
+                      Thank you for contacting DocuSafe! We will reply to your request within 24 hours.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSubmitted(false)}
+                    className="win95-btn px-4 py-1 text-xs font-bold font-mono"
+                  >
+                    Send Another
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-3 font-sans text-xs">
+                  <div className="space-y-0.5">
+                    <label htmlFor="name" className="text-gray-600 font-bold text-[10px]">Your Name:</label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="win95-in px-2 py-1 w-full text-[11px] font-mono focus:outline-none focus:ring-1 focus:ring-[#000080]"
+                      placeholder="e.g. Kavindu"
+                    />
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <label htmlFor="email" className="text-gray-600 font-bold text-[10px]">Email Address:</label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="win95-in px-2 py-1 w-full text-[11px] font-mono focus:outline-none focus:ring-1 focus:ring-[#000080]"
+                      placeholder="name@email.com"
+                    />
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <label htmlFor="subject" className="text-gray-600 font-bold text-[10px]">Subject:</label>
+                    <input
+                      type="text"
+                      id="subject"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="win95-in px-2 py-1 w-full text-[11px] font-mono focus:outline-none focus:ring-1 focus:ring-[#000080]"
+                      placeholder="Tool issues, suggestions..."
+                    />
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <label htmlFor="message" className="text-gray-600 font-bold text-[10px]">Message Details:</label>
+                    <textarea
+                      id="message"
+                      rows={3}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="win95-in px-2 py-1 w-full text-[11px] font-mono focus:outline-none focus:ring-1 focus:ring-[#000080] resize-none"
+                      placeholder="Describe your inquiry..."
+                    />
+                  </div>
+
+                  {error && (
+                    <p className="text-red-600 text-[10px] font-bold font-mono">{error}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="win95-btn w-full py-1 text-xs font-bold font-mono text-black flex items-center justify-center gap-1.5"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 size={12} className="animate-spin shrink-0" />
+                        <span>Sending Mail...</span>
+                      </>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+
+          </div>
+
+          {/* Status Bar */}
+          <div className="bg-[#c0c0c0] border-t border-[#808080] px-2 py-0.5 text-[11px] font-sans flex justify-between select-none">
+            <div>Connection status: Secured</div>
+            <div className="border-l border-[#808080] pl-4">SMTP Sandbox</div>
+          </div>
+        </div>
+
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 relative border-b border-slate-200/60 px-6 py-3 flex items-center justify-between z-40 backdrop-blur-md bg-white/90 shadow-sm">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-fuchsia-500 flex items-center justify-center shadow-md shadow-indigo-500/10 group-hover:scale-105 transition-transform duration-200">
-            <ShieldCheck size={16} className="text-white" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-slate-900">
-            DocuSafe<span className="text-indigo-600 font-medium">PDF</span>
-          </span>
-        </Link>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all shadow-sm"
-        >
-          <ArrowLeft size={13} /> Back to Dashboard
-        </Link>
-      </header>
-
-      {/* Content */}
-      <main className="relative z-10 flex-1 max-w-4xl mx-auto w-full px-6 py-12 grid md:grid-cols-12 gap-8 items-start animate-in">
-        {/* Left Column: Details */}
-        <div className="md:col-span-5 space-y-6">
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Contact Us</h1>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Have questions about billing, enterprise options, or need technical help? Send us a message and we'll reply within 24 hours.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex gap-4 p-4 rounded-xl bg-white border border-slate-200/60 shadow-sm">
-              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-600 shrink-0">
-                <Mail size={18} />
-              </div>
-              <div>
-                <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Support Email</p>
-                <p className="font-bold text-slate-800 text-sm mt-0.5">support@docusafepdf.com</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">For general help &amp; tool support</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 p-4 rounded-xl bg-white border border-slate-200/60 shadow-sm">
-              <div className="w-10 h-10 rounded-lg bg-fuchsia-500/10 flex items-center justify-center text-fuchsia-600 shrink-0">
-                <MessageSquare size={18} />
-              </div>
-              <div>
-                <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Billing Support</p>
-                <p className="font-bold text-slate-800 text-sm mt-0.5">billing@docusafepdf.com</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">For refunds, cancellations, and LemonSqueezy details</p>
-              </div>
-            </div>
+      {/* Taskbar */}
+      <div className="win95-out h-10 w-full flex items-center justify-between p-1 bg-[#c0c0c0] border-t border-slate-400 select-none z-50 fixed bottom-0 left-0 right-0">
+        <div className="flex items-center gap-1.5 h-full">
+          <Link 
+            href="/"
+            className="flex items-center gap-1 px-3 py-1 font-bold text-xs h-full border-2 border-t-white border-l-white border-r-[#808080] border-b-[#808080] bg-[#c0c0c0] text-black no-underline"
+          >
+            <ShieldCheck size={12} className="text-[#000080]" />
+            <span className="font-sans font-bold">Start</span>
+          </Link>
+          <div className="h-full flex items-center gap-1 pl-2">
+            <button className="win95-btn flex items-center gap-1.5 px-2.5 h-full text-[10px] font-sans font-bold border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#dfdfdf] max-w-[130px] truncate">
+              <span>✉️</span>
+              <span className="truncate">Contact Support</span>
+            </button>
           </div>
         </div>
 
-        {/* Right Column: Contact Form */}
-        <div className="md:col-span-7 bg-white border border-slate-200/80 p-6 sm:p-8 rounded-2xl shadow-sm">
-          {submitted ? (
-            <div className="text-center py-8 space-y-4 animate-in">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 border border-green-200 flex items-center justify-center text-green-600 mx-auto">
-                <CheckCircle2 size={24} />
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-extrabold text-slate-900 text-lg">Message Sent Successfully</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                  Thank you for reaching out! A member of our support team will contact you at your email address shortly.
-                </p>
-              </div>
-              <button
-                onClick={() => setSubmitted(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer border-none"
-              >
-                Send Another Message
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs font-semibold">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label htmlFor="name" className="text-slate-500 uppercase tracking-wider font-bold">Your Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800 text-xs"
-                    placeholder="Enter your name"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label htmlFor="email" className="text-slate-500 uppercase tracking-wider font-bold">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800 text-xs"
-                    placeholder="name@email.com"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label htmlFor="subject" className="text-slate-500 uppercase tracking-wider font-bold">Subject</label>
-                <input
-                  type="text"
-                  id="subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800 text-xs"
-                  placeholder="Billing inquiry, feature request..."
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label htmlFor="message" className="text-slate-500 uppercase tracking-wider font-bold">Message</label>
-                <textarea
-                  id="message"
-                  rows={4}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-800 text-xs resize-none"
-                  placeholder="Write details about your request..."
-                />
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-[11px] font-medium leading-relaxed">{error}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3 bg-indigo-650 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl transition-all shadow-md shadow-indigo-500/10 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer border-none"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin" />
-                    Sending Message...
-                  </>
-                ) : (
-                  "Send Message"
-                )}
-              </button>
-            </form>
-          )}
+        {/* System Tray */}
+        <div className="win95-in px-2.5 py-0.5 bg-[#c0c0c0] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white flex items-center gap-2.5 text-[10.5px] font-sans font-semibold">
+          <span>🔐</span>
+          <span className="border-l border-[#808080] pl-2 tabular-nums">{time}</span>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200/60 py-4 px-6 relative z-10 bg-slate-50 text-slate-500 shadow-inner">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px]">
-          <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
-          <div className="flex gap-4">
-            <Link href="/" className="hover:underline">Home</Link>
-            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
-            <Link href="/terms" className="hover:underline">Terms of Service</Link>
-            <Link href="/refund" className="hover:underline">Refund Policy</Link>
-            <Link href="/contact" className="hover:underline font-bold text-indigo-650">Contact Us</Link>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }

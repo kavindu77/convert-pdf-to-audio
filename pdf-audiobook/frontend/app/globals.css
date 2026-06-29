@@ -253,3 +253,18 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #d8d8d8;
 }
+
+/* Custom Windows 95 Retro Cursors */
+html, body {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M0,0 L0,19 L5,14 L9,22 L12,20 L8,12 L14,12 Z' fill='white' stroke='black' stroke-width='1.5' stroke-linejoin='miter'/%3E%3C/svg%3E") 0 0, default;
+}
+
+/* Clicking links, buttons and hover components uses retro pointing finger hand */
+a, button, [role="button"], select, input[type="submit"], input[type="button"], .win95-btn {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M8,8 L8,2 C8,0.9 8.9,0 10,0 C11.1,0 12,0.9 12,2 L12,8 L14,8 C15.1,8 16,8.9 16,10 L16,14 C16,17.3 13.3,20 10,20 L8,20 C5.8,20 4,18.2 4,16 L4,10 C4,8.9 4.9,8 6,8 Z' fill='white' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 10 0, pointer;
+}
+
+/* Retain standard text selection I-beam for inputs and text fields */
+input[type="text"], input[type="email"], input[type="password"], textarea, [contenteditable="true"], .win95-in {
+  cursor: text;
+}
