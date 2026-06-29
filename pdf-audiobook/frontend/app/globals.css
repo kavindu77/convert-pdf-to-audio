@@ -5,31 +5,69 @@
 * { box-sizing: border-box; padding: 0; margin: 0; }
 
 :root {
-  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
-
-  /* Core light mode palette */
-  --bg-deep: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.8);
-  --bg-card-hover: #ffffff;
-  --border-subtle: rgba(226, 232, 240, 0.8);
-  --border-hover: rgba(99, 102, 241, 0.25);
-
-  /* Accent colors per tool */
-  --accent-audio: #6366f1;
-  --accent-merge: #8b5cf6;
-  --accent-split: #ec4899;
-  --accent-images: #f59e0b;
-  --accent-to-pdf: #10b981;
-  --accent-compress: #06b6d4;
-  --accent-text: #f97316;
+  --font-inter: 'MS Sans Serif', 'Courier New', monospace;
+  --win-teal: #008080;
+  --win-grey: #c0c0c0;
+  --win-light: #ffffff;
+  --win-shadow: #808080;
+  --win-dark: #0a0a0a;
 }
 
 body {
-  background: var(--bg-deep);
-  color: #0f172a;
-  font-family: var(--font-inter);
+  background: var(--win-teal);
+  color: #000000;
+  font-family: var(--font-mono), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Retro Windows 95 Bevel Styles */
+.win95-out {
+  background-color: var(--win-grey);
+  box-shadow: inset 1.5px 1.5px 0px var(--win-light), 
+              inset -1.5px -1.5px 0px var(--win-shadow), 
+              1px 1px 0px var(--win-dark);
+}
+
+.win95-in {
+  background-color: #ffffff;
+  box-shadow: inset 1.5px 1.5px 0px var(--win-shadow), 
+              inset -1.5px -1.5px 0px var(--win-light), 
+              0.5px 0.5px 0px var(--win-light);
+  border: 1px solid var(--win-shadow);
+  color: #000000;
+}
+
+.win95-btn {
+  background-color: var(--win-grey);
+  box-shadow: inset 1.5px 1.5px 0px var(--win-light), 
+              inset -1.5px -1.5px 0px var(--win-shadow), 
+              1.5px 1.5px 0px var(--win-dark);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.win95-btn:active {
+  box-shadow: inset 1.5px 1.5px 0px var(--win-shadow), 
+              inset -1.5px -1.5px 0px var(--win-light);
+  padding-top: 5px !important;
+  padding-left: 9px !important;
+  padding-bottom: 3px !important;
+  padding-right: 7px !important;
+}
+
+.win95-title {
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #ffffff;
+}
+
+.win95-title-inactive {
+  background: #808080;
+  color: #c0c0c0;
+}
+
+.win95-border {
+  border: 1px solid var(--win-shadow);
 }
 
 /* Light glassmorphism card */
@@ -197,16 +235,21 @@ body {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 16px;
+  height: 16px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #dfdfdf;
+  background-image: radial-gradient(#c0c0c0 25%, transparent 25%), radial-gradient(#c0c0c0 25%, transparent 25%);
+  background-size: 4px 4px;
+  background-position: 0 0, 2px 2px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.1);
-  border-radius: 3px;
+  background-color: var(--win-grey);
+  box-shadow: inset 1.5px 1.5px 0px var(--win-light), 
+              inset -1.5px -1.5px 0px var(--win-shadow), 
+              1.5px 1.5px 0px var(--win-dark);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.2);
+  background-color: #d8d8d8;
 }

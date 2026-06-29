@@ -717,6 +717,28 @@ export default function HomePage() {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false);
 
+  // Retro Windows 95 UI states
+  const [time, setTime] = useState("");
+  const [isStartOpen, setIsStartOpen] = useState(false);
+  const [isReadmeOpen, setIsReadmeOpen] = useState(false);
+  const [activeWindow, setActiveWindow] = useState<"explorer" | "readme" | null>("explorer");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }));
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const closeStart = () => setIsStartOpen(false);
+    window.addEventListener("click", closeStart);
+    return () => window.removeEventListener("click", closeStart);
+  }, []);
+
   // Form Inputs
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [nameInput, setNameInput] = useState("");
@@ -915,619 +937,417 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F8FF] text-[#071B3A] selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
-      <div className="wrap bg-[#0E0E12] w-full text-white shrink-0">
-        <div className="nav flex items-center justify-between px-8 py-4 border-b border-white/5 relative z-25">
-          <Link href="/" className="logo flex items-center gap-2 text-sm font-semibold text-white no-underline">
-            <div className="logo-mark w-6 h-6 bg-[#534AB7] rounded-lg flex items-center justify-center text-white">
-              <ShieldCheck size={14} className="text-white" />
+    <div className="min-h-screen bg-[#008080] text-black font-mono selection:bg-[#000080] selection:text-white flex flex-col justify-between select-none relative p-3 sm:p-5 overflow-hidden h-screen">
+      {/* Desktop Workspace */}
+      <div className="flex-1 flex gap-6 overflow-hidden relative pb-12">
+        {/* Left Side: Desktop Icons / Shortcuts */}
+        <div className="flex flex-col gap-5 shrink-0 select-none z-10 pt-2 pl-2">
+          <div 
+            onDoubleClick={() => setActiveWindow("explorer")}
+            onClick={() => setActiveWindow("explorer")}
+            className="flex flex-col items-center justify-center text-center w-20 p-1 cursor-pointer group border border-transparent hover:border-white/20 hover:bg-white/10"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-[#ffea79] text-3xl group-hover:scale-105 transition-transform">
+              🖥️
             </div>
-            DocuSafe<span className="text-[#7F77DD]">PDF</span>
-          </Link>
+            <span className="text-[10px] font-bold text-white mt-1 text-shadow-sm select-none truncate w-full">My Computer</span>
+          </div>
 
-          {/* Search bar inside navigation menu with instant results autocomplete */}
-          <div className="relative hidden md:block w-48 lg:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/35" size={13} />
-            <input 
-              type="text" 
-              placeholder="Search 38 tools..." 
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setShowSearchDropdown(true);
-              }}
-              onFocus={() => {
-                setShowSearchDropdown(true);
-                setIsSearchFocused(true);
-              }}
-              onBlur={() => {
-                setIsSearchFocused(false);
-                setTimeout(() => setShowSearchDropdown(false), 250);
-              }}
-              onKeyDown={handleSearchKeyDown}
-              className="w-full pl-8 pr-3 py-1.5 bg-[#16161C] border border-[#7F77DD]/20 rounded-lg text-[11px] focus:outline-none focus:border-[#7F77DD] placeholder-white/25 text-white transition-all focus:ring-2 focus:ring-[#7F77DD]/20"
-            />
-            {showSearchDropdown && (searchQuery.trim() !== "" || isSearchFocused) && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#16161C] border border-white/10 rounded-xl shadow-2xl p-2 z-50 max-h-60 overflow-y-auto flex flex-col gap-1 animate-fade-in">
-                <div className="text-[9px] text-white/30 font-bold uppercase tracking-wider px-2 py-1 border-b border-white/5 mb-1 flex justify-between items-center">
-                  <span>{searchQuery.trim() !== "" ? "Search Results" : "Popular Tools"}</span>
-                  <span className="text-[8px] opacity-65 lowercase text-[#7F77DD]">↑↓ to navigate, enter to open</span>
-                </div>
-                {searchResults.map((t, idx) => {
-                  const CardIcon = t.icon;
-                  const isHighlighted = idx === activeSearchIndex;
+          <div 
+            onDoubleClick={() => {
+              setIsReadmeOpen(true);
+              setActiveWindow("readme");
+            }}
+            onClick={() => {
+              setIsReadmeOpen(true);
+              setActiveWindow("readme");
+            }}
+            className="flex flex-col items-center justify-center text-center w-20 p-1 cursor-pointer group border border-transparent hover:border-white/20 hover:bg-white/10"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-white text-3xl group-hover:scale-105 transition-transform">
+              📄
+            </div>
+            <span className="text-[10px] font-bold text-white mt-1 text-shadow-sm select-none truncate w-full">README.txt</span>
+          </div>
+
+          <div 
+            onDoubleClick={() => setActiveCategory("ai")}
+            onClick={() => setActiveCategory("ai")}
+            className="flex flex-col items-center justify-center text-center w-20 p-1 cursor-pointer group border border-transparent hover:border-white/20 hover:bg-white/10"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-3xl group-hover:scale-105 transition-transform">
+              🤖
+            </div>
+            <span className="text-[10px] font-bold text-white mt-1 text-shadow-sm select-none truncate w-full">AI Utilities</span>
+          </div>
+
+          <div 
+            onDoubleClick={() => setActiveCategory("security")}
+            onClick={() => setActiveCategory("security")}
+            className="flex flex-col items-center justify-center text-center w-20 p-1 cursor-pointer group border border-transparent hover:border-white/20 hover:bg-white/10"
+          >
+            <div className="w-10 h-10 flex items-center justify-center text-3xl group-hover:scale-105 transition-transform">
+              🔐
+            </div>
+            <span className="text-[10px] font-bold text-white mt-1 text-shadow-sm select-none truncate w-full">Security</span>
+          </div>
+        </div>
+
+        {/* Floating Notepad Program (README.txt) */}
+        {isReadmeOpen && (
+          <div 
+            onClick={() => setActiveWindow("readme")}
+            className={`win95-out absolute top-12 left-16 sm:left-32 w-full max-w-lg z-40 flex flex-col shadow-2xl ${
+              activeWindow === "readme" ? "z-50" : "z-30"
+            }`}
+          >
+            {/* Title Bar */}
+            <div className={`flex items-center justify-between px-2 py-1 select-none font-bold text-xs ${
+              activeWindow === "readme" ? "win95-title" : "win95-title-inactive"
+            }`}>
+              <span>README.txt - Notepad</span>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsReadmeOpen(false);
+                }} 
+                className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]"
+              >
+                X
+              </button>
+            </div>
+            
+            {/* Menu bar */}
+            <div className="bg-[#c0c0c0] px-2 py-0.5 border-b border-[#808080] flex gap-4 text-xs select-none font-sans">
+              <span>File</span>
+              <span>Edit</span>
+              <span>Search</span>
+              <span>Help</span>
+            </div>
+
+            {/* Readme content */}
+            <div className="win95-in p-4 bg-white text-black text-xs font-mono overflow-y-auto h-72">
+              <p className="font-bold text-sm mb-2 border-b border-black/25 pb-1">ℹ️ DOCUSAFE PDF TOOLKIT v1.0.0</p>
+              <p className="mb-4 leading-relaxed">Welcome to DocuSafe! This application provides 38 professional-grade PDF utilities running entirely client-side inside your browser sandbox.</p>
+              
+              <p className="font-bold mb-1">🔐 SECURITY HIGHLIGHTS:</p>
+              <p className="mb-3 leading-relaxed">Your files never leave your computer. Processing runs locally in browser memory so your corporate documents, invoices, and templates remain 100% private.</p>
+
+              <p className="font-bold mb-1">🛠️ UTILITY SUITE CONTENTS:</p>
+              <ul className="list-disc pl-4 mb-4 space-y-1">
+                <li>Merge &amp; Split PDF files locally</li>
+                <li>Compress PDF bytes for fast sharing</li>
+                <li>Watermark drafting and protected stamps</li>
+                <li>AI Chat &amp; Flashcard converters (uses your Groq key)</li>
+              </ul>
+              
+              <p className="text-[10px] text-gray-500 border-t border-dashed border-gray-300 pt-2">© ${new Date().getFullYear()} DocuSafe PDF Retro. All rights reserved.</p>
+            </div>
+            {/* Status bar */}
+            <div className="bg-[#c0c0c0] border-t border-[#808080] px-2 py-0.5 text-[11px] font-sans text-right select-none">
+              Ln 1, Col 1
+            </div>
+          </div>
+        )}
+
+        {/* Main Explorer Application Window */}
+        <div 
+          onClick={() => setActiveWindow("explorer")}
+          className={`win95-out flex-1 flex flex-col overflow-hidden shadow-2xl relative ${
+            activeWindow === "explorer" ? "z-40" : "z-30"
+          }`}
+        >
+          {/* Title Bar */}
+          <div className={`flex items-center justify-between px-2 py-1 select-none font-bold text-xs ${
+            activeWindow === "explorer" ? "win95-title" : "win95-title-inactive"
+            }`}>
+            <div className="flex items-center gap-1">
+              <span>🖥️</span>
+              <span>DocuSafe PDF Explorer</span>
+            </div>
+            <div className="flex gap-0.5">
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">-</button>
+              <button className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]">▢</button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveWindow(null);
+                }}
+                className="win95-btn w-4 h-4 text-[9px] font-extrabold flex items-center justify-center p-0 text-black hover:bg-[#dfdfdf]"
+              >
+                X
+              </button>
+            </div>
+          </div>
+
+          {/* Menus Row */}
+          <div className="bg-[#c0c0c0] px-2 py-0.5 border-b border-[#808080] flex items-center justify-between text-xs select-none font-sans">
+            <div className="flex gap-4">
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">File</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Edit</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">View</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Go</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Favorites</span>
+              <span className="hover:bg-[#000080] hover:text-white px-1.5 py-0.5 cursor-default">Help</span>
+            </div>
+          </div>
+
+          {/* Explorer Toolbar */}
+          <div className="bg-[#c0c0c0] px-2 py-1 border-b border-[#808080] flex items-center gap-3 text-xs select-none border-t border-white/40">
+            <button 
+              onClick={() => setActiveCategory("all")}
+              disabled={activeCategory === "all"}
+              className="win95-btn flex items-center gap-1 px-2 py-0.5 text-xs font-sans disabled:text-[#808080] disabled:cursor-not-allowed text-black font-semibold hover:bg-[#dfdfdf]"
+            >
+              ⬅️ Back
+            </button>
+            <button 
+              className="win95-btn flex items-center gap-1 px-2 py-0.5 text-xs font-sans text-black font-semibold disabled:text-[#808080] hover:bg-[#dfdfdf]" 
+              disabled
+            >
+              Forward ➡️
+            </button>
+            <button 
+              onClick={() => setActiveCategory("all")}
+              className="win95-btn flex items-center gap-1 px-2 py-0.5 text-xs font-sans text-black font-semibold hover:bg-[#dfdfdf]"
+            >
+              ⬆️ Up
+            </button>
+            <div className="w-[1px] h-4 bg-[#808080] border-r border-white/40" />
+            
+            {/* Search Tool Input */}
+            <div className="flex items-center gap-1 flex-1 font-sans">
+              <span className="font-bold text-[#606060]">Search:</span>
+              <input 
+                type="text"
+                placeholder="Search tools..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="win95-in px-2 py-0.5 text-[11px] w-full max-w-xs focus:outline-none focus:ring-1 focus:ring-[#000080]"
+              />
+            </div>
+          </div>
+
+          {/* Address Bar */}
+          <div className="bg-[#c0c0c0] px-2 py-1.5 border-b border-[#808080] flex items-center gap-2 text-xs font-sans">
+            <span className="text-[#808080] font-bold">Address:</span>
+            <div className="win95-in flex-1 px-2 py-0.5 text-[11px] select-all truncate bg-white select-text">
+              C:\Windows\System32\DocuSafe\{activeCategory}
+            </div>
+          </div>
+
+          {/* Explorer Main Split Workspace */}
+          <div className="flex-1 flex overflow-hidden bg-[#dfdfdf]">
+            
+            {/* Left: Folders Navigation Tree */}
+            <div className="w-56 bg-white border-r-2 border-[#808080] overflow-y-auto p-2.5 flex flex-col gap-1.5 text-xs select-none">
+              <div className="font-bold text-[11px] uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1 mb-2">Folders</div>
+              
+              <button 
+                onClick={() => setActiveCategory("all")}
+                className={`w-full text-left py-1 px-2 flex items-center gap-1.5 border border-transparent font-bold ${
+                  activeCategory === "all" ? "bg-[#000080] text-white border-[#808080]" : "text-black hover:bg-[#dfdfdf]"
+                }`}
+              >
+                📁 DocuSafe PDF Explorer
+              </button>
+
+              <div className="pl-4 flex flex-col gap-1">
+                {CATEGORY_TABS.map((tab) => {
+                  if (tab.id === "all") return null;
+                  const isActive = activeCategory === tab.id;
                   return (
                     <button
-                      key={t.id}
-                      onClick={() => {
-                        router.push(t.href);
-                        setShowSearchDropdown(false);
-                      }}
-                      onMouseEnter={() => setActiveSearchIndex(idx)}
-                      className={`w-full flex items-center gap-2 p-2 rounded-lg text-left border-none bg-transparent cursor-pointer text-white transition-colors ${
-                        isHighlighted ? "bg-white/10" : "hover:bg-white/5"
+                      key={tab.id}
+                      onClick={() => setActiveCategory(tab.id)}
+                      className={`w-full text-left py-1 px-2 flex items-center gap-1.5 border border-transparent font-medium text-[11px] ${
+                        isActive ? "bg-[#000080] text-white border-[#808080]" : "text-black hover:bg-[#dfdfdf]"
                       }`}
                     >
-                      <div className="w-6 h-6 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: `${t.color}20` }}>
-                        <CardIcon size={12} style={{ color: t.color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-bold truncate">{t.name}</div>
-                        <div className="text-[9px] text-white/40 truncate">{t.description}</div>
-                      </div>
+                      📁 {tab.name}
                     </button>
                   );
                 })}
-                {searchResults.length === 0 && (
-                  <div className="text-[10px] text-white/40 text-center py-2">No matching tools</div>
+              </div>
+            </div>
+
+            {/* Right: Grid of Folder Contents */}
+            <div className="flex-1 p-4 overflow-y-auto bg-white win95-in">
+              <div className="border-b border-gray-300 pb-2 mb-4 flex justify-between items-center select-none font-sans">
+                <div>
+                  <h2 className="text-xs font-bold text-black uppercase tracking-wider">
+                    {searchQuery ? "Search Results" : CATEGORY_TABS.find(t => t.id === activeCategory)?.name}
+                  </h2>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    {searchQuery 
+                      ? `Found ${filteredTools.length} object(s) matching your request`
+                      : `Select an item to launch the tool sandbox.`}
+                  </p>
+                </div>
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="win95-btn px-2 py-0.5 text-[9px] font-bold">
+                    Clear
+                  </button>
                 )}
               </div>
-            )}
-          </div>
 
-          <div className="nav-r flex items-center gap-5 text-xs">
-            <Link href="/tools/merge" className="text-white/45 hover:text-white transition-colors no-underline">Merge</Link>
-            <Link href="/tools/split" className="text-white/45 hover:text-white transition-colors no-underline">Split</Link>
-            <Link href="/tools/compress" className="text-white/45 hover:text-white transition-colors no-underline">Compress</Link>
-            <button 
-              onClick={() => {
-                setActiveCategory("all");
-                document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="text-white/45 hover:text-white transition-colors no-underline bg-transparent border-none cursor-pointer font-bold text-xs"
-            >
-              All Tools
-            </button>
-          </div>
-        </div>
-
-        {/* Hero Area */}
-        <div className="hero max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center min-h-[400px] px-8 py-14 gap-8">
-          <div className="hl text-left">
-            <div className={`badge anim-up ${activeAnims["a0"] ? "go" : ""}`} id="a0">
-              <Lock size={12} className="text-[#7F77DD]" /> 100% client-side
-            </div>
-            
-            <h1 className={`anim-up font-[500] tracking-[-0.8px] leading-[1.15] text-[38px] mb-4 ${activeAnims["a1"] ? "go" : ""}`} id="a1">
-              Edit PDFs.<br />
-              <em className="text-[#7F77DD] not-italic">Stay private.</em>
-            </h1>
-            
-            <p className={`sub text-xs leading-relaxed max-w-[280px] mb-7 text-white/40 ${activeAnims["a2"] ? "go" : ""}`} id="a2">
-              Your files never leave your device. Everything runs in your browser.
-            </p>
-
-            <div className={`btns flex items-center gap-3 ${activeAnims["a3"] ? "go" : ""}`} id="a3">
-              <button 
-                onClick={() => document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" })}
-                className="btn-p text-xs font-semibold px-5 py-2.5 bg-[#534AB7] hover:bg-[#4339a0] text-white border-none rounded-lg cursor-pointer transition-colors shadow-lg shadow-[#534AB7]/10"
-              >
-                Start with PDF tools
-              </button>
-              <button 
-                onClick={() => {
-                  setActiveCategory("all");
-                  document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="btn-g text-xs bg-transparent border-none text-white/40 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-              >
-                See all tools <ArrowRight size={13} />
-              </button>
-            </div>
-
-            {/* Social Proof trust indicator with avatar faces */}
-            <div className="pt-6 border-t border-white/5 mt-6 max-w-sm flex items-center gap-3">
-              <div className="flex -space-x-2 shrink-0">
-                <div className="w-6 h-6 rounded-full bg-slate-800 border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-[#7F77DD]">K</div>
-                <div className="w-6 h-6 rounded-full bg-[#534AB7] border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-white">S</div>
-                <div className="w-6 h-6 rounded-full bg-[#7F77DD] border border-[#0E0E12] flex items-center justify-center text-[8px] font-bold text-slate-900">A</div>
-              </div>
-              <p className="text-[10px] text-white/35 font-medium leading-relaxed">
-                Trusted by 10,000+ privacy-focused students, freelancers, and offices.
-              </p>
-            </div>
-          </div>
-
-          <div className="hr flex justify-center items-center">
-            <div className={`card bg-[#16161C] border border-white/5 p-5 rounded-2xl w-[230px] shadow-2xl relative group anim-right ${activeAnims["a4"] ? "go" : ""}`} id="a4">
-              <div className="absolute top-0 right-5 -translate-y-1/2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[8px] font-extrabold uppercase">
-                Secure Mode
-              </div>
-
-              <div className="cf flex items-center gap-2.5 mb-4">
-                <div className="fi w-8.5 h-8.5 bg-[#534AB7]/20 rounded-lg flex items-center justify-center text-[#7F77DD]">
-                  <FileText size={16} />
+              {filteredTools.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {filteredTools.map((tool) => {
+                    const CardIcon = tool.icon;
+                    return (
+                      <Link
+                        key={tool.id}
+                        href={tool.href}
+                        className="win95-btn p-3 flex flex-col items-center justify-between text-center min-h-[120px] select-none hover:bg-[#dfdfdf] border border-transparent text-black no-underline"
+                      >
+                        <div className="flex flex-col items-center justify-center flex-1">
+                          <div 
+                            className="w-10 h-10 rounded-lg flex items-center justify-center border shadow-inner mb-2 shrink-0"
+                            style={{ 
+                              backgroundColor: `${tool.color}15`, 
+                              borderColor: `${tool.color}25` 
+                            }}
+                          >
+                            <CardIcon size={20} style={{ color: tool.color }} />
+                          </div>
+                          <h3 className="font-bold text-[11px] leading-tight select-none truncate w-full text-center">
+                            {tool.name}
+                          </h3>
+                        </div>
+                        <span className="text-[9px] text-gray-500 leading-snug line-clamp-1 border-t border-dashed border-gray-300 pt-1 w-full mt-1.5 truncate">
+                          {tool.processing}
+                        </span>
+                      </Link>
+                    );
+                  })}
                 </div>
-                <div>
-                  <div className="fn text-[12px] font-semibold text-white">annual_report.pdf</div>
-                  <div className="fm text-[11px] text-white/30">4.2 MB · 12 pages</div>
+              ) : (
+                <div className="py-12 text-center border-2 border-dashed border-[#808080] rounded bg-[#dfdfdf]/35 select-none font-sans">
+                  <span className="text-3xl block mb-2">⚠️</span>
+                  <p className="text-black text-xs font-bold">No items found matching search parameters.</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Check search text spelling or browse categories.</p>
                 </div>
-              </div>
-
-              <div className="rows flex flex-col gap-2">
-                <div className="row flex justify-between items-center text-xs">
-                  <span className="rl text-[11px] text-white/35 flex items-center gap-1"><Shield size={12} className="text-[#7F77DD]" /> Security</span>
-                  <span className="tg tg-g text-[10px] font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Secure</span>
-                </div>
-                <div className="row flex justify-between items-center text-xs">
-                  <span className="rl text-[11px] text-white/35 flex items-center gap-1"><Lock size={12} className="text-[#7F77DD]" /> AES-256</span>
-                  <span className="tg tg-p text-[10px] font-medium px-2 py-0.5 rounded bg-[#534AB7]/20 text-[#AFA9EC]">Ready</span>
-                </div>
-                <div className="row flex justify-between items-center text-xs">
-                  <span className="rl text-[11px] text-white/35 flex items-center gap-1"><Zap size={12} className="text-[#7F77DD]" /> Speed</span>
-                  <span className="tg tg-n text-[10px] font-medium px-2 py-0.5 rounded bg-white/5 text-white/40">0.4s</span>
-                </div>
-              </div>
-
-              <div className="divider h-[1px] bg-white/5 my-3.5"></div>
-              
-              <div className="checks flex flex-col gap-1.5" id="chks">
-                <div className={`ck text-[11px] text-white/30 flex items-center gap-1.5 anim-in ${activeAnims["c1"] ? "go" : ""}`} id="c1">
-                  <Check size={12} className="text-emerald-500 font-extrabold" /> No uploads
-                </div>
-                <div className={`ck text-[11px] text-white/30 flex items-center gap-1.5 anim-in ${activeAnims["c2"] ? "go" : ""}`} id="c2">
-                  <Check size={12} className="text-emerald-500 font-extrabold" /> No tracking
-                </div>
-                <div className={`ck text-[11px] text-white/30 flex items-center gap-1.5 anim-in ${activeAnims["c3"] ? "go" : ""}`} id="c3">
-                  <Check size={12} className="text-emerald-500 font-extrabold" /> No account needed
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Benefits bottom segment */}
-        <div className="bottom border-t border-white/5 px-8 py-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className={`ft p-4 bg-[#16161C] border border-white/5 rounded-xl space-y-2 anim-up ${activeAnims["f1"] ? "go" : ""}`} id="f1">
-            <Globe size={20} className="text-[#534AB7]" />
-            <div className="ft-t text-xs font-semibold text-white">On your machine</div>
-            <div className="ft-s text-[11px] text-white/30 leading-relaxed">Files load into browser memory only.</div>
-          </div>
-          <div className={`ft p-4 bg-[#16161C] border border-white/5 rounded-xl space-y-2 anim-up ${activeAnims["f2"] ? "go" : ""}`} id="f2">
-            <Zap size={20} className="text-[#534AB7]" />
-            <div className="ft-t text-xs font-semibold text-white">Instant results</div>
-            <div className="ft-s text-[11px] text-white/30 leading-relaxed">Local compilation. No upload lag.</div>
-          </div>
-          <div className={`ft p-4 bg-[#16161C] border border-white/5 rounded-xl space-y-2 anim-up ${activeAnims["f3"] ? "go" : ""}`} id="f3">
-            <Activity size={20} className="text-[#534AB7]" />
-            <div className="ft-t text-xs font-semibold text-white">38 tools</div>
-            <div className="ft-s text-[11px] text-white/30 leading-relaxed">Compress, protect, split, merge.</div>
-          </div>
-        </div>
-
-      </div>
-
-      <main className="relative z-10 flex-1">
-
-        {/* Category Tab Selector */}
-        <section className="border-y border-slate-200 bg-white/85 backdrop-blur-md py-2 px-6 sticky top-[58px] z-30 shadow-sm">
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
-            {CATEGORY_TABS.map((tab) => {
-              const isActive = activeCategory === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveCategory(tab.id);
-                    document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all duration-200 border flex items-center gap-1.5 shadow-sm cursor-pointer
-                    ${isActive 
-                      ? "bg-[#5B4DFF] border-transparent text-white shadow-[#5B4DFF]/15" 
-                      : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                    }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 2. Tools Grid Section */}
-        <section id="tools-grid-section" className="px-6 py-10 max-w-7xl mx-auto scroll-mt-24">
-          <div className="space-y-6">
-            <div className="border-b border-slate-200/60 pb-2.5 flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">
-                  {searchQuery 
-                    ? "Search Results" 
-                    : activeCategory === "all" 
-                      ? "Popular Utilities" 
-                      : CATEGORY_TABS.find(t => t.id === activeCategory)?.name}
-                </h2>
-                <p className="text-[10.5px] text-slate-400 mt-0.5">
-                  {searchQuery 
-                    ? `Found ${filteredTools.length} matches across all 38 tools` 
-                    : activeCategory === "all" 
-                      ? "Quick access to the most commonly used PDF utilities" 
-                      : `Displaying tools for ${CATEGORY_TABS.find(t => t.id === activeCategory)?.name}`}
-                </p>
-              </div>
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-[10px] text-[#5B4DFF] hover:text-[#4a3ce6] font-extrabold uppercase border-none bg-transparent cursor-pointer">
-                  Clear Search
-                </button>
               )}
             </div>
 
-            {filteredTools.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filteredTools.map((tool, idx) => (
-                  <ToolCard key={tool.id} tool={tool} index={idx} onClick={handleToolClick} onCardMouseMove={handleCardMouseMove} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 text-center border border-dashed border-slate-200 rounded-2xl bg-white/50">
-                <FileWarning size={28} className="mx-auto text-slate-400 mb-2.5" />
-                <p className="text-slate-600 text-xs font-semibold">No tools match your search query.</p>
-                <p className="text-[10.5px] text-slate-400 mt-0.5">Try keywords like merge, split, compress, lock, or diff.</p>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* 3. Popular Workflows Section (Clickable Multi-step Sequences) */}
-        <section className="max-w-7xl mx-auto px-6 py-10 border-t border-slate-200/50">
-          <div className="border-b border-slate-200/60 pb-3 mb-6">
-            <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Popular Workflows</h2>
-            <p className="text-[10.5px] text-slate-400 mt-0.5">Click any workflow to execute pre-configured multi-step processes sequentially</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              {
-                title: "Prepare PDF for Email",
-                desc: "Shrink PDF filesize and restrict unauthorized opening permissions.",
-                steps: ["Compress PDF", "Remove metadata", "Protect PDF"],
-                href: "/tools/compress"
-              },
-              {
-                title: "Clean Scanned Document",
-                desc: "Analyze alignment issues, compress scanned pages, and smart-rename.",
-                steps: ["Bad Scan Check", "Compress PDF", "Smart Rename"],
-                href: "/tools/bad-scan-detector"
-              },
-              {
-                title: "Print-Ready PDF",
-                desc: "Fix orientation scans, assign pagination labels, and watermark drafts.",
-                steps: ["Rotate PDF", "Page Labels", "Add Watermark"],
-                href: "/tools/rotate"
-              },
-              {
-                title: "Secure Document",
-                desc: "Strip PII text blocks, lock access permissions, and sign cryptographically.",
-                steps: ["PDF Redactor", "Protect PDF", "Evidence Locker"],
-                href: "/tools/redact"
-              }
-            ].map((flow) => (
-              <Link
-                key={flow.title}
-                href={flow.href}
-                className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-[#5B4DFF]/30 hover:-translate-y-0.5 transition-all text-left no-underline"
-              >
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">{flow.title}</h3>
-                    <span className="text-[8px] bg-indigo-50 text-indigo-600 font-extrabold uppercase px-1.5 py-0.5 rounded border border-indigo-100">Workflow</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">{flow.desc}</p>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
-                  <div className="flex flex-col gap-1.5">
-                    {flow.steps.map((st, i) => (
-                      <div key={i} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-700">
-                        <span className="w-4 h-4 bg-slate-100 text-slate-500 text-[8px] flex items-center justify-center rounded-full font-mono">{i + 1}</span>
-                        <span>{st}</span>
-                        {i < flow.steps.length - 1 && <span className="text-slate-300">→</span>}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[9px] text-[#5B4DFF] font-extrabold flex items-center gap-0.5 pt-1">
-                    Start Sequence →
-                  </span>
-                </div>
-              </Link>
-            ))}
+          {/* Status Bar */}
+          <div className="bg-[#c0c0c0] border-t border-[#808080] px-2 py-0.5 text-[11px] font-sans flex justify-between select-none">
+            <div>{filteredTools.length} object(s)</div>
+            <div className="border-l border-[#808080] pl-4">My Computer</div>
           </div>
-        </section>
+        </div>
 
-        {/* 4. Why Private PDF Tools (Trust Grid) */}
-        <section className="max-w-4xl mx-auto px-6 py-12 space-y-8 border-t border-slate-200/50">
-          <div className="text-center space-y-1">
-            <h2 className="text-xs font-extrabold text-slate-455 uppercase tracking-widest">Why DocuSafePDF?</h2>
-            <p className="text-base font-extrabold text-slate-800">Visual PDF Hygiene without Server Storage Risk</p>
-          </div>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {[
-              {
-                icon: Shield,
-                title: "No File Uploads",
-                desc: "Your documents are processed inside your browser sandbox. They never leave your device or touch external clouds."
-              },
-              {
-                icon: User,
-                title: "No Account Required",
-                desc: "Get started instantly. Access all essential utilities without completing registrations or inputting emails."
-              },
-              {
-                icon: Lock,
-                title: "Private by Design",
-                desc: "We do not store, read, or track your PDF content. Clean document hygiene is achieved with zero logs."
-              },
-              {
-                icon: Zap,
-                title: "Fast Local Processing",
-                desc: "Since files don't need to be uploaded and downloaded from remote servers, processing is virtually instant."
-              }
-            ].map((val) => {
-              const ValIcon = val.icon;
-              return (
-                <div key={val.title} className="flex gap-4 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                  <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-[#5B4DFF] shrink-0">
-                    <ValIcon size={18} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="font-extrabold text-xs text-slate-800 uppercase tracking-wider">{val.title}</h3>
-                    <p className="text-[11.5px] text-slate-500 leading-normal">{val.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* 6. FAQ Section */}
-        <section className="bg-slate-100/50 border-t border-slate-200/50 px-6 py-12">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="text-center space-y-1">
-              <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-widest">Frequently Asked Questions</h2>
-              <p className="text-[11px] text-slate-400">Common questions about browser-based private PDF editing.</p>
-            </div>
-
-            <div className="space-y-4">
-              {[
-                {
-                  q: "Do my files get uploaded to a server?",
-                  a: "Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required."
-                },
-                {
-                  q: "Is DocuSafePDF free to use?",
-                  a: "Yes, all tools are completely free to use, supported by unobtrusive advertisements."
-                },
-                {
-                  q: "How does the AI Q&A Chat work?",
-                  a: "AI tools send extracted document text to our secure server and AI provider to generate responses. We do not use user-provided API keys, and we do not store full document text after processing."
-                }
-              ].map((faq, idx) => (
-                <div key={idx} className="bg-white border border-slate-200 p-4 rounded-xl space-y-2">
-                  <h3 className="font-extrabold text-xs text-slate-850 uppercase tracking-wider">{faq.q}</h3>
-                  <p className="text-[11px] text-slate-500 leading-normal">{faq.a}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Multi-column Premium Footer */}
-        <footer className="border-t border-slate-200/60 py-10 px-6 bg-slate-50 text-slate-500">
-          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-[11px] pb-8 border-b border-slate-200/60">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="logo-mark w-7 h-7 bg-[#534AB7] rounded-lg flex items-center justify-center">
-                  <ShieldCheck size={14} className="text-white" />
-                </div>
-                <span className="font-bold text-sm text-slate-800 tracking-tight">DocuSafe PDF</span>
-              </div>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Your private document workspace. Edit, clean, and secure PDF documents locally with zero server storage logs.
-              </p>
-            </div>
-
-            <div className="space-y-2.5">
-              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Tools</h4>
-              <div className="flex flex-col gap-1.5 text-slate-400">
-                <Link href="/tools/merge" className="hover:text-[#5B4DFF] no-underline">Merge PDF</Link>
-                <Link href="/tools/split" className="hover:text-[#5B4DFF] no-underline">Split PDF</Link>
-                <Link href="/tools/compress" className="hover:text-[#5B4DFF] no-underline">Compress PDF</Link>
-                <Link href="/tools/password-protect" className="hover:text-[#5B4DFF] no-underline">Protect PDF</Link>
-                <Link href="/tools/pdf-to-images" className="hover:text-[#5B4DFF] no-underline">PDF to Images</Link>
-              </div>
-            </div>
-
-            <div className="space-y-2.5">
-              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Company</h4>
-              <div className="flex flex-col gap-1.5 text-slate-400 text-left">
-                <Link href="/contact" className="hover:text-[#5B4DFF] no-underline">Contact Support</Link>
-                <Link href="#" className="hover:text-[#5B4DFF] no-underline">Product Roadmap</Link>
-              </div>
-            </div>
-
-            <div className="space-y-2.5">
-              <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Legal &amp; Security</h4>
-              <div className="flex flex-col gap-1.5 text-slate-400">
-                <Link href="/privacy" className="hover:text-[#5B4DFF] no-underline">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-[#5B4DFF] no-underline">Terms of Service</Link>
-                <Link href="#" className="hover:text-[#5B4DFF] no-underline">Security Audits</Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-400">
-            <p>© {new Date().getFullYear()} DocuSafe PDF · Your Private PDF Editor</p>
-            <p>Most PDF tools run directly in your browser. AI and audio tools use secure temporary server-side processing when required.</p>
-          </div>
-        </footer>
-
-      </main>
-
-
-
-      {/* Exact style block matching user's custom CSS and sequential animations */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.15s ease-out forwards;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
-        /* Hero Animation CSS */
-        .wrap {
-          border-radius: 0;
-          overflow: hidden;
-        }
-        .logo span {
-          color: #7F77DD;
-        }
-        .badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 11px;
-          color: #7F77DD;
-          background: rgba(83, 74, 183, 0.15);
-          border: 0.5px solid rgba(127, 119, 221, 0.3);
-          padding: 4px 11px;
-          border-radius: 20px;
-          margin-bottom: 20px;
-        }
-        .btn-g i {
-          font-size: 14px;
-        }
-        .anim-up {
-          opacity: 0;
-          transform: translateY(16px);
-          transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        .anim-right {
-          opacity: 0;
-          transform: translateX(16px);
-          transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        .anim-in {
-          opacity: 0;
-          transition: opacity 0.5s ease;
-        }
-        .go {
-          opacity: 1 !important;
-          transform: none !important;
-        }
-        
-        /* Floating Card Animation */
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(1.5deg); }
-        }
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* Reusable Tool Card Component for Dense Grid */
-interface ToolCardProps {
-  tool: Tool;
-  index: number;
-  onClick: (e: React.MouseEvent<HTMLAnchorElement>, tool: Tool) => void;
-  onCardMouseMove: (e: React.MouseEvent<HTMLAnchorElement>) => void;
-}
-
-function ToolCard({ tool, index, onClick, onCardMouseMove }: ToolCardProps) {
-  const Icon = tool.icon;
-  
-  const planColor = 
-    tool.planRequired === "free" 
-      ? "text-emerald-600 bg-emerald-50 border-emerald-100" 
-      : tool.planRequired === "pro" 
-        ? "text-indigo-650 bg-indigo-50 border-indigo-100" 
-        : "text-amber-600 bg-amber-50 border-amber-100";
-
-  return (
-    <a
-      href={tool.href}
-      onClick={(e) => onClick(e, tool)}
-      onMouseMove={onCardMouseMove}
-      className="glass-card shimmer-border p-5 flex flex-col justify-between h-[180px] cursor-pointer group relative overflow-hidden active:scale-[0.98] transition-all duration-300 animate-in bg-white border border-slate-200 hover:border-transparent hover:shadow-2xl rounded-2xl no-underline text-slate-800"
-      style={{
-        animationDelay: `${index * 20}ms`,
-        // @ts-ignore
-        "--hover-color": tool.color,
-      }}
-    >
-      <div>
-        <div className="flex items-start justify-between relative z-10 mb-3">
-          <div 
-            className="w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 shadow-inner group-hover:scale-105"
-            style={{ 
-              backgroundColor: `${tool.color}12`, 
-              borderColor: `${tool.color}20` 
-            }}
-          >
-            <Icon size={22} style={{ color: tool.color }} />
-          </div>
+      {/* Taskbar / Start Bar */}
+      <div className="win95-out h-10 w-full flex items-center justify-between p-1 bg-[#c0c0c0] border-t border-slate-400 select-none z-50 fixed bottom-0 left-0 right-0">
+        <div className="flex items-center gap-1.5 h-full relative">
           
-          <div className="flex items-center gap-1.5">
-            {POPULAR_10_IDS.includes(tool.id) && (
-              <span className="text-[8px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#5B4DFF] text-white shadow-sm shadow-[#5B4DFF]/10">
-                Most Used
-              </span>
+          {/* Start Menu Button */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsStartOpen(!isStartOpen);
+            }}
+            className={`flex items-center gap-1 px-3 py-1 font-bold text-xs select-none h-full border-2 ${
+              isStartOpen 
+                ? "border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#d4d4d4]" 
+                : "border-t-white border-l-white border-r-[#808080] border-b-[#808080] bg-[#c0c0c0]"
+            }`}
+          >
+            <ShieldCheck size={12} className="text-[#000080] shrink-0" />
+            <span className="font-sans font-bold text-black uppercase">Start</span>
+          </button>
+
+          {/* Start Menu Popup */}
+          {isStartOpen && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="win95-out w-72 absolute bottom-9 left-0 bg-[#c0c0c0] border-2 border-white/80 p-1 flex shadow-2xl z-50"
+            >
+              {/* Left Bar (Vertical Windows branding) */}
+              <div className="w-8 win95-title flex items-end justify-center select-none py-2 font-sans shrink-0">
+                <span className="rotate-270 origin-center text-white/50 text-xs font-black tracking-widest uppercase pb-1 flex gap-1">
+                  <span>DocuSafe</span>
+                  <span className="text-[#AFA9EC]">95</span>
+                </span>
+              </div>
+              
+              {/* Menu Options */}
+              <div className="flex-1 flex flex-col gap-0.5 text-xs pl-1 font-sans">
+                <div className="text-[9px] text-[#808080] font-bold uppercase tracking-widest border-b border-gray-300 pb-1 mb-1 px-2">Program Catalog</div>
+                
+                {CATEGORY_TABS.map((tab) => {
+                  if (tab.id === "all") return null;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveCategory(tab.id);
+                        setIsStartOpen(false);
+                      }}
+                      className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent hover:border-[#808080] text-black"
+                    >
+                      <span>{tab.icon}</span>
+                      <span className="font-medium text-[11px]">{tab.name}</span>
+                    </button>
+                  );
+                })}
+
+                <div className="h-[1px] bg-[#808080] border-b border-white my-1" />
+                <button 
+                  onClick={() => {
+                    setIsReadmeOpen(true);
+                    setIsStartOpen(false);
+                  }}
+                  className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent text-black"
+                >
+                  📄 <span>View README.txt</span>
+                </button>
+                <Link 
+                  href="/contact"
+                  className="w-full text-left py-1.5 px-3 flex items-center gap-2 hover:bg-[#000080] hover:text-white border border-transparent text-black no-underline"
+                >
+                  ✉️ <span>Contact Support</span>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Active programs buttons on the Taskbar */}
+          <div className="h-full flex items-center gap-1 pl-2 select-none">
+            {activeWindow === "explorer" && (
+              <button 
+                onClick={() => setActiveWindow(null)}
+                className="win95-btn flex items-center gap-1.5 px-2.5 h-full text-[10px] font-sans font-bold border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#dfdfdf] max-w-[130px] truncate"
+              >
+                <span>🖥️</span>
+                <span className="truncate">DocuSafe Explorer</span>
+              </button>
+            )}
+            {isReadmeOpen && activeWindow === "readme" && (
+              <button 
+                onClick={() => setActiveWindow(null)}
+                className="win95-btn flex items-center gap-1.5 px-2.5 h-full text-[10px] font-sans font-bold border-t-[#808080] border-l-[#808080] border-r-white border-b-white bg-[#dfdfdf] max-w-[130px] truncate"
+              >
+                <span>📄</span>
+                <span className="truncate">README.txt - Notepad</span>
+              </button>
             )}
           </div>
+
         </div>
 
-        <div className="relative z-10">
-          <h3 className="font-extrabold text-slate-800 text-[14px] leading-tight group-hover:text-[#5B4DFF] transition-colors duration-150 mb-1">
-            {tool.name}
-          </h3>
-          <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">
-            {tool.description}
-          </p>
+        {/* System Tray (Clock, System indicators) */}
+        <div className="win95-in px-2.5 py-0.5 bg-[#c0c0c0] border-2 border-t-[#808080] border-l-[#808080] border-r-white border-b-white flex items-center gap-2.5 text-[10.5px] font-sans font-semibold">
+          <span className="cursor-help" title="Local System Secured">🔐</span>
+          <span className="cursor-help" title="Audio sandbox active">🔊</span>
+          <span className="border-l border-[#808080] pl-2 tabular-nums select-none" title="Local System Time">{time}</span>
         </div>
       </div>
-
-      <div className="relative z-10 flex items-center justify-between text-[9px] font-bold text-slate-400 uppercase tracking-wider pt-3 border-t border-slate-100">
-        <span className="flex items-center gap-1 text-[9px] text-slate-450 font-semibold lowercase first-letter:uppercase">
-          <Globe size={11} className="text-slate-400 shrink-0" />
-          in-browser
-        </span>
-        <span className="text-[#5B4DFF] font-extrabold flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-          Open Tool <ArrowRight size={10} className="mt-0.5" />
-        </span>
-      </div>
-    </a>
+    </div>
   );
 }
