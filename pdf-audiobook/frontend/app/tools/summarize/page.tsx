@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { verifyUsageAndGetToken } from "@/app/utils/usageClient";
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -20,9 +17,6 @@ function formatSize(bytes: number): string {
 }
 
 export default function SummarizePdfPage() {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-
   const [file, setFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
@@ -30,10 +24,6 @@ export default function SummarizePdfPage() {
   const [progressLabel, setProgressLabel] = useState("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [pageCount, setPageCount] = useState(0);
-
-  // Secure job token tracking states
-  const [activeJobToken, setActiveJobToken] = useState<string | null>(null);
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   // Summarize settings
   const [length, setLength] = useState<"brief" | "standard" | "detailed">("standard");
@@ -68,16 +58,6 @@ export default function SummarizePdfPage() {
   const handleExtractAndSummarize = async () => {
     if (!file) return;
 
-    if (!isSignedIn) {
-      const clerk = (window as any).Clerk;
-      if (clerk) {
-        clerk.openSignIn();
-      } else {
-        router.push("/sign-in");
-      }
-      return;
-    }
-
     setIsSummarizing(true);
     setError(null);
     setSummary("");
@@ -98,19 +78,6 @@ export default function SummarizePdfPage() {
       const count = pdf.numPages;
       setPageCount(count);
       const fileSizeMb = file.size / (1024 * 1024);
-
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "summarize",
-        toolName: "PDF Summarizer",
-        fileSizeMb,
-        pageCount: count,
-        fileCount: 1,
-      });
-
-      if (!checkResult.allowed) {
-        setIsSummarizing(false);
-        return;
-      }
 
       setProgress(40);
       setProgressLabel("Extracting text contents...");
@@ -140,14 +107,8 @@ export default function SummarizePdfPage() {
 
       const response = await fetch("/api/ai/summarize", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jobToken: checkResult.jobToken,
-          jobId: checkResult.jobId,
-          fileSizeMb,
-          pageCount: count,
           documentText: textContent,
           summaryLength: length,
           summaryStyle: style,
@@ -165,17 +126,6 @@ export default function SummarizePdfPage() {
       if (!summaryText) {
         throw new Error("No summary returned from model.");
       }
-
-      // Sync local tasksUsed cache
-      const prevUsed = parseInt(localStorage.getItem("user_tasks_used_today") || "0", 10);
-      localStorage.setItem("user_tasks_used_today", String(prevUsed + (checkResult.taskCost || 1)));
-      
-      // Sync trials count
-      if (checkResult.isProTrial) {
-        const trialsUsed = parseInt(localStorage.getItem("pro_trials_used") || "0", 10);
-        localStorage.setItem("pro_trials_used", String(trialsUsed + 1));
-      }
-      window.dispatchEvent(new Event("storage"));
 
       setSummary(summaryText);
       setProgress(100);
@@ -214,8 +164,6 @@ export default function SummarizePdfPage() {
     setError(null);
     setProgress(0);
     setProgressLabel("");
-    setActiveJobToken(null);
-    setActiveJobId(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 

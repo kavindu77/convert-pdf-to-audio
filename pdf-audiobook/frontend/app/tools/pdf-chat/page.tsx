@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { verifyUsageAndGetToken } from "@/app/utils/usageClient";
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -31,19 +28,12 @@ interface Message {
 }
 
 export default function PdfChatPage() {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-
   const [file, setFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [pageCount, setPageCount] = useState(0);
-
-  // Secure job token tracking states
-  const [activeJobToken, setActiveJobToken] = useState<string | null>(null);
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   // Chat states
   const [messages, setMessages] = useState<Message[]>([]);
@@ -82,16 +72,6 @@ export default function PdfChatPage() {
   const handleExtractText = async () => {
     if (!file) return;
 
-    if (!isSignedIn) {
-      const clerk = (window as any).Clerk;
-      if (clerk) {
-        clerk.openSignIn();
-      } else {
-        router.push("/sign-in");
-      }
-      return;
-    }
-
     setIsExtracting(true);
     setError(null);
     setProgress(10);
@@ -110,23 +90,6 @@ export default function PdfChatPage() {
       const pdf = await loadingTask.promise;
       const count = pdf.numPages;
       setPageCount(count);
-      const fileSizeMb = file.size / (1024 * 1024);
-
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "pdf-chat",
-        toolName: "PDF Chat",
-        fileSizeMb,
-        pageCount: count,
-        fileCount: 1,
-      });
-
-      if (!checkResult.allowed) {
-        setIsExtracting(false);
-        return;
-      }
-
-      setActiveJobToken(checkResult.jobToken || null);
-      setActiveJobId(checkResult.jobId || null);
 
       setProgress(40);
       setProgressLabel("Parsing pages...");
@@ -153,13 +116,6 @@ export default function PdfChatPage() {
       setExtractedText(textContent);
       setProgress(100);
       setProgressLabel("Text extracted!");
-      
-      // Update local storage trials if trial mode was verified
-      if (checkResult.isProTrial) {
-        const trialsUsed = parseInt(localStorage.getItem("pro_trials_used") || "0", 10);
-        localStorage.setItem("pro_trials_used", String(trialsUsed + 1));
-        window.dispatchEvent(new Event("storage"));
-      }
 
       setMessages([
         {
@@ -192,14 +148,8 @@ export default function PdfChatPage() {
 
       const response = await fetch("/api/ai/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jobToken: activeJobToken,
-          jobId: activeJobId,
-          fileSizeMb: file ? file.size / (1024 * 1024) : 0,
-          pageCount,
           documentText: extractedText,
           question: userMessage,
           chatHistory,
@@ -233,8 +183,6 @@ export default function PdfChatPage() {
     setError(null);
     setProgress(0);
     setProgressLabel("");
-    setActiveJobToken(null);
-    setActiveJobId(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 

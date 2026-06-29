@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { verifyUsageAndGetToken, recordUsageSuccess } from "@/app/utils/usageClient";
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -76,20 +74,6 @@ export default function CompressPdfPage() {
 
       const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
       const pageCount = pdfDoc.getPageCount();
-      const fileSizeMb = originalSize / (1024 * 1024);
-
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "compress",
-        toolName: "Compress PDF",
-        fileSizeMb,
-        pageCount,
-        fileCount: 1,
-      });
-
-      if (!checkResult.allowed) {
-        setIsCompressing(false);
-        return;
-      }
 
       setProgress(55);
       setProgressLabel("Stripping metadata...");
@@ -109,19 +93,6 @@ export default function CompressPdfPage() {
       setProgress(85);
       setProgressLabel("Finalizing...");
 
-      const recordSuccess = await recordUsageSuccess({
-        jobToken: checkResult.jobToken!,
-        jobId: checkResult.jobId!,
-        toolSlug: "compress",
-        fileSizeMb: compressedBytes.byteLength / (1024 * 1024),
-        pageCount,
-        fileCount: 1,
-      });
-
-      if (!recordSuccess) {
-        throw new Error("Failed to record usage event. Please try again.");
-      }
-
       setProgress(100);
       setProgressLabel("Complete!");
 
@@ -133,11 +104,6 @@ export default function CompressPdfPage() {
 
       const blob = new Blob([compressedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
       const baseName = file.name.replace(/\.pdf$/i, "");
-
-      // Sync local tasksUsed cache
-      const prevUsed = parseInt(localStorage.getItem("user_tasks_used_today") || "0", 10);
-      localStorage.setItem("user_tasks_used_today", String(prevUsed + (checkResult.taskCost || 1)));
-      window.dispatchEvent(new Event("storage"));
 
       setResult({
         originalSize,

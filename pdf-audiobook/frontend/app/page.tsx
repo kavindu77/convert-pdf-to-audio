@@ -853,30 +853,7 @@ export default function HomePage() {
 
   const handleToolClick = (e: React.MouseEvent<HTMLAnchorElement>, tool: Tool) => {
     e.preventDefault();
-
-    const allowed = isToolAllowed(tool.id, userPlan);
-    if (!allowed) {
-      const gateType = tool.planRequired === "business" ? "biz-gate" : "pro-gate";
-      openGate(gateType, tool.name);
-      return;
-    }
-
-    const cost = TOOL_COSTS[tool.id] || 1;
-    const hasLimit = checkHasRemainingTasks(cost);
-    if (!hasLimit) {
-      openGate("limit-reached", tool.name);
-      return;
-    }
-
     router.push(tool.href);
-  };
-
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
   };
 
   // Filter tools based on search query AND active category
@@ -910,41 +887,6 @@ export default function HomePage() {
     setActiveSearchIndex(0);
   }, [searchQuery]);
 
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showSearchDropdown) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveSearchIndex((prev) => (prev + 1) % searchResults.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (searchResults[activeSearchIndex]) {
-        const targetTool = searchResults[activeSearchIndex];
-        const allowed = isToolAllowed(targetTool.id, userPlan);
-        if (!allowed) {
-          const gateType = targetTool.planRequired === "business" ? "biz-gate" : "pro-gate";
-          openGate(gateType, targetTool.name);
-          return;
-        }
-        const cost = TOOL_COSTS[targetTool.id] || 1;
-        const hasLimit = checkHasRemainingTasks(cost);
-        if (!hasLimit) {
-          openGate("limit-reached", targetTool.name);
-          return;
-        }
-        router.push(targetTool.href);
-        setShowSearchDropdown(false);
-      }
-    } else if (e.key === "Escape") {
-      setShowSearchDropdown(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#F6F8FF] text-[#071B3A] selection:bg-indigo-500/20 overflow-x-hidden relative font-sans flex flex-col justify-between">
       
       {/* 1. Cinematic Dark Hero Section Block */}
       <div className="wrap bg-[#0E0E12] w-full text-white shrink-0">

@@ -1,10 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { TOOLS } from "@/lib/tools";
-import { getRequiredPlanForTool, isToolAllowed, getLocalPlan } from "@/app/utils/userState";
-import { useUsageStore } from "@/app/utils/useUsageStore";
 import {
   Merge,
   Scissors,
@@ -71,8 +68,6 @@ interface RelatedToolsProps {
 
 export default function RelatedTools({ currentToolSlug, category }: RelatedToolsProps) {
   const router = useRouter();
-  const { isSignedIn } = useUser();
-  const { openGate, setTargetHref } = useUsageStore();
 
   const related = TOOLS.filter(
     (t) => t.category === category && t.slug !== currentToolSlug
@@ -82,36 +77,6 @@ export default function RelatedTools({ currentToolSlug, category }: RelatedTools
 
   const handleToolClick = (e: React.MouseEvent<HTMLButtonElement>, tool: typeof TOOLS[0]) => {
     e.preventDefault();
-
-    if (!isSignedIn) {
-      // Prompt sign in
-      const clerk = (window as any).Clerk;
-      if (clerk) {
-        clerk.openSignIn();
-      } else {
-        router.push("/sign-in");
-      }
-      return;
-    }
-
-    const localPlan = getLocalPlan();
-    const allowed = isToolAllowed(tool.slug, localPlan);
-    if (!allowed) {
-      const isBiz = tool.minPlan === "business";
-      if (isBiz) {
-        openGate("biz-gate", tool.name);
-      } else {
-        const trialsUsed = parseInt(localStorage.getItem("pro_trials_used") || "0", 10);
-        if (trialsUsed < 2) {
-          setTargetHref(`/tools/${tool.slug}`);
-          openGate("pro-trial-info", tool.name);
-        } else {
-          openGate("pro-trial-limit", tool.name);
-        }
-      }
-      return;
-    }
-
     router.push(`/tools/${tool.slug}`);
   };
 

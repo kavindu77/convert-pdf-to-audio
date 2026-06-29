@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { verifyUsageAndGetToken } from "@/app/utils/usageClient";
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -25,9 +22,6 @@ interface Flashcard {
 }
 
 export default function FlashcardsPdfPage() {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-
   const [file, setFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -35,10 +29,6 @@ export default function FlashcardsPdfPage() {
   const [progressLabel, setProgressLabel] = useState("");
   const [extractedText, setExtractedText] = useState<string>("");
   const [pageCount, setPageCount] = useState(0);
-
-  // Secure job token tracking states
-  const [activeJobToken, setActiveJobToken] = useState<string | null>(null);
-  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   // Flashcards configuration
   const [cardCount, setCardCount] = useState(10);
@@ -80,16 +70,6 @@ export default function FlashcardsPdfPage() {
   const handleExtractText = async () => {
     if (!file) return;
 
-    if (!isSignedIn) {
-      const clerk = (window as any).Clerk;
-      if (clerk) {
-        clerk.openSignIn();
-      } else {
-        router.push("/sign-in");
-      }
-      return;
-    }
-
     setIsExtracting(true);
     setError(null);
     setProgress(10);
@@ -108,24 +88,6 @@ export default function FlashcardsPdfPage() {
       const pdf = await loadingTask.promise;
       const count = pdf.numPages;
       setPageCount(count);
-      const fileSizeMb = file.size / (1024 * 1024);
-
-      // Perform server-side access check & token creation
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "flashcards",
-        toolName: "PDF to Flashcards",
-        fileSizeMb,
-        pageCount: count,
-        fileCount: 1,
-      });
-
-      if (!checkResult.allowed) {
-        setIsExtracting(false);
-        return;
-      }
-
-      setActiveJobToken(checkResult.jobToken || null);
-      setActiveJobId(checkResult.jobId || null);
 
       setProgress(40);
       setProgressLabel("Parsing pages...");
@@ -171,14 +133,8 @@ export default function FlashcardsPdfPage() {
     try {
       const response = await fetch("/api/ai/flashcards", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          jobToken: activeJobToken,
-          jobId: activeJobId,
-          fileSizeMb: file ? file.size / (1024 * 1024) : 0,
-          pageCount,
           documentText: extractedText,
           count: cardCount,
           difficulty: difficulty,
@@ -194,18 +150,6 @@ export default function FlashcardsPdfPage() {
       if (!data || !Array.isArray(data)) {
         throw new Error("Invalid format returned by AI.");
       }
-
-      // Sync local tasksUsed cache
-      const prevUsed = parseInt(localStorage.getItem("user_tasks_used_today") || "0", 10);
-      localStorage.setItem("user_tasks_used_today", String(prevUsed + 1));
-      
-      // Sync trials count
-      const isTrial = localStorage.getItem("user_plan") === "free" || !localStorage.getItem("user_plan");
-      if (isTrial) {
-        const trialsUsed = parseInt(localStorage.getItem("pro_trials_used") || "0", 10);
-        localStorage.setItem("pro_trials_used", String(trialsUsed + 1));
-      }
-      window.dispatchEvent(new Event("storage"));
 
       setFlashcards(data);
     } catch (err: any) {
@@ -278,8 +222,6 @@ export default function FlashcardsPdfPage() {
     setProgress(0);
     setProgressLabel("");
     setKnownCards({});
-    setActiveJobToken(null);
-    setActiveJobId(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 

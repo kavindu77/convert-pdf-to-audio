@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { verifyUsageAndGetToken, recordUsageSuccess } from "@/app/utils/usageClient";
+
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -60,7 +59,6 @@ function parseRanges(input: string, totalPages: number): number[][] {
 }
 
 export default function SplitPdfPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [totalPages, setTotalPages] = useState(0);
@@ -122,19 +120,6 @@ export default function SplitPdfPage() {
     setProgress(0);
 
     try {
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "split",
-        toolName: "Split PDF",
-        fileSizeMb: file.size / (1024 * 1024),
-        pageCount: totalPages,
-        fileCount: 1,
-      });
-
-      if (!checkResult.allowed) {
-        setIsProcessing(false);
-        return;
-      }
-
       const { PDFDocument } = await import("pdf-lib");
       const JSZip = (await import("jszip")).default;
 
@@ -177,23 +162,6 @@ export default function SplitPdfPage() {
       }
 
       const blob = await zip.generateAsync({ type: "blob" });
-
-      const recordSuccess = await recordUsageSuccess({
-        jobToken: checkResult.jobToken!,
-        jobId: checkResult.jobId!,
-        toolSlug: "split",
-        fileSizeMb: file.size / (1024 * 1024),
-        pageCount: totalPages,
-        fileCount: 1,
-      });
-
-      if (!recordSuccess) {
-        throw new Error("Failed to record usage event. Please try again.");
-      }
-
-      const prevUsed = parseInt(localStorage.getItem("user_tasks_used_today") || "0", 10);
-      localStorage.setItem("user_tasks_used_today", String(prevUsed + (checkResult.taskCost || 1)));
-      window.dispatchEvent(new Event("storage"));
 
       setZipBlob(blob);
       setResults(splitResults);

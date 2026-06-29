@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useUser, useClerk, SignedIn, SignedOut, UserButton, SignInButton } from "@clerk/nextjs";
 import {
   Merge,
   Scissors,
@@ -27,7 +25,8 @@ import {
   FileText
 } from "lucide-react";
 import RelatedTools from "./RelatedTools";
-import UsageGateModal from "../UsageGateModal";
+import AdBanner from "../AdBanner";
+
 
 interface ToolPageShellProps {
   children: React.ReactNode;
@@ -42,25 +41,6 @@ export default function ToolPageShell({
   category,
   howItWorksSteps,
 }: ToolPageShellProps) {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-  const clerk = useClerk();
-
-  // App header states (synced with localStorage)
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("User");
-
-  useEffect(() => {
-    const updateLocalState = () => {
-      setIsLoggedIn(localStorage.getItem("user_logged_in") === "true");
-      const savedName = localStorage.getItem("user_profile_name");
-      if (savedName) setUserName(savedName);
-    };
-    updateLocalState();
-    window.addEventListener("storage", updateLocalState);
-    return () => window.removeEventListener("storage", updateLocalState);
-  }, []);
-
   const defaultSteps = [
     "Upload your PDF document to the secure workspace.",
     "Adjust preferences or options on the dashboard panel.",
@@ -187,32 +167,25 @@ export default function ToolPageShell({
             href="/"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-all shadow-sm"
           >
-            <ArrowLeft size={13} /> Back to Dashboard
+            <ArrowLeft size={13} /> Home
           </Link>
-
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all border-none cursor-pointer">
-                Sign In
-              </button>
-            </SignInButton>
-          </SignedOut>
-
-          {isLoggedIn && !isSignedIn && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-505" />
-              <span className="text-xs text-slate-700 font-bold">{userName}</span>
-            </div>
-          )}
+          <Link
+            href="/pricing"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-xs font-bold text-indigo-700 transition-all shadow-sm"
+          >
+            Free Forever
+          </Link>
         </div>
       </header>
 
       {/* Main Workspace */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 max-w-5xl mx-auto w-full">
         {children}
+
+        {/* Ad Banner */}
+        <div className="w-full mt-10">
+          <AdBanner adSlot="1234567890" />
+        </div>
 
         {/* How it works section */}
         <div className="w-full mt-16 border-t border-slate-200/60 pt-10 text-center">
@@ -240,19 +213,15 @@ export default function ToolPageShell({
       {/* Footer */}
       <footer className="border-t border-slate-200/60 py-5 px-6 relative z-10 bg-slate-50 text-slate-400 shadow-inner">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] font-semibold">
-          <p>© {new Date().getFullYear()} DocuSafe PDF · Private Document Toolkit</p>
+          <p>© {new Date().getFullYear()} DocuSafe PDF · Free Document Toolkit</p>
           <div className="flex gap-4">
             <Link href="/" className="hover:underline">Home</Link>
             <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
             <Link href="/terms" className="hover:underline">Terms of Service</Link>
-            <Link href="/refund" className="hover:underline">Refund Policy</Link>
             <Link href="/contact" className="hover:underline">Contact Us</Link>
           </div>
         </div>
       </footer>
-
-      {/* Global Usage Gate Modal */}
-      <UsageGateModal />
     </div>
   );
 }

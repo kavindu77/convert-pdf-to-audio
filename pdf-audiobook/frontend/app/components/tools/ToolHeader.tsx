@@ -1,46 +1,32 @@
 import React from "react";
 import { ICON_MAP } from "./RelatedTools";
 import { FileText } from "lucide-react";
-import { Plan } from "@/lib/tools";
 
 interface ToolHeaderProps {
   title: string;
   description: string;
   slug: string;
-  minPlan: Plan;
+  minPlan?: string; // retained for backwards compat, ignored
   processing: "client" | "server" | "hybrid" | "ai";
   output: string;
-  taskCost: number;
+  taskCost?: number; // retained for backwards compat, ignored
 }
 
 export default function ToolHeader({
   title,
   description,
   slug,
-  minPlan,
   processing,
   output,
-  taskCost,
 }: ToolHeaderProps) {
   const IconComponent = ICON_MAP[slug] || FileText;
-
-  const getPlanBadge = (plan: Plan) => {
-    switch (plan) {
-      case "business":
-        return { text: "Business", style: "bg-amber-500/10 text-amber-600 border-amber-500/20" };
-      case "pro":
-        return { text: "Pro", style: "bg-indigo-500/10 text-indigo-650 border-indigo-500/20" };
-      default:
-        return { text: "Free", style: "bg-green-500/10 text-green-600 border-green-500/20" };
-    }
-  };
 
   const getEngineBadge = (proc: typeof processing) => {
     switch (proc) {
       case "server":
         return "Secure server";
       case "ai":
-        return "AI";
+        return "AI-powered";
       case "hybrid":
         return "Hybrid";
       default:
@@ -48,7 +34,6 @@ export default function ToolHeader({
     }
   };
 
-  const planBadge = getPlanBadge(minPlan);
   const engineBadge = getEngineBadge(processing);
 
   return (
@@ -67,8 +52,8 @@ export default function ToolHeader({
       </div>
 
       <div className="flex flex-wrap justify-center gap-1.5 pt-1">
-        <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase border ${planBadge.style}`}>
-          {planBadge.text}
+        <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-green-500/10 text-green-600 border border-green-500/20">
+          Free
         </span>
         <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-slate-100 text-slate-600 border border-slate-200">
           {engineBadge}
@@ -76,11 +61,6 @@ export default function ToolHeader({
         <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-slate-100 text-slate-600 border border-slate-200">
           {output.toUpperCase()}
         </span>
-        {taskCost > 0 && (
-          <span className="text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase bg-slate-100 text-slate-600 border border-slate-200">
-            {taskCost} {taskCost === 1 ? "task" : "tasks"}
-          </span>
-        )}
       </div>
     </div>
   );

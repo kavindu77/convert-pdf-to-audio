@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { verifyUsageAndGetToken, recordUsageSuccess } from "@/app/utils/usageClient";
 import ToolPageShell from "@/app/components/tools/ToolPageShell";
 import ToolHeader from "@/app/components/tools/ToolHeader";
 import ToolUploadBox from "@/app/components/tools/ToolUploadBox";
@@ -35,10 +32,6 @@ function formatFileSize(bytes: number): string {
 }
 
 export default function MergePDFPage() {
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-  const clerk = useClerk();
-
   const [files, setFiles] = useState<PDFFileEntry[]>([]);
   const [isMerging, setIsMerging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,35 +116,11 @@ export default function MergePDFPage() {
       return;
     }
 
-    if (!isSignedIn) {
-      clerk.openSignIn();
-      return;
-    }
-
     setIsMerging(true);
     setError(null);
     setMergedBlob(null);
 
     try {
-      const totalSizeBytes = files.reduce((sum, f) => sum + f.size, 0);
-      const totalSizeMb = totalSizeBytes / (1024 * 1024);
-      const totalPages = files.reduce((sum, f) => sum + (f.pageCount ?? 0), 0);
-
-      const checkResult = await verifyUsageAndGetToken({
-        toolSlug: "merge",
-        toolName: "Merge PDF",
-        fileSizeMb: totalSizeMb,
-        pageCount: totalPages,
-        fileCount: files.length,
-      });
-
-      if (!checkResult.allowed) {
-        setIsMerging(false);
-        return;
-      }
-
-      const { jobToken, jobId, taskCost } = checkResult;
-
       const { PDFDocument } = await import("pdf-lib");
       const mergedPdf = await PDFDocument.create();
 
@@ -167,24 +136,6 @@ export default function MergePDFPage() {
 
       const mergedBytes = await mergedPdf.save();
       const blob = new Blob([mergedBytes.buffer as ArrayBuffer], { type: "application/pdf" });
-
-      const recordSuccess = await recordUsageSuccess({
-        jobToken: jobToken!,
-        jobId: jobId!,
-        toolSlug: "merge",
-        fileSizeMb: blob.size / (1024 * 1024),
-        pageCount: mergedPdf.getPageCount(),
-        fileCount: files.length,
-      });
-
-      if (!recordSuccess) {
-        throw new Error("Failed to record usage event. Please try again.");
-      }
-
-      // Sync local storage tasksUsed cache
-      const prevUsed = parseInt(localStorage.getItem("user_tasks_used_today") || "0", 10);
-      localStorage.setItem("user_tasks_used_today", String(prevUsed + (taskCost || 1)));
-      window.dispatchEvent(new Event("storage"));
 
       setMergedBlob(blob);
       setMergedSize(blob.size);
