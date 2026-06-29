@@ -169,12 +169,6 @@ export default function ToolPageShell({
           >
             <ArrowLeft size={13} /> Home
           </Link>
-          <Link
-            href="/pricing"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-xs font-bold text-indigo-700 transition-all shadow-sm"
-          >
-            Free Forever
-          </Link>
         </div>
       </header>
 

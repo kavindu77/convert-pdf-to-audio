@@ -998,22 +998,6 @@ export default function HomePage() {
             >
               All Tools
             </button>
-
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-white/45 hover:text-white transition-colors bg-transparent border-none cursor-pointer font-bold text-xs">Log in</button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="nav-btn bg-[#534AB7] hover:bg-[#4339a0] text-white font-medium px-3.5 py-1.5 rounded-lg border-none cursor-pointer transition-colors">Sign up free</button>
-              </SignUpButton>
-            </SignedOut>
-
-            <SignedIn>
-              <div className="flex items-center gap-4">
-                <Link href="/dashboard" className="text-white/45 hover:text-white transition-colors no-underline font-bold text-xs">Dashboard</Link>
-                <UserButton afterSignOutUrl="/" />
-              </div>
-            </SignedIn>
           </div>
         </div>
 
@@ -1316,146 +1300,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 5. Pricing Section Redesign */}
-        <section id="pricing-section" className="px-6 py-14 max-w-5xl mx-auto space-y-10 border-t border-slate-200/60 scroll-mt-20">
-          <div className="text-center space-y-1">
-            <h2 className="text-xl font-extrabold text-[#071B3A] uppercase tracking-wider">Flexible Pricing Plans</h2>
-            <p className="text-[11.5px] text-slate-400 max-w-sm mx-auto">Choose a plan that fits your document workflow and privacy audits.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Free */}
-            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between h-[280px] shadow-sm hover:shadow-md transition-shadow">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-800">Free Plan</h3>
-                  <p className="text-[9.5px] text-slate-400">For quick everyday PDF tasks</p>
-                </div>
-                <p className="text-3xl font-extrabold text-slate-900">$0</p>
-                <div className="space-y-1.5 text-xs text-slate-500">
-                  <p className="flex items-center gap-2">✔ Basic PDF tools</p>
-                  <p className="flex items-center gap-2">✔ 5 tasks per day</p>
-                  <p className="flex items-center gap-2">✔ 25MB max file size</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setLocalPlan("free");
-                  setUserPlan("free");
-                  document.getElementById("tools-grid-section")?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
-              >
-                Get Started
-              </button>
-            </div>
-
-            {/* Pro */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#534AB7]/10 to-fuchsia-500/10 rounded-2xl blur-xl opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="bg-white border-2 border-[#5B4DFF] p-6 rounded-2xl flex flex-col justify-between h-[280px] relative backdrop-blur-md shadow-md">
-                <div className="absolute top-0 right-5 -translate-y-1/2 px-2.5 py-0.5 rounded bg-[#5B4DFF] text-[8px] font-extrabold tracking-wider uppercase text-white shadow-md">
-                  Popular
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-extrabold text-sm text-[#5B4DFF]">Pro Plan</h3>
-                    <p className="text-[9.5px] text-indigo-405">For heavy PDF users &amp; privacy reports</p>
-                  </div>
-                  <p className="text-3xl font-extrabold text-slate-900">$9<span className="text-xs text-slate-400 font-normal">/mo</span></p>
-                  <div className="space-y-1.5 text-xs text-slate-650">
-                    <p className="flex items-center gap-2">✔ All 38 PDF tools</p>
-                    <p className="flex items-center gap-2">✔ 300 tasks per month</p>
-                    <p className="flex items-center gap-2">✔ 250MB max file size</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    if (isLoggedIn) {
-                      router.push("/pricing");
-                    } else {
-                      clerk.openSignIn();
-                    }
-                  }}
-                  className="w-full py-2.5 bg-[#5B4DFF] hover:bg-[#4a3ce6] rounded-xl text-xs font-bold text-white transition-colors shadow-sm cursor-pointer"
-                >
-                  Upgrade to Pro
-                </button>
-              </div>
-            </div>
-
-            {/* Business */}
-            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between h-[280px] shadow-sm hover:shadow-md transition-shadow">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-800">Business Plan</h3>
-                  <p className="text-[9.5px] text-slate-400">For teams and batch automation</p>
-                </div>
-                <p className="text-3xl font-extrabold text-slate-900">$29<span className="text-xs text-slate-400 font-normal">/mo</span></p>
-                <div className="space-y-1.5 text-xs text-slate-500">
-                  <p className="flex items-center gap-2">✔ Team workspace</p>
-                  <p className="flex items-center gap-2">✔ 2000 tasks per month</p>
-                  <p className="flex items-center gap-2">✔ 1GB max file size</p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  if (isLoggedIn) {
-                    router.push("/pricing");
-                  } else {
-                    clerk.openSignIn();
-                  }
-                }}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
-              >
-                Start Business
-              </button>
-            </div>
-
-          </div>
-
-          {/* Feature Differences Matrix */}
-          <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white shadow-sm mt-8">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/50 font-bold text-slate-800">
-                  <th className="p-3">Feature</th>
-                  <th className="p-3">Free</th>
-                  <th className="p-3 text-indigo-650">Pro</th>
-                  <th className="p-3">Business</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-655">
-                <tr>
-                  <td className="p-3 font-semibold text-slate-700">PDF Tools Available</td>
-                  <td className="p-3">Basic PDF tools</td>
-                  <td className="p-3 font-medium text-indigo-650">All PDF tools</td>
-                  <td className="p-3">Team workspace</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-slate-700">Daily Task Limits</td>
-                  <td className="p-3">5 tasks/day</td>
-                  <td className="p-3 font-medium text-indigo-650">300 tasks/month</td>
-                  <td className="p-3">2000 tasks/month</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-slate-700">Max File Size</td>
-                  <td className="p-3">25 MB</td>
-                  <td className="p-3 font-medium text-indigo-650">250 MB</td>
-                  <td className="p-3">1 GB</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-slate-750">Batch Processing</td>
-                  <td className="p-3">No batch tools</td>
-                  <td className="p-3 font-medium text-indigo-650">Batch tools</td>
-                  <td className="p-3">Branding &amp; audit logs</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         {/* 6. FAQ Section */}
         <section className="bg-slate-100/50 border-t border-slate-200/50 px-6 py-12">
           <div className="max-w-3xl mx-auto space-y-6">
@@ -1472,7 +1316,7 @@ export default function HomePage() {
                 },
                 {
                   q: "Is DocuSafePDF free to use?",
-                  a: "Yes. The free tier allows 5 tasks per day for standard utilities. Upgrade to Pro for high-limit processing and security reports."
+                  a: "Yes, all tools are completely free to use, supported by unobtrusive advertisements."
                 },
                 {
                   q: "How does the AI Q&A Chat work?",
@@ -1517,8 +1361,6 @@ export default function HomePage() {
             <div className="space-y-2.5">
               <h4 className="font-extrabold text-slate-700 text-[10px] uppercase tracking-wider">Company</h4>
               <div className="flex flex-col gap-1.5 text-slate-400 text-left">
-                <button onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })} className="text-left hover:text-[#5B4DFF] bg-transparent border-none p-0 cursor-pointer text-[11px] text-slate-400">Pricing Plans</button>
-                <Link href="/dashboard" className="hover:text-[#5B4DFF] no-underline">Dashboard</Link>
                 <Link href="/contact" className="hover:text-[#5B4DFF] no-underline">Contact Support</Link>
                 <Link href="#" className="hover:text-[#5B4DFF] no-underline">Product Roadmap</Link>
               </div>
@@ -1529,7 +1371,6 @@ export default function HomePage() {
               <div className="flex flex-col gap-1.5 text-slate-400">
                 <Link href="/privacy" className="hover:text-[#5B4DFF] no-underline">Privacy Policy</Link>
                 <Link href="/terms" className="hover:text-[#5B4DFF] no-underline">Terms of Service</Link>
-                <Link href="/refund" className="hover:text-[#5B4DFF] no-underline">Refund Policy</Link>
                 <Link href="#" className="hover:text-[#5B4DFF] no-underline">Security Audits</Link>
               </div>
             </div>
@@ -1543,195 +1384,7 @@ export default function HomePage() {
 
       </main>
 
-      {/* Login Modal */}
-      {isSignInOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-5 relative text-slate-800">
-            <button 
-              onClick={() => {
-                setIsSignInOpen(false);
-                setAuthMode("signin");
-              }} 
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer"
-            >
-              <X size={16} />
-            </button>
-            
-            <div className="text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-200/50 flex items-center justify-center mx-auto">
-                <User size={18} className="text-indigo-600" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-base">
-                {authMode === "signin" ? "Sign in to DocuSafe" : "Create your account"}
-              </h3>
-              <p className="text-xs text-slate-400">
-                {authMode === "signin" 
-                  ? "Access your dashboard, check limits, and save keys" 
-                  : "Start auditing PDFs and managing local tasks free"}
-              </p>
-            </div>
 
-            <form onSubmit={authMode === "signin" ? handleLogin : handleSignUp} className="space-y-3">
-              {authMode === "signup" && (
-                <div className="space-y-1">
-                  <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="John Doe"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
-                  />
-                </div>
-              )}
-              
-              <div className="space-y-1">
-                <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="name@company.com"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Password</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#7F77DD] text-slate-800"
-                />
-              </div>
-
-              <button type="submit" className="w-full mt-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors border-none cursor-pointer">
-                {authMode === "signin" ? "Sign In" : "Create Free Account"}
-              </button>
-            </form>
-
-            <div className="relative flex items-center justify-center my-1.5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
-              </div>
-              <span className="relative px-3.5 bg-white text-[9px] text-slate-400 font-bold uppercase tracking-wider">Or continue with</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button 
-                type="button" 
-                onClick={() => handleSocialLogin("Google")} 
-                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-slate-200 rounded-xl text-[10.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
-                  <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.54 14.98 1 12 1 7.35 1 3.37 3.65 1.42 7.5l3.85 2.99C6.2 7.42 8.87 5.04 12 5.04z" />
-                  <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.29 1.48-1.14 2.73-2.4 3.58l3.73 2.89c2.18-2 3.7-4.99 3.7-8.62z" />
-                  <path fill="#FBBC05" d="M5.27 10.49c-.25-.75-.4-1.56-.4-2.4s.15-1.65.4-2.4L1.42 2.7C.51 4.5 0 6.69 0 9s.51 4.5 1.42 6.3l3.85-2.81z" />
-                  <path fill="#34A853" d="M12 18.96c-3.13 0-5.8-2.38-6.73-5.46L1.42 16.3c1.95 3.85 5.93 6.5 10.58 6.5 2.98 0 5.8-.99 7.84-2.69l-3.73-2.89c-1.09.73-2.47 1.24-4.11 1.24z" />
-                </svg>
-                Google
-              </button>
-              <button 
-                type="button" 
-                onClick={() => handleSocialLogin("GitHub")} 
-                className="flex items-center justify-center gap-1.5 py-2 px-3 border border-slate-200 rounded-xl text-[10.5px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors bg-white cursor-pointer"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.48 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.577.688.479C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
-                </svg>
-                GitHub
-              </button>
-            </div>
-
-            <div className="text-center text-[11px] text-slate-400 pt-1">
-              {authMode === "signin" ? (
-                <>
-                  Don't have an account?{" "}
-                  <button 
-                    onClick={() => setAuthMode("signup")} 
-                    className="text-indigo-600 hover:text-indigo-700 font-extrabold border-none bg-transparent cursor-pointer p-0 underline"
-                  >
-                    Create Account
-                  </button>
-                </>
-              ) : (
-                <>
-                  Already have an account?{" "}
-                  <button 
-                    onClick={() => setAuthMode("signin")} 
-                    className="text-indigo-600 hover:text-indigo-700 font-extrabold border-none bg-transparent cursor-pointer p-0 underline"
-                  >
-                    Sign In
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upgrade Modal */}
-      {isUpgradeOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-5 space-y-5 relative text-slate-800">
-            <button onClick={() => setIsUpgradeOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer" disabled={isUpgrading}>
-              <X size={16} />
-            </button>
-            <div className="text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center mx-auto shadow-sm text-black">
-                <Award size={18} />
-              </div>
-              <h3 className="font-extrabold text-slate-900 text-base">Upgrade to Premium Pro</h3>
-              <p className="text-xs text-slate-400">Unlock security scanners, print saving engines, and batch jobs.</p>
-            </div>
-            
-            <div className="bg-slate-105 border border-slate-200 p-0.5 rounded-lg flex max-w-[150px] mx-auto text-[9px]">
-              <button onClick={() => setBillingInterval("monthly")} className={`flex-1 py-0.5 rounded font-bold transition-all border-none cursor-pointer ${billingInterval === "monthly" ? "bg-white text-slate-800 shadow-sm" : "text-slate-450 bg-transparent"}`}>Monthly</button>
-              <button onClick={() => setBillingInterval("yearly")} className={`flex-1 py-0.5 rounded font-bold transition-all border-none cursor-pointer ${billingInterval === "yearly" ? "bg-white text-slate-800 shadow-sm" : "text-slate-450 bg-transparent"}`}>Yearly (-33%)</button>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <p className="font-bold text-slate-800">Pro Plan Subscription</p>
-                <p className="text-[9px] text-slate-400">Unlocks 300 monthly tasks</p>
-              </div>
-              <p className="font-extrabold text-slate-900 text-base">{billingInterval === "monthly" ? "$9" : "$6"}<span className="text-[9px] text-slate-400 font-normal">/mo</span></p>
-            </div>
-
-            <div className="space-y-2">
-              {upgradeSuccess ? (
-                <div className="py-2.5 bg-green-100 border border-green-200 rounded-xl text-green-655 font-bold text-xs text-center flex items-center justify-center gap-1.5 animate-bounce">
-                  <Check size={14} /> Subscription Active! Welcome to Pro!
-                </div>
-              ) : (
-                <button
-                  onClick={handleUpgradeNow}
-                  disabled={isUpgrading}
-                  className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-655 text-black font-extrabold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 border-none cursor-pointer animate-pulse"
-                >
-                  {isUpgrading ? (
-                    <>
-                      <RefreshCw size={11} className="animate-spin" /> Processing purchase...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={11} /> Activate Premium Pro
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Global Usage Gate Modal */}
-      <UsageGateModal />
 
       {/* Exact style block matching user's custom CSS and sequential animations */}
       <style jsx global>{`
@@ -1853,9 +1506,6 @@ function ToolCard({ tool, index, onClick, onCardMouseMove }: ToolCardProps) {
                 Most Used
               </span>
             )}
-            <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded border capitalize ${planColor}`}>
-              {tool.planRequired}
-            </span>
           </div>
         </div>
 

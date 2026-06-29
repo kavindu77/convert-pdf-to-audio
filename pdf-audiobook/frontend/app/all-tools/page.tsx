@@ -860,19 +860,6 @@ export default function AllToolsDirectory() {
 
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-400">
           <Link href="/" prefetch={false} className="hover:text-white transition-colors">Home</Link>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:text-white transition-all text-xs cursor-pointer">
-                Sign In
-              </button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" prefetch={false} className="text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-semibold">Dashboard</Link>
-              <UserButton afterSignOutUrl="/" />
-            </div>
-          </SignedIn>
         </nav>
       </header>
 
@@ -960,15 +947,6 @@ export default function AllToolsDirectory() {
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 tool-icon">
                       <Icon size={18} style={{ color: tool.color }} />
                     </div>
-                    <span className={`text-[8px] font-extrabold px-2.5 py-0.5 rounded border uppercase tracking-wider ${
-                      tool.planRequired === "free"
-                        ? "bg-green-500/15 border-green-500/20 text-green-400"
-                        : tool.planRequired === "pro"
-                        ? "bg-indigo-500/15 border-indigo-500/20 text-indigo-400"
-                        : "bg-amber-500/15 border-amber-500/20 text-amber-400"
-                    }`}>
-                      {tool.badge}
-                    </span>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1003,176 +981,11 @@ export default function AllToolsDirectory() {
 
       </main>
 
-      {/* Login Modal */}
-      {isSignInOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-6 relative">
-            <button onClick={() => setIsSignInOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-              <X size={18} />
-            </button>
-            <div className="text-center space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center mx-auto">
-                <User size={20} className="text-indigo-400" />
-              </div>
-              <h3 className="font-bold text-white text-lg">Sign in to DocuSafe</h3>
-              <p className="text-xs text-gray-400">Access your dashboard, check limits, and save keys</p>
-            </div>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="name@company.com"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Password</label>
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-gray-950 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-white"
-                />
-              </div>
-              <button type="submit" className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors">
-                Sign In
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Upgrade Modal */}
-      {isUpgradeOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-6 relative animate-scale-up">
-            <button onClick={() => setIsUpgradeOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors" disabled={isUpgrading}>
-              <X size={18} />
-            </button>
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20 text-black">
-                <Award size={24} />
-              </div>
-              <h3 className="font-extrabold text-white text-xl">Upgrade to Premium Pro</h3>
-              <p className="text-xs text-gray-400">Unlock security scanners, print saving engines, and batch jobs.</p>
-            </div>
-            
-            <div className="bg-white/5 border border-white/10 p-1 rounded-xl flex max-w-[200px] mx-auto text-[10px]">
-              <button onClick={() => setBillingInterval("monthly")} className={`flex-1 py-1 rounded-lg font-bold transition-all ${billingInterval === "monthly" ? "bg-white/10 text-white" : "text-gray-400"}`}>Monthly</button>
-              <button onClick={() => setBillingInterval("yearly")} className={`flex-1 py-1 rounded-lg font-bold transition-all ${billingInterval === "yearly" ? "bg-white/10 text-white" : "text-gray-400"}`}>Yearly (-33%)</button>
-            </div>
 
-            <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <p className="font-bold text-white">Pro Plan Subscription</p>
-                <p className="text-[10px] text-gray-500">Unlocks 300 monthly tasks</p>
-              </div>
-              <p className="font-extrabold text-white text-lg">{billingInterval === "monthly" ? "$9" : "$6"}<span className="text-[10px] text-gray-500 font-normal">/mo</span></p>
-            </div>
 
-            <div className="space-y-3">
-              {upgradeSuccess ? (
-                <div className="py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-bold text-xs text-center flex items-center justify-center gap-1.5 animate-bounce">
-                  <Check size={16} /> Subscription Active! Welcome to Pro!
-                </div>
-              ) : (
-                <button
-                  onClick={handleUpgradeNow}
-                  disabled={isUpgrading}
-                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-extrabold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
-                >
-                  {isUpgrading ? (
-                    <>
-                      <RefreshCw size={12} className="animate-spin" /> Processing purchase...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={12} /> Activate Premium Pro
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Task Limit Modal */}
-      {isLimitModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-6 relative text-center">
-            <button onClick={() => setIsLimitModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-              <X size={18} />
-            </button>
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto text-red-400 animate-pulse">
-              <AlertTriangle size={24} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-extrabold text-white text-lg">Limit Reached</h3>
-              <p className="text-xs text-gray-400">
-                You used your {userPlan === "free" ? "5 free" : userPlan === "pro" ? "300 Pro" : "2000 Business"} tasks today.
-              </p>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
-                Upgrade to Pro for 300 monthly tasks, full security reports, larger files, and batch processing.
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setIsLimitModalOpen(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-xs text-gray-400 hover:text-white font-bold transition-colors">
-                Come back tomorrow
-              </button>
-              <button
-                onClick={() => {
-                  setIsLimitModalOpen(false);
-                  setIsUpgradeOpen(true);
-                }}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors shadow-lg shadow-indigo-600/15"
-              >
-                Upgrade to Pro
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Pro Tool Gate Modal */}
-      {isGateModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-gray-900 border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 space-y-6 relative text-center animate-scale-up">
-            <button onClick={() => setIsGateModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
-              <X size={18} />
-            </button>
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto text-indigo-400">
-              <Lock size={22} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-extrabold text-white text-lg">This is a {gateToolRequired === "business" ? "Business" : "Pro"} tool</h3>
-              <p className="text-xs text-gray-400">
-                Upgrade to unlock {gateToolName}, Privacy Report, Evidence Locker, Fake Redaction Detector, and more.
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setIsGateModalOpen(false)} className="flex-1 py-2.5 border border-white/10 rounded-xl text-xs text-gray-400 hover:text-white font-bold transition-colors">
-                View free tools
-              </button>
-              <button
-                onClick={() => {
-                  setIsGateModalOpen(false);
-                  setIsUpgradeOpen(true);
-                }}
-                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-colors"
-              >
-                Upgrade
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style jsx global>{`
         @keyframes fadeIn {

@@ -127,15 +127,7 @@ export function getRequiredPlanForTool(toolId: string): PlanType {
   return "free";
 }
 
-// Check if plan has access to a tool
 export function isToolAllowed(toolId: string, currentPlan: PlanType): boolean {
-  const required = getRequiredPlanForTool(toolId);
-  if (required === "business") {
-    return currentPlan === "business";
-  }
-  if (required === "pro") {
-    return currentPlan === "pro" || currentPlan === "business";
-  }
   return true;
 }
 
@@ -189,9 +181,5 @@ export function getLocalTasksLimit(plan: PlanType): number {
 }
 
 export function checkHasRemainingTasks(cost: number): boolean {
-  if (IS_SERVER) return true;
-  const plan = getLocalPlan();
-  const limit = getLocalTasksLimit(plan);
-  const used = getLocalTasksUsed();
-  return (used + cost) <= limit;
+  return true;
 }
